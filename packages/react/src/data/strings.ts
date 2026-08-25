@@ -1,0 +1,202 @@
+/**
+ * Every user-facing string, flat and overridable through `DocsProvider`'s `strings` prop
+ * (docs/08 section 3). Copy rules: sentence case, plain verbs, the verb on a button matches
+ * the verb in its result, no exclamation marks, no apologies, errors say what happened and
+ * what to do (docs/06 section 14).
+ *
+ * Placeholders are `{name}`; `format` fills them. No i18n dependency (D-07).
+ */
+export const defaultStrings = {
+  // Sidebar and tree (docs/06 section 5, docs/07 sections 8-9).
+  'tree.label': 'Pages',
+  'tree.search': 'Search',
+  'tree.home': 'Home',
+  'tree.newPage': 'New page',
+  'tree.newPageTooltip': 'New page',
+  'tree.addInside': 'Add a page inside {title}',
+  'tree.rowMenu': 'More options for {title}',
+  'tree.expandRow': 'Expand {title}',
+  'tree.collapseRow': 'Collapse {title}',
+  'tree.empty': 'No pages yet',
+  'tree.emptyAction': 'Create your first page',
+  'tree.error': "Couldn't load pages",
+  'tree.retry': 'Retry',
+  'tree.indexing': 'Indexing {done} / {total} pages',
+  'tree.collapseSidebar': 'Collapse sidebar',
+  'tree.expandSidebar': 'Show sidebar',
+  'tree.resize': 'Resize sidebar',
+  'tree.workspace': 'Docs',
+
+  // Header (docs/06 section 6).
+  'header.breadcrumb': 'Breadcrumb',
+  'header.breadcrumbMore': 'More pages',
+  'header.document': 'Document',
+  'header.actions': 'Page actions',
+  'header.edit': 'Edit',
+  'header.done': 'Done',
+  'header.menu': 'More options',
+  'header.savedAt': 'Saved {time}',
+
+  // Save status (docs/06 section 9).
+  'status.label': 'Save status',
+  'status.saving': 'Saving…',
+  'status.unsaved': 'Unsaved changes',
+  'status.offline': 'Offline, retrying',
+  'status.offlineTooltip': 'Next retry {time}',
+  'status.conflict': 'Changed on disk',
+  'status.draft': 'Restored draft',
+  'status.error': "Couldn't save",
+  'status.opened': 'Opened {title}',
+
+  // Banners (docs/06 section 10).
+  'banner.lossy':
+    "Some content here can't be edited without changes: {reasons}. Editing will drop it.",
+  'banner.lossyEdit': 'Edit anyway',
+  'banner.lossyLearnMore': 'Learn more',
+  'banner.lossyReasons': 'What changes',
+  'banner.conflict': 'Changed on disk since you opened it.',
+  'banner.conflictReload': 'Reload',
+  'banner.conflictOverwrite': 'Overwrite',
+  'banner.draftRestored': 'Restored unsaved changes from {time}.',
+  'banner.draftKeep': 'Keep',
+  'banner.draftDiscard': 'Discard',
+  'banner.draftMismatch': 'This page changed since your unsaved edits.',
+  'banner.draftApply': 'Apply draft',
+  'banner.draftKeepFile': 'Keep file',
+  'banner.largePage': 'Large page: opened in read mode for performance.',
+  'banner.largePageEdit': 'Edit anyway',
+
+  // Empty and error cards (docs/06 section 11).
+  'empty.noSelection.title': 'Select a page',
+  'empty.noSelection.body': 'Choose a page from the sidebar or press ⌘P to search.',
+  'empty.noSelection.action': 'New page',
+  'empty.noPages.title': 'No pages yet',
+  'empty.noPages.body': 'Create your first page to get started.',
+  'empty.noPages.action': 'Create page',
+  'empty.notFound.title': 'This page no longer exists',
+  'empty.notFound.body': 'It may have been moved or deleted.',
+  'empty.notFound.action': 'Go home',
+  'empty.folder.title': 'This folder has no page yet',
+  'empty.folder.body': 'Create one to add content here.',
+  'empty.folder.action': 'Create page',
+  'empty.unreachable.title': 'Docs are unavailable',
+  'empty.unreachable.action': 'Retry',
+  'empty.contractTooNew.title': 'Docs backend is newer than this app',
+  'empty.contractTooNew.body': 'Update the app to open these docs.',
+  'empty.offline.title': 'Not available offline',
+  'empty.offline.body': "This page hasn't been opened on this device yet.",
+  'empty.offline.action': 'Retry',
+  'empty.editorCrash.title': 'Editor failed to render this page',
+  'empty.editorCrash.body': 'Reload the page or open it in read mode.',
+  'empty.editorCrash.action': 'Reload',
+  'empty.editorCrash.secondary': 'Open in read mode',
+  'empty.page.title': 'Untitled',
+
+  // Dialogs (docs/06 section 8).
+  'dialog.cancel': 'Cancel',
+  'dialog.delete.title': "Delete '{title}'?",
+  'dialog.delete.body': 'This deletes the page and {count} sub-pages. This cannot be undone.',
+  'dialog.delete.bodyLeaf': 'This deletes the page. This cannot be undone.',
+  'dialog.delete.confirm': 'Delete',
+  'dialog.move.title': 'Move to',
+  'dialog.move.placeholder': 'Search pages…',
+  'dialog.move.root': 'Root',
+  'dialog.move.empty': 'No pages',
+  'dialog.rename.title': 'Rename page',
+  'dialog.rename.label': 'Title',
+  'dialog.rename.confirm': 'Rename',
+
+  // Menus (docs/06 section 8).
+  'menu.copyLink': 'Copy link',
+  'menu.copyMarkdown': 'Copy as Markdown',
+  'menu.download': 'Download .md',
+  'menu.changeIcon': 'Change icon',
+  'menu.rename': 'Rename',
+  'menu.moveTo': 'Move to',
+  'menu.wordCount': '{count} words',
+  'menu.delete': 'Delete',
+  'menu.copiedLink': 'Copied link',
+  'menu.copiedMarkdown': 'Copied as Markdown',
+  'menu.downloaded': "Downloaded '{title}'",
+  'menu.deleted': "Deleted '{title}'",
+  'menu.moved': "Moved '{title}'",
+  'menu.renamed': "Renamed to '{title}'",
+
+  // Command palette (docs/06 section 8, docs/07 section 5).
+  'palette.label': 'Search pages and actions',
+  'palette.placeholder': 'Search pages…',
+  'palette.recent': 'Recent',
+  'palette.pages': 'Pages',
+  'palette.actions': 'Actions',
+  'palette.results': 'Results',
+  'palette.searchContent': 'Search in content',
+  'palette.empty': 'No results',
+  'palette.retry': 'Retry',
+  'palette.newPage': 'New page',
+  'palette.toggleSidebar': 'Toggle sidebar',
+  'palette.expandAll': 'Expand all',
+  'palette.collapseAll': 'Collapse all',
+  'palette.switchTheme': 'Switch theme',
+  'palette.footerNavigate': '↑↓ to navigate',
+  'palette.footerOpen': '↵ to open',
+  'palette.footerClose': 'esc to close',
+
+  // Canvas and editor (docs/06 sections 7-8).
+  'editor.titlePlaceholder': 'Untitled',
+  'editor.bodyPlaceholder': "Write something, or press '/' for commands",
+  'editor.addIcon': 'Add icon',
+  'editor.removeIcon': 'Remove',
+  'editor.iconEmoji': 'Emoji',
+  'editor.iconIcons': 'Icons',
+  'editor.iconSearch': 'Search icons…',
+  'editor.iconRandom': 'Random',
+  'editor.emptyToggle': 'Empty toggle. Click or drop blocks inside.',
+  'editor.copyCode': 'Copy',
+  'editor.copiedCode': 'Copied',
+  'editor.imageMissing': 'Image not found: {path}',
+  'editor.dragHandle': 'Drag to move',
+  'editor.addBlock': 'Add a block below',
+  'editor.slash.basic': 'Basic blocks',
+  'editor.slash.lists': 'Lists',
+  'editor.slash.media': 'Media',
+  'editor.slash.advanced': 'Advanced',
+  'editor.slash.empty': 'No results',
+  'editor.toolbar.label': 'Formatting',
+  'editor.toolbar.turnInto': 'Turn into',
+  'editor.toolbar.bold': 'Bold',
+  'editor.toolbar.italic': 'Italic',
+  'editor.toolbar.strikethrough': 'Strikethrough',
+  'editor.toolbar.code': 'Code',
+  'editor.toolbar.link': 'Link',
+  'editor.link.placeholder': 'Paste a link',
+  'editor.link.apply': 'Apply',
+  'editor.link.remove': 'Remove link',
+
+  // Failures. `error.<ProviderErrorCode>` is what a caught ProviderError falls back to.
+  'error.generic': 'Something went wrong',
+  'error.save': "Couldn't save '{title}'",
+  'error.create': "Couldn't create the page",
+  'error.move': "Couldn't move '{title}'",
+  'error.delete': "Couldn't delete '{title}'",
+  'error.rename': "Couldn't rename '{title}'",
+  'error.copy': "Couldn't copy",
+  'error.upload': "Couldn't upload '{name}'",
+  'error.not_found': 'That page no longer exists',
+  'error.conflict': 'This page changed on disk',
+  'error.forbidden': 'You do not have access to this page',
+  'error.validation': 'That change is not valid',
+  'error.unsupported': 'This store does not support that',
+  'error.network': 'Docs are unreachable',
+  'error.quota': 'Out of storage space',
+  'error.internal': 'Something went wrong',
+};
+
+export type DocsStrings = Record<keyof typeof defaultStrings, string>;
+
+/** `format('Opened {title}', { title: 'Auth' })`. An unknown placeholder is left as written. */
+export function format(template: string, params: Record<string, string | number> = {}): string {
+  return template.replace(/\{(\w+)\}/g, (match, name: string) => {
+    const value = params[name];
+    return value === undefined ? match : String(value);
+  });
+}

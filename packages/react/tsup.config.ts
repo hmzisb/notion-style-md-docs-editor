@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { defineConfig } from 'tsup';
 
 export default defineConfig({
@@ -12,9 +13,20 @@ export default defineConfig({
     'adapters/memory': 'src/adapters/memory.ts',
   },
   format: ['esm'],
-  // Same as core: a composite program needs an explicit file list, which tsup's dts
-  // worker does not build (TS6307).
-  dts: { compilerOptions: { composite: false, incremental: false, declarationMap: false } },
+  dts: {
+    compilerOptions: {
+      // Same as core: a composite program needs an explicit file list, which tsup's dts
+      // worker does not build (TS6307).
+      composite: false,
+      incremental: false,
+      declarationMap: false,
+      // Without project references, the workspace `paths` would pull `@docs/core`'s source
+      // into this program, outside `rootDir` (TS6059). Declarations must point at the
+      // package the consumer installs, so only the package-local alias survives here.
+      baseUrl: '.',
+      paths: { '@/*': ['./src/*'] },
+    },
+  },
   sourcemap: true,
   splitting: true,
   treeshake: true,
@@ -23,6 +35,8 @@ export default defineConfig({
   external: [/^react/, /^react-dom/, /^@tanstack\//, /^platejs/, /^@platejs\//, /^@docs\//],
   esbuildOptions(o) {
     o.jsx = 'automatic';
+    // `@/*` is the alias the shadcn registry writes; no `@/` import survives into dist.
+    o.alias = { '@': fileURLToPath(new URL('src', import.meta.url)) };
   },
   onSuccess: 'pnpm build:css',
 });
