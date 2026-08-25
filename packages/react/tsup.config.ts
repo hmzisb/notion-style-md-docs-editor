@@ -32,7 +32,16 @@ export default defineConfig({
   treeshake: true,
   clean: true,
   target: 'es2022',
-  external: [/^react/, /^react-dom/, /^@tanstack\//, /^platejs/, /^@platejs\//, /^@docs\//],
+  // Anchored: a bare `/^react/` also externalises `react-dnd`, which docs/11 section 8 lists
+  // as bundled.
+  external: [
+    /^react(\/|$)/,
+    /^react-dom(\/|$)/,
+    /^@tanstack\//,
+    /^platejs(\/|$)/,
+    /^@platejs\//,
+    /^@docs\//,
+  ],
   esbuildOptions(o) {
     o.jsx = 'automatic';
     // `@/*` is the alias the shadcn registry writes; no `@/` import survives into dist.

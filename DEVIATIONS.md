@@ -17,6 +17,20 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-016 · P2-T01 · 2026-08-26
+Spec said: docs/02 section 2 and docs/11 section 6 hold every file in the repo to the same `strictTypeChecked` + `stylisticTypeChecked` lint.
+Reality: the 25 copied Plate registry files fail 60 of those rules after `--fix` - `no-unsafe-*` on Plate's `any`-typed element props, `no-non-null-assertion`, `no-unnecessary-condition`, `no-deprecated`. None is a correctness finding; rewriting them all would fork the vendored source and make a later re-add unmergeable, which is the one thing docs/11 section 5 asks us to protect.
+Decision: `eslint.config.js` turns nine non-correctness rules off for `packages/react/src/editor/ui/**` only. Those files still pass `tsc --strict` with `noUncheckedIndexedAccess`, the rules of hooks and every boundary rule; ten genuine strict-mode defects found in them were fixed by hand rather than suppressed.
+Impact: `eslint.config.js`; the module's own code, including `src/editor/kits/**` and `src/editor/*.tsx`, is unaffected.
+Reverse when: Plate's registry ships types that satisfy the type-safety rules, or the module stops treating these files as vendored.
+
+## DEV-015 · P2-T01 · 2026-08-26
+Spec said: docs/11 section 5 - add Plate items with `npx shadcn@latest add @plate/<item>` into `src/editor/ui`.
+Reality: shadcn 4.19 ignores `--path` and writes every item to `aliases.ui`, so the items land in `src/ui` next to the primitives. It also re-adds their shadcn dependencies: `add @plate/callout-node` overwrites `tooltip.tsx`, `separator.tsx` and `dropdown-menu.tsx`, three files that carry the local edits in `REGISTRY-SYNC.md`, and it writes a `-static` twin per node that this module never renders (the read view is `@docs/core`'s `PlateView`, not the static registry).
+Decision: the items were taken from the same registry the CLI reads (`https://platejs.org/r/<name>.json`), written to `src/editor/ui`, and their `@/components/ui/*` imports redirected to `@/ui/*` - the redirect docs/11 section 5 already requires. `checkbox` was the one missing primitive and came from `@shadcn` through the CLI as normal. `REGISTRY-SYNC.md` records the item list and the method, so a later re-add still diffs against a known source.
+Impact: `packages/react/src/editor/ui/*` (25 files), `packages/react/src/ui/checkbox.tsx`, `packages/react/REGISTRY-SYNC.md`.
+Reverse when: the CLI honours `--path` and stops force-overwriting already-installed primitives.
+
 ## DEV-014 · P1-T13 · 2026-08-26
 Spec said: docs/06 section 5 - the sidebar's Search row carries a right-aligned `⌘P` kbd in `text-xs text-muted-foreground`.
 Reality: on the sidebar surface that pair measures 4.42:1 (`#737373` on `#f7f7f7`, 12 px, weight 500), which axe reports as a `color-contrast` violation. `--muted-foreground` clears 4.5:1 against `--background` but not against the lighter `--sidebar`, so every other use of the token in the spec is fine and only this one is not.

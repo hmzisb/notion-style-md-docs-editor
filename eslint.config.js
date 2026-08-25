@@ -2,6 +2,7 @@
 import js from '@eslint/js';
 import tseslint from 'typescript-eslint';
 import boundaries from 'eslint-plugin-boundaries';
+import reactHooks from 'eslint-plugin-react-hooks';
 import prettierConfig from 'eslint-config-prettier';
 import globals from 'globals';
 
@@ -150,6 +151,18 @@ export default tseslint.config(
     },
   },
 
+  // The rules of hooks, on every component in the repo (docs/11 section 6). The two classic
+  // rules only: the rest of `recommended-latest` is the React Compiler's adoption lint, which
+  // is a project of its own and not what docs/11 asks for (ASM-060).
+  {
+    files: ['packages/**/*.tsx', 'apps/**/*.tsx', 'smoke/**/*.tsx'],
+    plugins: reactHooks.configs.flat['recommended-latest'].plugins,
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'error',
+    },
+  },
+
   // Architecture boundaries (docs/02 section 2).
   {
     files: ['packages/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'smoke/**/*.{ts,tsx}'],
@@ -203,6 +216,26 @@ export default tseslint.config(
   {
     files: ['packages/react/src/tree/**/*.{ts,tsx}'],
     rules: { 'no-restricted-imports': ['error', { patterns: [NO_PLATE_REACT] }] },
+  },
+
+  // Copied Plate UI (docs/11 section 5, DEV-015, DEV-016). These files are vendored source that is
+  // re-synced from the registry, so they are held to `tsc --strict` and the rules of hooks -
+  // both of which they pass - but not to the type-safety lint the module's own code follows.
+  // Every rule below fires on the same two things: Plate and Ariakit types that surface `any`,
+  // and upstream's own house style. Nothing here is a correctness rule.
+  {
+    files: ['packages/react/src/editor/ui/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'off',
+      '@typescript-eslint/no-non-null-assertion': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/restrict-plus-operands': 'off',
+    },
   },
 
   // Config files and scripts: no type-aware program, allow console.

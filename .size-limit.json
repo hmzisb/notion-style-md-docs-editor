@@ -44,10 +44,7 @@
   },
   {
     "name": "@docs/react ./tree + ./view",
-    "path": [
-      "packages/react/dist/tree/index.js",
-      "packages/react/dist/view/index.js"
-    ],
+    "path": ["packages/react/dist/tree/index.js", "packages/react/dist/view/index.js"],
     "limit": "80 kB",
     "ignore": [
       "@docs/core",
@@ -73,6 +70,30 @@
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
     "limit": "92 kB",
+    "ignore": [
+      "@docs/core",
+      "lucide-react/dynamic",
+      "@tanstack/react-query",
+      "react",
+      "react-dom",
+      "@platejs/basic-nodes",
+      "@platejs/callout",
+      "@platejs/caption",
+      "@platejs/code-block",
+      "@platejs/link",
+      "@platejs/list",
+      "@platejs/markdown",
+      "@platejs/media",
+      "@platejs/table",
+      "@platejs/toggle",
+      "platejs"
+    ],
+    "gzip": true
+  },
+  {
+    "name": "@docs/react ./editor",
+    "path": "packages/react/dist/editor/index.js",
+    "limit": "260 kB",
     "ignore": [
       "@docs/core",
       "lucide-react/dynamic",

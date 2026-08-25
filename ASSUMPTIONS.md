@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-061 · P2-T01 · 2026-08-26
+Question: the copied `media-image-node` renders a caption textarea, but the read view (docs/06 section 7) draws no caption at all.
+Assumed: the editor's image node drops the caption UI for now; `CaptionPlugin` stays in the kit so the data survives a round-trip, and the caption is designed in P2-T12.
+Why: `caption` currently holds the Markdown alt text, so an editable textarea would show alt text as a visible caption in edit mode and nothing in read mode - the visual jump docs/05 section 8 forbids.
+Cheap to reverse: yes
+
+## ASM-060 · P2-T01 · 2026-08-26
+Question: docs/11 section 6 asks for `eslint-plugin-react-hooks`, whose v7 `recommended-latest` config is mostly the React Compiler's adoption lint.
+Assumed: wire the plugin in with `rules-of-hooks` and `exhaustive-deps` as errors, and leave the compiler rules off.
+Why: the compiler rules flag 16 items in shipped, tested P1 code (`preserve-manual-memoization`, `set-state-in-effect`); adopting the compiler is its own task with its own gate, and docs/11 asks for the rules of hooks, not for that migration.
+Cheap to reverse: yes
+
+## ASM-059 · P2-T01 · 2026-08-26
+Question: `DocumentEditor`'s `toolbar` prop (docs/08 section 5) accepts `'fixed'`, but docs/06 has no design for a fixed toolbar.
+Assumed: `'floating'` and `'fixed'` both mount the floating toolbar for now; only `'none'` changes the kit, by dropping it. The prop is honoured for real in P2-T05.
+Why: the alternative is a toolbar with no spec, which would have to be redrawn once docs/06 defines one; dropping the value from the type would break the public prop docs/08 pins.
+Cheap to reverse: yes
+
 ## ASM-058 · P1-T13 · 2026-08-26
 Question: docs/09 P1-T13 asks for a Lighthouse a11y run script, but `lighthouse` is not in docs/11's dev-dependency list and no gate runs it.
 Assumed: `scripts/lighthouse-a11y.ts` shells out to `npx -y lighthouse@12` instead of adding the package; the score is captured for the phase report, and `@axe-core/playwright` stays the gate.

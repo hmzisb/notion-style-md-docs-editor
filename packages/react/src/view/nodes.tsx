@@ -19,6 +19,7 @@ import {
   type SlateRenderElementProps,
 } from 'platejs/static';
 import { useEffect, useState, type ReactNode } from 'react';
+import { blockStyles } from '@/lib/block-styles.js';
 import { useDocs } from '@/data/context.js';
 import { cn } from '@/lib/utils';
 import { AssetImage } from './AssetImage.js';
@@ -110,27 +111,23 @@ function Block({
 }
 
 function ParagraphStatic(props: SlateElementProps): React.JSX.Element {
-  return <Block props={props} className="py-[3px]" />;
+  return <Block props={props} className={blockStyles.p} />;
 }
 
-const HEADING = 'mb-0.5 font-semibold leading-[1.3] first:mt-0';
-
 function H1Static(props: SlateElementProps): React.JSX.Element {
-  return <Block props={props} as="h1" className={cn(HEADING, 'mt-8 mb-1 text-[30px] font-bold')} />;
+  return <Block props={props} as="h1" className={blockStyles.h1} />;
 }
 
 function H2Static(props: SlateElementProps): React.JSX.Element {
-  return <Block props={props} as="h2" className={cn(HEADING, 'mt-6 text-2xl')} />;
+  return <Block props={props} as="h2" className={blockStyles.h2} />;
 }
 
 function H3Static(props: SlateElementProps): React.JSX.Element {
-  return <Block props={props} as="h3" className={cn(HEADING, 'mt-4 text-xl')} />;
+  return <Block props={props} as="h3" className={blockStyles.h3} />;
 }
 
 function BlockquoteStatic(props: SlateElementProps): React.JSX.Element {
-  return (
-    <Block props={props} as="blockquote" className="my-1 border-l-[3px] border-foreground pl-4" />
-  );
+  return <Block props={props} as="blockquote" className={blockStyles.blockquote} />;
 }
 
 /** Void: the hairline is decoration, the empty text child still has to render. */
@@ -138,8 +135,8 @@ function HrStatic(props: SlateElementProps): React.JSX.Element {
   return (
     <SlateElement {...props}>
       {/* 12 px of hit area around a 1 px rule (docs/06 section 7). */}
-      <div className="my-2 flex h-3 items-center">
-        <hr className="w-full border-t border-border" />
+      <div className={blockStyles.hrBox}>
+        <hr className={blockStyles.hrRule} />
       </div>
       {props.children}
     </SlateElement>
@@ -152,7 +149,7 @@ function CodeBlockStatic(props: SlateElementProps<TCodeBlockElement>): React.JSX
   const code = props.element.children.map((line) => NodeApi.string(line)).join('\n');
 
   return (
-    <SlateElement {...props} className="my-1" style={indentStyle(props.element)}>
+    <SlateElement {...props} className={blockStyles.codeBlock} style={indentStyle(props.element)}>
       <div className="group/code relative rounded-md bg-muted">
         <div className="absolute top-1 right-1 flex items-center gap-1">
           {lang !== undefined && lang !== '' && (
@@ -220,7 +217,7 @@ async function copy(text: string): Promise<boolean> {
 
 function TableStatic(props: SlateElementProps): React.JSX.Element {
   return (
-    <SlateElement {...props} className="my-2 overflow-x-auto">
+    <SlateElement {...props} className={blockStyles.table}>
       <table className="w-full border-collapse border border-border text-sm">
         <tbody>{props.children}</tbody>
       </table>
@@ -233,17 +230,11 @@ function TableRowStatic(props: SlateElementProps): React.JSX.Element {
 }
 
 function TableCellStatic(props: SlateElementProps): React.JSX.Element {
-  return <SlateElement {...props} as="td" className="border border-border px-2 py-1 align-top" />;
+  return <SlateElement {...props} as="td" className={blockStyles.td} />;
 }
 
 function TableHeaderCellStatic(props: SlateElementProps): React.JSX.Element {
-  return (
-    <SlateElement
-      {...props}
-      as="th"
-      className="border border-border bg-muted/50 px-2 py-1 text-start align-top font-medium"
-    />
-  );
+  return <SlateElement {...props} as="th" className={blockStyles.th} />;
 }
 
 /**
@@ -263,7 +254,7 @@ function ImageStatic(props: SlateElementProps<TImageElement & TCaptionProps>): R
   const alt = caption === undefined ? '' : caption.map((line) => NodeApi.string(line)).join(' ');
 
   return (
-    <SlateElement {...props} className="my-2" style={indentStyle(props.element)}>
+    <SlateElement {...props} className={blockStyles.image} style={indentStyle(props.element)}>
       <AssetImage src={url} alt={alt} title={title} node={node} />
       {props.children}
     </SlateElement>
@@ -280,13 +271,7 @@ function RawHtmlStatic(props: SlateLeafProps): React.JSX.Element {
 
 /** docs/06 section 3. */
 function CodeLeafStatic(props: SlateLeafProps): React.JSX.Element {
-  return (
-    <SlateLeaf
-      {...props}
-      as="code"
-      className="rounded-[4px] bg-muted px-[0.3em] py-[0.15em] font-mono text-[85%]"
-    />
-  );
+  return <SlateLeaf {...props} as="code" className={blockStyles.code} />;
 }
 
 function BoldStatic(props: SlateLeafProps): React.JSX.Element {

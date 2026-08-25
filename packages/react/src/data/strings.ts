@@ -146,6 +146,9 @@ export const defaultStrings = {
   // Canvas and editor (docs/06 sections 7-8).
   'editor.titlePlaceholder': 'Untitled',
   'editor.bodyPlaceholder': "Write something, or press '/' for commands",
+  'editor.heading1Placeholder': 'Heading 1',
+  'editor.heading2Placeholder': 'Heading 2',
+  'editor.heading3Placeholder': 'Heading 3',
   'editor.addIcon': 'Add icon',
   'editor.removeIcon': 'Remove',
   'editor.iconEmoji': 'Emoji',

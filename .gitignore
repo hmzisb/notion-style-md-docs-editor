@@ -13,3 +13,6 @@ blob-report/
 .DS_Store
 *.local
 apps/playground/e2e/__screenshots__/**/*-actual.png
+
+# Plate local docs (CLAUDE.md section 4): fetched with `shadcn add @plate/docs`, not source.
+packages/react/plate-docs/
