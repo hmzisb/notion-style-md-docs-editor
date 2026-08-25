@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { buildIndex } from './tree.js';
-import { normalizeRelative, parseHref, resolvePageLink } from './links.js';
+import { isSafeHref, normalizeRelative, parseHref, resolvePageLink } from './links.js';
 import type { NodeId, NodeKind, TreeNode } from './model.js';
 
 const node = (id: string, kind: NodeKind, path: string, childIds: string[] = []): TreeNode => ({
@@ -144,6 +144,35 @@ describe('normalizeRelative', () => {
   for (const [from, href, expected] of rows) {
     it(`${href} from ${from}`, () => {
       expect(normalizeRelative(from, href)).toBe(expected);
+    });
+  }
+});
+
+describe('isSafeHref (docs/05 section 11)', () => {
+  const rows: [href: string, safe: boolean][] = [
+    ['./auth.md', true],
+    ['/guides/api', true],
+    ['guides/my page.md', true],
+    ['', true],
+    ['#tokens', true],
+    ['https://example.com/x?a=1', true],
+    ['HTTP://EXAMPLE.COM', true],
+    ['mailto:team@example.com', true],
+    ['tel:+15551234', false],
+    ['ftp://example.com/f', false],
+    ['//example.com/x', false],
+    ['javascript:alert(1)', false],
+    ['JaVaScRiPt:alert(1)', false],
+    [' javascript:alert(1)', false],
+    ['java\nscript:alert(1)', false],
+    ['java\tscript:alert(1)', false],
+    ['java script:alert(1)', false],
+    ['data:text/html;base64,PHNjcmlwdD4=', false],
+    ['vbscript:msgbox(1)', false],
+  ];
+  for (const [href, safe] of rows) {
+    it(`${safe ? 'allows' : 'rejects'} ${JSON.stringify(href)}`, () => {
+      expect(isSafeHref(href)).toBe(safe);
     });
   }
 });

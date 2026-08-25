@@ -13,6 +13,7 @@ import { usePage, useTreeIndex } from '@/data/queries.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
+import { DocumentView } from '@/view/DocumentView.js';
 import { EmptyState } from './EmptyState.js';
 
 export interface ShellContentProps {
@@ -26,7 +27,7 @@ export interface ShellContentProps {
 
 /**
  * The content region's states, in the order docs/06 section 11 and docs/07 section 8 list them.
- * The document itself is still a title block: `DocumentView` lands under it in P1-T08.
+ * Read mode renders `DocumentView`; the editor chunk swaps in over it in P2 (docs/05 section 8).
  */
 export function ShellContent({
   pageId,
@@ -123,11 +124,19 @@ export function ShellContent({
     );
   }
 
-  return <PageCanvas page={page.data} node={node} />;
+  return <PageCanvas page={page.data} node={node} rootId={rootId} />;
 }
 
-/** docs/06 sections 4 and 7. The body arrives in P1-T08; the geometry is already the final one. */
-function PageCanvas({ page, node }: { page: PageDocument; node: TreeNode }): React.JSX.Element {
+/** docs/06 sections 4 and 7: the title block, then the page itself. */
+function PageCanvas({
+  page,
+  node,
+  rootId,
+}: {
+  page: PageDocument;
+  node: TreeNode;
+  rootId?: NodeId;
+}): React.JSX.Element {
   return (
     <article className="mx-auto w-full max-w-[calc(var(--docs-content-width)+8rem)] px-4 pt-20 pb-[40vh] md:px-16 md:pt-[88px]">
       {node.icon !== undefined && (
@@ -142,6 +151,7 @@ function PageCanvas({ page, node }: { page: PageDocument; node: TreeNode }): Rea
       <h1 className="text-[32px] leading-tight font-bold md:text-[40px]">
         {page.meta.title ?? node.title}
       </h1>
+      <DocumentView page={page} node={node} rootId={rootId} className="pt-4" />
     </article>
   );
 }

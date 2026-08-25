@@ -48,7 +48,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P1-T06** PageTree
   - `tree/PageTree.tsx` (headless-tree `syncDataLoader` + `hotkeysCore` + `search` over a virtualized list, synthetic root, expansion in the sidebar store, skeleton/empty/error states), `tree/PageTreeRow.tsx` (`React.memo` on primitives, roving tabindex, chevron button, `href` links, reserved action slot), `tree/IconGlyph.tsx` (emoji, lazy `DynamicIcon`, kind defaults). Type-ahead by title prefix. 12 RTL tests; `./tree + ./view` 29.8 kB gz.
 - [x] **P1-T07** Shell
-- [ ] **P1-T08** DocumentView (read-only)
+- [x] **P1-T08** DocumentView (read-only)
+  - `view/DocumentView.tsx` (`PlateView` over the codec's `BaseKit`, value cached L3 by `ns:id:version`, list wrapper overridden on `BaseListPlugin`), `view/nodes.tsx` (static components for the whole v1 block set, 24 px list marker column, to-do checkbox, code copy button, raw HTML hidden), `view/LinkStatic.tsx` (internal links through `resolvePageLink`, external ones through the `isSafeHref` policy, unresolved ones inert), `view/AssetImage.tsx` (`assetUrl` with a skeleton and an `ImageOff` notice), `core/links.ts` gains `isSafeHref`. Shell renders it in read mode. 16 RTL tests; `./tree + ./view` 30.18 kB gz.
 - [ ] **P1-T09** Filesystem adapter
 - [ ] **P1-T10** HTTP adapter
 - [ ] **P1-T11** Playground modes

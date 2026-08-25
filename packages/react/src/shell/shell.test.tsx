@@ -219,7 +219,8 @@ describe('DocsShell', () => {
       mount({ pageId: 'p_home' });
       await ready();
 
-      expect(await screen.findByRole('heading', { name: 'Home' })).toBeInTheDocument();
+      // Two: the title block, and the body's own `# Home`, which docs/03 section 6 keeps.
+      expect(await screen.findAllByRole('heading', { name: 'Home' })).toHaveLength(2);
       await waitFor(() => {
         expect(liveRegion()).toHaveTextContent('Opened Home');
       });

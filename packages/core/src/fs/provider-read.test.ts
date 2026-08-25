@@ -240,6 +240,15 @@ describe('assetUrl', () => {
     }
   });
 
+  it('types the blob from the file extension, so an SVG renders at all', async () => {
+    const create = vi.spyOn(URL, 'createObjectURL');
+    const provider = corpusProvider();
+    const page = await nodeAt(provider, 'index.md');
+    await provider.assetUrl('assets/logo.svg', page);
+    expect(create.mock.calls[0]?.[0]).toMatchObject({ type: 'image/svg+xml' });
+    create.mockRestore();
+  });
+
   it('revokes object URLs on dispose', async () => {
     const revoke = vi.spyOn(URL, 'revokeObjectURL');
     const provider = corpusProvider();

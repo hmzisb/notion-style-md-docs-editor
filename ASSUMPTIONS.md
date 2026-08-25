@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-036 · P1-T08 · 2026-08-25
+Question: the Markdown alt text deserializes into the image's `caption`, which is also what docs/06 section 7 styles as a visible caption.
+Assumed: nothing is drawn under an image in P1; the text stays the `alt` attribute.
+Why: docs/05 section 5 makes a caption a different thing - the italic paragraph after the image - and schedules it for P2; showing alt text under every image would invent captions the author never wrote.
+Cheap to reverse: yes
+
+## ASM-035 · P1-T08 · 2026-08-25
+Question: a code block in read mode has no syntax highlighting, because the block set's highlighter (`lowlight`) is 30 kB+ gz and belongs to the editor chunk.
+Assumed: `./view` renders code as plain monospace text with the language label and the copy button, and highlighting is considered with the editor in P2.
+Why: docs/09 P1-T08 asks for the label and the copy button, not for highlighting, and `./tree + ./view` is budgeted at 80 kB gz for both entries together.
+Cheap to reverse: yes
+
+## ASM-034 · P1-T08 · 2026-08-25
+Question: what a link should look like when it points inside the tree but at a page the reader cannot reach (moved, deleted, or outside the host's `rootId` subtree).
+Assumed: it renders as inert text in `text-muted-foreground` with a dotted underline and the raw href as its `title`, rather than as a link that goes nowhere or as an external link.
+Why: docs/05 section 11 allows only `http`, `https` and `mailto` out; a relative href is not addressable, so there is nothing to navigate to, and a dead link that looks live is worse than one that reads as text.
+Cheap to reverse: yes
+
+## ASM-033 · P1-T08 · 2026-08-25
+Question: raw HTML survives the codec as an `html` mark (DEV-003), and docs/05 section 11 says it is never rendered.
+Assumed: the mark renders in a `hidden` span - present in the DOM, painted by nothing, read by nothing - through a one-key plugin registered only in the view.
+Why: the bytes have to stay in the value or a save would drop them; `hidden` keeps them out of the page and out of the accessibility tree without a second value.
+Cheap to reverse: yes
+
+## ASM-032 · P1-T08 · 2026-08-25
+Question: `DocumentView` resolves internal links against a tree index, and the shell can be scoped to a subtree with `rootId`.
+Assumed: `DocumentView` takes the same optional `rootId` prop and resolves against that subtree, so a link to a page outside the host's scope stays unresolved.
+Why: the reader can only navigate to what the shell shows; resolving against the full tree would produce links the sidebar cannot follow.
+Cheap to reverse: yes
+
 ## ASM-031 · P1-T07 · 2026-08-25
 Question: jsdom answers no media query and measures every element as 0x0, so the shell tests would each need the same stubs as the tree tests.
 Assumed: `matchMedia`, `offsetWidth`/`offsetHeight` and the pointer-capture methods are stubbed once in `testing/setup.ts` rather than per test file.

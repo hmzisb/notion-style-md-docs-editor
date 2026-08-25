@@ -17,11 +17,18 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-013 · P1-T08 · 2026-08-25
+Spec said: docs/06 section 7 - a to-do checkbox is `size-4 rounded-[3px] border border-foreground/40 checked:bg-primary`.
+Reality: a native checkbox paints its own control; `background-color` only reaches it after `appearance: none`, which also removes the tick, so `checked:bg-primary` renders a primary-coloured empty square. Drawing a tick back on costs an SVG and a second set of states for a control the reader cannot operate.
+Decision: the checkbox keeps the spec's size, radius and border and colours its checked state with `accent-primary` instead of `checked:bg-primary`. The rendered result is the intended one - a primary-tinted box with a tick - through the platform control.
+Impact: `view/nodes.tsx` only; no API, no bundle change. The editor's own checkbox in P2 should use the same class.
+Reverse when: the design asks for a custom check glyph, at which point `appearance-none` plus an icon is the way.
+
 ## DEV-012 · P1-T07 · 2026-08-25
 Spec said: docs/02 section 7 budgets `./shell` at 60 kB gz excluding the editor.
 Reality: with the shell assembled it measures 67.94 kB gz. Breakdown (minified bytes before gzip): own shell + tree + data code 32.7, tailwind-merge 26.5, `@tanstack/virtual-core` 21.8, `@headless-tree/core` 15.9, the Radix menu stack behind the breadcrumb overflow (`react-menu` 12.8, `react-collection` 7.0, `react-dropdown-menu` 5.2, `react-dismissable-layer` 5.2, `react-popper` 4.4, `react-focus-scope` 3.6, `react-roving-focus` 3.6) plus floating-ui 21.7, the sheet's `react-dialog` 4.8 with `react-remove-scroll` 5.8, `lucide-react` 4.0. The tree alone is 30 kB gz of it and is budgeted a second time under `./tree + ./view`.
 Decision: no limit is set on the `./shell` entry in `.size-limit.json` yet, and the overage is carried to Gate 1. The two candidate cuts - a lazily imported menu chunk, and pruning what the vendored sidebar drags in - can only be judged once P2's `PageMenu` and P3's row menus exist, because both consume the same Radix menu stack; cutting it now for one breadcrumb menu could buy nothing at all.
-Impact: `.size-limit.json` reports `./shell` without a limit, so a regression is visible but not fatal; `docs/execution/PHASE-1-REPORT.md` records the number and the decision.
+Impact: `.size-limit.json` reports `./shell` without a limit, so a regression is visible but not fatal; `docs/execution/PHASE-1-REPORT.md` records the number and the decision. P1-T08 takes it to 70.89 kB: read mode renders `DocumentView`, which docs/05 section 8 makes a static import of the shell.
 Reverse when: Gate 1 - either the menu stack moves into a lazy chunk and the 60 kB limit is set, or the budget is amended in docs/02 with this breakdown as the reason.
 
 ## DEV-011 · P1-T07 · 2026-08-25

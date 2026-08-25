@@ -106,7 +106,13 @@ export {
   type Sortable,
 } from './fs/ordering.js';
 
-export { normalizeRelative, parseHref, resolvePageLink, type ParsedHref } from './links.js';
+export {
+  isSafeHref,
+  normalizeRelative,
+  parseHref,
+  resolvePageLink,
+  type ParsedHref,
+} from './links.js';
 
 export { formatIcon, parseIcon } from './icon.js';
 

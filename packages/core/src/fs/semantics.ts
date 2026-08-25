@@ -621,7 +621,10 @@ export function createFileStoreProvider(
       const hit = assetCache.get(cacheKey);
       if (hit !== undefined) return hit;
 
-      const blob = await store.readBinary(target);
+      const bytes = await store.readBinary(target);
+      // A store hands back raw bytes: without the type an object URL renders nothing for an
+      // SVG and leaves every other format to content sniffing, so the extension supplies it.
+      const blob = bytes.type === '' ? new Blob([bytes], { type: mimeFor(target) }) : bytes;
       const url =
         typeof URL.createObjectURL === 'function'
           ? URL.createObjectURL(blob)

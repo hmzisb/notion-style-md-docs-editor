@@ -114,7 +114,7 @@ interface PageTreeProps { activeId: NodeId | null; onOpen: (id: NodeId, opts?: {
 interface DocumentEditorProps { pageId: NodeId; value: Value; readOnly: boolean; onChange: (v: Value) => void; onReady?: (editor: PlateEditor) => void; onRequestEdit?: () => void; page: TreeNode; toolbar?: 'floating' | 'fixed' | 'none'; autoFocus?: boolean | 'title-next' }
 // `value` is the initial value only (Plate semantics). External resets (conflict Reload, silent refresh while clean, draft Discard)
 // go through the editor instance handed to `onReady`: `editor.tf.setValue(next)` plus `editor.history` reset. The session owns that ref.
-interface DocumentViewProps { page: PageDocument; node: TreeNode; className?: string }
+interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeId; className?: string }
 ```
 
 ## 6. Strings

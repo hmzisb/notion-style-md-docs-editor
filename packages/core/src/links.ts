@@ -29,6 +29,26 @@ function safeDecode(value: string): string {
   }
 }
 
+/** Schemes a link may carry (docs/05 section 11). Everything else renders as inert text. */
+const SAFE_SCHEMES = new Set(['http:', 'https:', 'mailto:']);
+
+/**
+ * The link policy, applied where an href is accepted and again where it is rendered
+ * (docs/05 section 11): `http`, `https`, `mailto` and every relative form are allowed,
+ * `javascript:`, `data:`, `vbscript:` and any other scheme are not.
+ */
+export function isSafeHref(href: string): boolean {
+  // A browser drops control characters and spaces before it reads the scheme, so
+  // `java\nscript:` is `javascript:` to it. Strip the same set before matching, on a copy:
+  // the href itself keeps its spaces, which are legal inside a relative path.
+  // eslint-disable-next-line no-control-regex -- control characters are exactly what has to go.
+  const probe = href.replace(/[\u0000-\u0020]/g, '');
+  const scheme = SCHEME.exec(probe)?.[0];
+  // A protocol-relative href (`//host/x`) is a remote page in relative clothing.
+  if (scheme === undefined) return !probe.startsWith('//');
+  return SAFE_SCHEMES.has(scheme.toLowerCase());
+}
+
 /** Splits an href into path, query and fragment. Decodes each path segment separately. */
 export function parseHref(href: string): ParsedHref {
   const external = href.startsWith('//') || SCHEME.test(href);

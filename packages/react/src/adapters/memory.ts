@@ -17,7 +17,8 @@ import {
  * with its pages, which is easier to hand-write for one screen (docs/08 section 7).
  */
 export type MemorySeed =
-  { files: Record<string, string> } | { tree: TreeSnapshot; pages: Record<NodeId, PageDocument> };
+  | { files: Record<string, string | Uint8Array> }
+  | { tree: TreeSnapshot; pages: Record<NodeId, PageDocument> };
 
 export interface MemoryProviderOptions {
   capabilities?: Partial<ProviderCapabilities>;
@@ -34,7 +35,7 @@ export interface MemoryProviderOptions {
  * both shapes get the same core semantics (D-03) rather than a second implementation of ids,
  * ordering and slugs.
  */
-function filesFrom(seed: MemorySeed): Record<string, string> {
+function filesFrom(seed: MemorySeed): Record<string, string | Uint8Array> {
   if ('files' in seed) return seed.files;
 
   const files: Record<string, string> = {};
