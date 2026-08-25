@@ -34,7 +34,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `codec/base-kit.ts` (headless v1 plugin list, pinned `remark-stringify` options, four fidelity rules) and `codec/codec.ts` (`createCodec`, `defaultCodec`, `markdownToValue`, `valueToMarkdown`, `normalizeMarkdown`). `remarkInlineRefs` rewrites reference links inline. 30 of the 33 corpus pages round trip byte for byte; the other three have goldens in `fixtures/expected/`. 68 codec tests.
 - [x] **P0-T14** Fidelity classifier and doctor
   - `codec/fidelity.ts` (`classifyFidelity`): normalize-compare for `exact`, then one census of both mdast trees for the reasons, then a tree comparison with the known reformats applied. `scripts/doctor.ts` prints the table and exits 1 on a lossy page unless `--allow-lossy`. 45 tests, including all 33 corpus pages against the manifest.
-- [ ] **Gate 0** green, `docs/execution/PHASE-0-REPORT.md` written
+- [x] **Gate 0** green, `docs/execution/PHASE-0-REPORT.md` written
 
 ## Phase 1: Read path, shell, adapters, playground
 
@@ -102,5 +102,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: Gate 0
-- Last gate passed: (none)
+- Current task: P1-T01
+- Last gate passed: Gate 0 (2026-08-25)
