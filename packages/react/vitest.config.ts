@@ -7,6 +7,8 @@ export default defineConfig({
   // Same two aliases as tsconfig `paths`: tests run against core's source, never a stale dist.
   resolve: {
     alias: {
+      // Before the bare entry, or the prefix match would send `/testing` into `index.ts`.
+      '@docs/core/testing': fileURLToPath(new URL('../core/src/testing/index.ts', import.meta.url)),
       '@docs/core': fileURLToPath(new URL('../core/src/index.ts', import.meta.url)),
       // Trailing slash on both sides, or this entry would also swallow `@docs/core`.
       '@/': src,

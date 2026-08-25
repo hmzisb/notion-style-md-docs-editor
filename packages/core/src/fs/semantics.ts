@@ -66,6 +66,12 @@ export interface FileStoreProviderOptions {
    * (docs/03 section 4.4). The React layer turns this into `tree:renumbered`.
    */
   onRenumber?: (count: number) => void;
+  /**
+   * Replaces the in-memory `path -> PageInfo` cache. The filesystem adapter passes a map
+   * backed by IndexedDB, so a reload re-reads only the files that actually changed rather
+   * than every frontmatter in the corpus (docs/03 section 4.11).
+   */
+  infoCache?: Map<string, PageInfo>;
 }
 
 export interface FileStoreProvider extends DocumentProvider {
@@ -147,7 +153,7 @@ export function createFileStoreProvider(
    * path of one save; the entries this cache holds are dropped explicitly by `touch`,
    * so a re-walk only reads what actually changed.
    */
-  const infoCache = new Map<string, PageInfo>();
+  const infoCache = opts.infoCache ?? new Map<string, PageInfo>();
 
   const readPageInfo = async (path: string): Promise<PageInfo> => {
     const hit = infoCache.get(path);

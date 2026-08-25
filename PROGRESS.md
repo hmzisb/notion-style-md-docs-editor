@@ -50,7 +50,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P1-T07** Shell
 - [x] **P1-T08** DocumentView (read-only)
   - `view/DocumentView.tsx` (`PlateView` over the codec's `BaseKit`, value cached L3 by `ns:id:version`, list wrapper overridden on `BaseListPlugin`), `view/nodes.tsx` (static components for the whole v1 block set, 24 px list marker column, to-do checkbox, code copy button, raw HTML hidden), `view/LinkStatic.tsx` (internal links through `resolvePageLink`, external ones through the `isSafeHref` policy, unresolved ones inert), `view/AssetImage.tsx` (`assetUrl` with a skeleton and an `ImageOff` notice), `core/links.ts` gains `isSafeHref`. Shell renders it in read mode. 16 RTL tests; `./tree + ./view` 30.18 kB gz.
-- [ ] **P1-T09** Filesystem adapter
+- [x] **P1-T09** Filesystem adapter
+  - `adapters/filesystem-store.ts` (`FileStore` over a `FileSystemDirectoryHandle`: recursive listing with dot-dir and `node_modules` exclusion, directories derived from file paths, `File` reads, overwrite through a hidden temp file plus `move` where the engine has it, recursive `removeEntry`, native file move with copy + remove for directories, `stat`, optional polling `watch`), `adapters/filesystem.ts` (`createFileSystemProvider` with the IndexedDB index cache from docs/03 section 4.11 and its `onProgress`, `pickDirectory` with handle reuse and permission re-query, `getOpfsRoot`, `exportToDirectory`, `importFromDirectory`), `adapters/filesystem-fake.ts` (in-memory handle polyfill). Core gains `FileStoreProviderOptions.infoCache`. 29 unit tests plus 78 conformance cases over three store variants.
 - [ ] **P1-T10** HTTP adapter
 - [ ] **P1-T11** Playground modes
 - [ ] **P1-T12** Command palette and global shortcuts
@@ -106,6 +107,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T08
+- Current task: P1-T10
 - Open at Gate 1: `./shell` measures 67.9 kB gz against the 60 kB budget in docs/02 section 7 (DEV-012).
 - Last gate passed: Gate 0 (2026-08-25)

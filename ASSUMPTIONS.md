@@ -14,6 +14,48 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-043 · P1-T09 · 2026-08-25
+Question: docs/03 section 4.11 puts the index cache in the filesystem adapter, but the frontmatter read it caches lives in core's `createFileStoreProvider`.
+Assumed: `FileStoreProviderOptions` gains an optional `infoCache?: Map<string, PageInfo>`, and the adapter passes a `Map` subclass backed by IndexedDB.
+Why: additive and one line in core; the alternative is a second copy of the walk in the adapter, which is exactly what D-03 exists to prevent.
+Cheap to reverse: yes
+
+## ASM-042 · P1-T09 · 2026-08-25
+Question: `FileSystemDirectoryHandle.entries()` is not typed without the `DOM.AsyncIterable` lib, which `tsconfig.base.json` did not include.
+Assumed: add `DOM.AsyncIterable` to the shared `lib` list rather than hand-declaring the iterator in the adapter.
+Why: docs/11 pins the tooling versions, not the lib list; a hand-written declaration for a standard API is a permanent maintenance cost for nothing.
+Cheap to reverse: yes
+
+## ASM-041 · P1-T09 · 2026-08-25
+Question: docs/03 section 3 says the filesystem adapter polls when it has no change events, but names no interval.
+Assumed: 2000 ms, and `watch` is off unless the host asks for it, so a folder is never polled by default.
+Why: a poll is a full recursive listing plus a `getFile` per entry; twice a second on 5k files would cost more than the feature is worth, and once every two seconds is under the threshold where an outside edit feels stale.
+Cheap to reverse: yes
+
+## ASM-040 · P1-T09 · 2026-08-25
+Question: how often the IndexedDB index is written, and what happens when IndexedDB is unavailable (private mode, no `indexedDB` global).
+Assumed: one write per 250 ms burst, so a cold build of 5k pages saves once; every IndexedDB failure is swallowed and the adapter falls back to reading the files.
+Why: the cache is an optimisation, and an optimisation that can break the app is a defect.
+Cheap to reverse: yes
+
+## ASM-039 · P1-T09 · 2026-08-25
+Question: docs/09 P1-T09 asks for "a temp-file-and-move pattern where supported", which on a new file has nothing to protect.
+Assumed: an overwrite writes a hidden `.<name>.<n>.tmp` and renames it over the target where `FileSystemFileHandle.move` exists; a file that does not exist yet is written straight to its own name.
+Why: the point of the dance is that a failed write leaves the previous content intact; for a new file it would only leave a temp file behind on failure instead of a partial one.
+Cheap to reverse: yes
+
+## ASM-038 · P1-T09 · 2026-08-25
+Question: a real directory can be empty; a `remove` or a `move` leaves the source directory behind.
+Assumed: the store derives directory entries from the paths of the files under them, exactly as the memory store does, and never deletes a directory the user still has on disk.
+Why: it keeps both stores on one set of tree semantics (an empty folder is not a node), and deleting a directory the module did not create is not a decision an adapter should make silently.
+Cheap to reverse: yes
+
+## ASM-037 · P1-T09 · 2026-08-25
+Question: what `pickDirectory` should do on an engine with no `showDirectoryPicker` (everything outside Chromium).
+Assumed: resolve to `null`, the same as a user cancelling, rather than throwing `unsupported`.
+Why: docs/08 section 7 says the host hides "Open folder" when it is unsupported, so the caller is already branching on a value; a throw would make the unsupported case the noisy one.
+Cheap to reverse: yes
+
 ## ASM-036 · P1-T08 · 2026-08-25
 Question: the Markdown alt text deserializes into the image's `caption`, which is also what docs/06 section 7 styles as a visible caption.
 Assumed: nothing is drawn under an image in P1; the text stays the `alt` attribute.
