@@ -44,7 +44,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `data/keys.ts` (`createNamespace` = `docs:<instance>:<fnv1a64(provider.key)>`, `createKeys`), `data/events.ts` (`DocsEvent`, an emitter that rethrows a throwing host handler on its own task), `data/strings.ts` (162 keys plus `format`), `data/queries.ts` (`metaQuery`/`treeQuery`/`pageQuery` with the docs/04 lifetimes, `useMeta`, `useTreeIndex` with a version-memoized `select`, `usePage` idle on `null`), `data/online.ts`, `data/DocsProvider.tsx` (host or internal `QueryClient`, subtree remount on namespace change, stable emitter, resolved options, capabilities from meta with a provider fallback). 20 tests.
 - [x] **P1-T03** Persisted cache and value cache
 - [x] **P1-T04** Sidebar store and recents
-- [ ] **P1-T05** Memory adapter entry and playground bootstrap
+- [x] **P1-T05** Memory adapter entry and playground bootstrap
 - [ ] **P1-T06** PageTree
 - [ ] **P1-T07** Shell
 - [ ] **P1-T08** DocumentView (read-only)
@@ -104,5 +104,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T05
+- Current task: P1-T06
 - Last gate passed: Gate 0 (2026-08-25)

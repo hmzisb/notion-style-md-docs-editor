@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-024 · P1-T05 · 2026-08-25
+Question: the playground needs a demo corpus, but `MemoryProvider` takes files in memory and the corpus lives on disk under `fixtures/corpus/`.
+Assumed: `providers.ts` inlines the corpus with `import.meta.glob('../../../fixtures/corpus/**/*.md', { query: '?raw', eager: true })` and strips the prefix to get provider paths.
+Why: the playground is a dev app, not a shipped artifact, so bundling the fixture text keeps it a static site with no server; the same seed the conformance tests use then drives the UI.
+Cheap to reverse: yes
+
+## ASM-023 · P1-T05 · 2026-08-25
+Question: Vite 7.3.6 is pinned by docs/11, and `@vitejs/plugin-react@6` resolves `vite/internal`, an export Vite only added in 8 (`ERR_PACKAGE_PATH_NOT_EXPORTED`).
+Assumed: the playground pins `@vitejs/plugin-react@^5.2.0`.
+Why: docs/11's Vite pin wins over the plugin's latest major; v5 is the release line built for Vite 7 and supports the same Fast Refresh surface.
+Cheap to reverse: yes
+
+## ASM-022 · P1-T05 · 2026-08-25
+Question: should `apps/playground` import `@docs/react` from the built `dist` or from source?
+Assumed: `vite.config.ts` aliases `@docs/react`, its `styles.css` / `theme.css` / `adapters/*` subpaths and `@docs/core` to `src`, so the dev server has HMR into the packages and no build step in the loop.
+Why: the published entry shape is already covered by `smoke/` and by `attw` in the gate, so the playground does not need to re-verify it and would otherwise need a rebuild per edit.
+Cheap to reverse: yes
+
 ## ASM-021 · P1-T03 · 2026-08-25
 Question: `persisterFn` is generic (`<T, TQueryKey>`), and a generic function in a `useQuery` options literal drives inference for the whole query to `unknown` - `staleTime` then fails to typecheck against the typed `queryOptions` spread.
 Assumed: `queryPersister<T, K>(persister)` in `data/cache/persister.ts` returns the same function annotated as `QueryPersister<T, K> | undefined`, and every call site names its data and key types.

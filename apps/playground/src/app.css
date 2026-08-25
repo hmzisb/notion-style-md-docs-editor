@@ -1,0 +1,6 @@
+/* The playground's own chrome. The module's sheet is imported separately in `main.tsx`. */
+@import 'tailwindcss';
+
+html {
+  font-family: 'Inter Variable', ui-sans-serif, system-ui, sans-serif;
+}
