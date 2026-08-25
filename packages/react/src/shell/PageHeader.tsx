@@ -63,8 +63,9 @@ export function PageHeader({
          * Reserved even while empty (docs/06 section 15): the save status appears mid-edit and
          * must not push the actions to the left when it does.
          */}
+        {/* `role="status"` is what makes the name legal here: a bare `div` may not carry one. */}
         <div
-          aria-live="polite"
+          role="status"
           aria-label={strings['status.label']}
           className="hidden min-w-[96px] justify-end text-end md:flex"
         />

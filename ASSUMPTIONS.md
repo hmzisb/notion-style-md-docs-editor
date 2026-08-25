@@ -14,6 +14,12 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-058 · P1-T13 · 2026-08-26
+Question: docs/09 P1-T13 asks for a Lighthouse a11y run script, but `lighthouse` is not in docs/11's dev-dependency list and no gate runs it.
+Assumed: `scripts/lighthouse-a11y.ts` shells out to `npx -y lighthouse@12` instead of adding the package; the score is captured for the phase report, and `@axe-core/playwright` stays the gate.
+Why: docs/11 section 1 is a locked tooling contract, and a report-only tool that drags in its own Chrome does not belong in every install; the number it produces is identical either way.
+Cheap to reverse: yes
+
 ## ASM-057 · P1-T12 · 2026-08-25
 Question: docs/07 section 4 says a "Search in content" row "runs `provider.search` after 250 ms debounce", which reads both as a row the reader picks and as an automatic run.
 Assumed: the search runs on its own once the query stops changing for 250 ms and is two characters long; the row is what the group shows while that is in flight, and the way to retry a failed one.

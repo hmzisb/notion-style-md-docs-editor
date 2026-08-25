@@ -175,3 +175,52 @@ export async function importOpfs(): Promise<string | null> {
   await importFromDirectory(source, await getOpfsRoot(OPFS_DIR), { clear: true });
   return source.name;
 }
+
+/* ---------------------------------------------------------------------------- bench */
+
+const BENCH_FANOUT = 10;
+/** A hostile `?bench=` must not hang the tab; nothing needs more than this to measure. */
+const BENCH_MAX = 20_000;
+
+/**
+ * docs/10 section 5 budgets the tree on a 5,000-node fixture. This is the shape
+ * `fixtures/perf/gen.ts` writes to disk - ten children per level, index pages down to depth
+ * three - built in memory instead, because the browser cannot read that corpus off disk.
+ */
+export function benchFiles(nodes: number): Record<string, string> {
+  const page = (title: string, order: number): string =>
+    `---\ntitle: ${title}\norder: ${String(order)}\n---\n\n# ${title}\n\nGenerated page.\n`;
+
+  const files: Record<string, string> = { 'index.md': page('Perf corpus', 10) };
+  let written = 1;
+  const queue: [rel: string, depth: number][] = [['', 0]];
+  for (let head = 0; head < queue.length && written < nodes; head += 1) {
+    const entry = queue[head];
+    if (entry === undefined) break;
+    const [parent, depth] = entry;
+    for (let i = 1; i <= BENCH_FANOUT && written < nodes; i += 1) {
+      const slug = `${depth === 0 ? 'section' : 'topic'}-${String(i)}`;
+      const rel = parent === '' ? slug : `${parent}/${slug}`;
+      if (depth < 3) {
+        files[`${rel}/index.md`] = page(`Section ${rel}`, i * 10);
+        queue.push([rel, depth + 1]);
+      } else {
+        files[`${rel}.md`] = page(`Page ${rel}`, i * 10);
+      }
+      written += 1;
+    }
+  }
+  return files;
+}
+
+/** `?bench=<nodes>` opens a generated workspace of that size. Not a mode: nothing is saved. */
+export function benchSize(search: string): number | null {
+  const raw = new URLSearchParams(search).get('bench');
+  if (raw === null) return null;
+  const nodes = Number(raw);
+  return Number.isFinite(nodes) && nodes > 0 ? Math.min(Math.floor(nodes), BENCH_MAX) : null;
+}
+
+export function benchProvider(nodes: number): DocumentProvider {
+  return createMemoryProvider({ files: benchFiles(nodes) }, { key: `bench:${String(nodes)}` });
+}

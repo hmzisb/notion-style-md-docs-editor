@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-014 · P1-T13 · 2026-08-26
+Spec said: docs/06 section 5 - the sidebar's Search row carries a right-aligned `⌘P` kbd in `text-xs text-muted-foreground`.
+Reality: on the sidebar surface that pair measures 4.42:1 (`#737373` on `#f7f7f7`, 12 px, weight 500), which axe reports as a `color-contrast` violation. `--muted-foreground` clears 4.5:1 against `--background` but not against the lighter `--sidebar`, so every other use of the token in the spec is fine and only this one is not.
+Decision: the row's kbd is `text-sidebar-foreground/70` instead, which reads as the same muted grey and measures 5.5:1 in light and 7.6:1 in dark. Everything else about the row is unchanged, and `--muted-foreground` itself is untouched, since `theme.css` is generated from shadcn's palette.
+Impact: `shell/DocsSidebar.tsx` only; no API, no bundle change. `e2e/a11y.spec.ts` scans the phone layout, which is where the violation surfaced.
+Reverse when: the design picks a `--sidebar` dark enough for `--muted-foreground`, or the shortcut hint moves off the sidebar surface.
+
 ## DEV-013 · P1-T08 · 2026-08-25
 Spec said: docs/06 section 7 - a to-do checkbox is `size-4 rounded-[3px] border border-foreground/40 checked:bg-primary`.
 Reality: a native checkbox paints its own control; `background-color` only reaches it after `appearance: none`, which also removes the tick, so `checked:bg-primary` renders a primary-coloured empty square. Drawing a tick back on costs an SVG and a second set of states for a control the reader cannot operate.

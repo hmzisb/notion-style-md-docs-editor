@@ -206,12 +206,13 @@ function TreeBody({
 
   return (
     <div ref={scrollRef} className={cn('h-full overflow-y-auto overscroll-contain', className)}>
+      {/* Outside the container: `role="tree"` may only hold rows, and this is a live region. */}
+      <AssistiveTreeDescription tree={tree} />
       <div
         {...containerProps}
         className="relative w-full"
         style={{ height: virtualizer.getTotalSize() }}
       >
-        <AssistiveTreeDescription tree={tree} />
         {virtualizer.getVirtualItems().map((row) => {
           const item = items[row.index];
           if (item === undefined) return null;

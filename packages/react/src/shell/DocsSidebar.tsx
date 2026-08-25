@@ -81,7 +81,10 @@ export function DocsSidebar({
           <NavRow
             icon={<Search aria-hidden="true" className="size-4 text-muted-foreground/70" />}
             onClick={onSearch}
-            trailing={<Kbd className="bg-transparent">{formatKeys('Mod+P')}</Kbd>}
+            // DEV-014: `text-muted-foreground` on the sidebar surface measures 4.42:1.
+            trailing={
+              <Kbd className="bg-transparent text-sidebar-foreground/70">{formatKeys('Mod+P')}</Kbd>
+            }
           >
             {strings['tree.search']}
           </NavRow>

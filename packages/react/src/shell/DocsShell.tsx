@@ -147,7 +147,7 @@ function ShellBody({
   onThemeChange,
 }: ShellBodyProps): React.JSX.Element {
   const { navigation, strings, capabilities } = useDocs();
-  const { isMobile, open, toggleSidebar } = useSidebar();
+  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
   const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -218,7 +218,9 @@ function ShellBody({
         variant="ghost"
         size="icon-sm"
         aria-expanded={isMobile ? undefined : false}
-        aria-controls={sidebarId}
+        // On a phone the sidebar is a sheet, so while it is closed there is no element with
+        // this id and a dangling `aria-controls` is an invalid value, not a hint.
+        aria-controls={isMobile && !openMobile ? undefined : sidebarId}
         aria-label={strings['tree.expandSidebar']}
         onClick={toggleSidebar}
         className="max-md:size-11"

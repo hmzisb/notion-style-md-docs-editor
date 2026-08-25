@@ -17,6 +17,7 @@
     "contract:gen": "tsx packages/core/src/contract/openapi.ts",
     "perf:gen": "tsx fixtures/perf/gen.ts",
     "doctor": "tsx --tsconfig tsconfig.tools.json scripts/doctor.ts",
+    "a11y:lighthouse": "tsx --tsconfig tsconfig.tools.json scripts/lighthouse-a11y.ts",
     "smoke": "pnpm -r --filter './smoke/*' build && pnpm -r --filter './smoke/*' test",
     "gate": "tsx scripts/gate.ts",
     "changeset": "changeset",

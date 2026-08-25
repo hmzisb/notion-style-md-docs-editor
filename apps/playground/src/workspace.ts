@@ -1,6 +1,8 @@
 import type { DocumentProvider } from '@docs/core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
+  benchProvider,
+  benchSize,
   demoProvider,
   exportOpfs,
   importOpfs,
@@ -157,12 +159,23 @@ export function useWorkspace(): Workspace {
   useEffect(() => {
     if (restored.current) return;
     restored.current = true;
+    // `?bench=<nodes>` is how `e2e/perf.spec.ts` gets the 5,000-node tree of docs/10 section 5.
+    // It stands in for the saved workspace without replacing it, so a reload without the
+    // parameter is back to whatever the user had.
+    // The host owns its URL; the rule this suppresses exists to keep `packages/` off it.
+    // eslint-disable-next-line no-restricted-syntax
+    const bench = benchSize(window.location.search);
+    if (bench !== null) {
+      attempt.current += 1;
+      if (install(benchProvider(bench), attempt.current)) setStatus('ready');
+      return;
+    }
     const saved = readSettings();
     // Nothing chosen yet, or a folder, whose permission prompt needs a gesture.
     if (saved.mode === null || saved.mode === 'folder') return;
     if (saved.mode === 'remote' && saved.baseUrl === '') return;
     open(saved.mode);
-  }, [open]);
+  }, [open, install]);
 
   return { settings, status, provider, error, notice, open, leave, transfer };
 }
