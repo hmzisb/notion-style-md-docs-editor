@@ -15,7 +15,7 @@ export interface MemoryFileStoreOptions {
   /** Provider identity. Defaults to `memory:<hash of the seed paths>`. */
   key?: string;
   readOnly?: boolean;
-  /** Monotonic clock for `mtime`. Defaults to a counter, so listings are deterministic. */
+  /** Clock for `mtime`. Defaults to wall time, forced to stay strictly increasing. */
   now?: () => number;
 }
 
@@ -36,18 +36,24 @@ export class MemoryFileStore implements FileStore {
   readonly readOnly: boolean;
 
   #files = new Map<string, StoredFile>();
-  #now: () => number;
-  #tick = 0;
+  #clock: () => number;
+  #last = 0;
   #watchers = new Set<(paths: string[]) => void>();
 
   constructor(seed: MemoryFileSeed = {}, opts: MemoryFileStoreOptions = {}) {
     this.readOnly = opts.readOnly ?? false;
-    this.#now = opts.now ?? ((): number => ++this.#tick);
+    this.#clock = opts.now ?? Date.now;
     this.key = opts.key ?? `memory:${fnv1a64(Object.keys(seed).sort().join('\n'))}`;
     for (const [path, data] of Object.entries(seed)) {
       const bytes = typeof data === 'string' ? data : new Uint8Array(data);
       this.#files.set(this.#normalize(path), { data: bytes, mtime: this.#now() });
     }
+  }
+
+  /** Wall time, forced upward so two writes in the same millisecond still differ. */
+  #now(): number {
+    this.#last = Math.max(this.#clock(), this.#last + 1);
+    return this.#last;
   }
 
   /** Rejects traversal at the boundary: a store path is always relative to the root. */

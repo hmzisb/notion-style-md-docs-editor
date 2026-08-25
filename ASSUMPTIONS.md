@@ -5,6 +5,21 @@ Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user r
 Format:
 
 ```
+## ASM-001 · <TASK-ID> · <date>
+Question: <the ambiguity, one line>
+Assumed: <the choice>
+Why: <one line>
+Cheap to reverse: yes | no
+```
+
+---
+
+## ASM-007 · P0-T10 · 2026-08-25
+Question: docs/03 section 4.9 defines `TreeSnapshot.version` for the whole tree; a `getTree({ rootId })` snapshot has a different node list and no version rule of its own.
+Assumed: the scoped version is `<full tree version>:<rootId>`.
+Why: the walk's order map is not retained past `buildSnapshotFromEntries`, so a scope-local fnv1a64 would mean re-walking; the derived form still changes whenever the tree or the scope changes, and only ever over-invalidates.
+Cheap to reverse: yes
+
 ## ASM-006 · P0-T08 · 2026-08-25
 Question: `fixtures/perf/gen.ts` sits outside every package `rootDir`, so no existing Vitest project can run its check.
 Assumed: add a third Vitest project, `fixtures`, and include `fixtures/**/*.ts` in `tsconfig.tools.json`.
@@ -16,15 +31,6 @@ Question: `loadCorpus` must read the repo from disk, but `@docs/core/testing` al
 Assumed: `testing/fixtures.ts` imports `node:fs/promises` and `node:url` lazily inside the function, and is listed as an exception to the core node-built-in lint ban.
 Why: a static node import would make the whole `./testing` subpath unloadable in a browser test environment; the lazy import keeps the conformance suite platform-neutral and still fails loudly in a browser if `loadCorpus` is actually called there.
 Cheap to reverse: yes
-
-## ASM-001 · <TASK-ID> · <date>
-Question: <the ambiguity, one line>
-Assumed: <the choice>
-Why: <one line>
-Cheap to reverse: yes | no
-```
-
----
 
 ## ASM-004 · P0-T01 · 2026-08-25
 Question: `attw --pack` fails on an ESM-only package because node10 resolution has no CJS entry.

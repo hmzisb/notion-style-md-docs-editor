@@ -129,3 +129,9 @@ export {
   type WalkResult,
   type WalkWarning,
 } from './fs/walk.js';
+
+export {
+  createFileStoreProvider,
+  type FileStoreProvider,
+  type FileStoreProviderOptions,
+} from './fs/semantics.js';

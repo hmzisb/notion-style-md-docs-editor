@@ -24,7 +24,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `fixtures/corpus/`: 33 pages over 5 levels (product, guides/{auth,billing,api/{rest,webhooks}}, specs, decisions, meeting-notes), one index-less folder, 4 assets, 2 ignored entries, 3 rule goldens. Covers frontmatter present/absent, `order`, emoji and Lucide icons, README-as-index, every link form, relative images, tables, task lists, nested/mixed lists, code in 6 languages, blockquotes, GFM alerts, `<details>`, HTML comment (lossy), reference links (reformat), footnote (lossy), CRLF, a 61 KB page. `manifest.json` declares kind/title/parent/order/icon/eol/bytes/fidelity per file. `fixtures/perf/gen.ts` writes a 5k-node tree and a 3k-block page to a temp dir; `loadCorpus()` in `@docs/core/testing`. 67 corpus tests + 3 generator tests.
 - [x] **P0-T09** Walk and MemoryFileStore
   - `fs/walk.ts`: `buildSnapshotFromEntries` implementing the file-to-node mapping, README fallback, folder nodes, hidden/vendored exclusion, title fallback chain, sibling ordering, duplicate-id warnings and the `fnv1a64` snapshot version. `fs/memory-store.ts`: `MemoryFileStore` with recursive `remove`, prefix `move`, `stat`, `watch`, read-only mode and traversal rejection, every failure arriving as a rejected promise. `icon.ts`: `parseIcon`/`formatIcon`. `tree.ts` now registers the README and trailing-slash `idByPath` forms. 68 walk/store tests + 17 icon tests; the corpus walk is asserted node-by-node against the manifest.
-- [ ] **P0-T10** FileStore provider: read side
+- [x] **P0-T10** FileStore provider: read side
+  - `fs/semantics.ts`: `createFileStoreProvider` turns any `FileStore` into a `DocumentProvider`. Key and capabilities derive from the store (read-only stores lose write/move/delete/upload, `subscribe` follows `store.watch`), overridable per option. One cached walk backs `getTree`, dropped by `invalidate()` and by the store watcher, which then emits a `tree` change event. `getTree({ rootId })` serves a subtree with the scope node reparented to null. `getPage` returns an LF body, the `sha256:` file version, `updatedAt` from frontmatter then mtime, and `eol: 'crlf'` only for CRLF files. `assetUrl` resolves against the page directory, rejects traversal above the root, caches per path+mtime and revokes on `dispose`, falling back to a data URL where `URL.createObjectURL` is absent. Write methods are `unsupported` until P0-T11. 23 provider-read tests.
 - [ ] **P0-T11** FileStore provider: write side
 - [ ] **P0-T12** Conformance suite
 - [ ] **P0-T13** Markdown codec
@@ -97,5 +98,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T10
+- Current task: P0-T11
 - Last gate passed: (none)
