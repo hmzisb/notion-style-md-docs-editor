@@ -1,0 +1,72 @@
+/**
+ * Fallback sheet (D-11, docs/11 section 4). Tailwind utilities compiled from this
+ * package's own sources, plus the module-private variables and the handful of rules
+ * that cannot be utilities. No preflight, no theme reset: only `.docs-root` and its
+ * descendants are ever styled.
+ */
+@import 'tailwindcss/theme.css' layer(theme) theme(reference);
+@import 'tailwindcss/utilities.css' layer(utilities);
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+
+@source '../**/*.tsx';
+
+@custom-variant dark (&:is(.dark *));
+
+/* shadcn's colour contract, read from the host or from theme.css (docs/06 section 2). */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--docs-sidebar);
+  --color-sidebar-foreground: var(--docs-sidebar-foreground);
+  --color-sidebar-accent: var(--docs-sidebar-accent);
+  --color-sidebar-accent-foreground: var(--docs-sidebar-accent-foreground);
+  --color-sidebar-border: var(--docs-sidebar-border);
+  --color-sidebar-ring: var(--docs-sidebar-ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+}
+
+.docs-root {
+  /* Sidebar variables fall back to their page counterparts (docs/06 section 2). */
+  --docs-sidebar: var(--sidebar, var(--background));
+  --docs-sidebar-foreground: var(--sidebar-foreground, var(--foreground));
+  --docs-sidebar-accent: var(--sidebar-accent, var(--accent));
+  --docs-sidebar-accent-foreground: var(--sidebar-accent-foreground, var(--accent-foreground));
+  --docs-sidebar-border: var(--sidebar-border, var(--border));
+  --docs-sidebar-ring: var(--sidebar-ring, var(--ring));
+
+  --docs-sidebar-width: 240px;
+  --docs-sidebar-min: 200px;
+  --docs-sidebar-max: 480px;
+  --docs-header-height: 44px;
+  --docs-content-width: 700px;
+  --docs-row-height: 28px;
+  --docs-indent: 12px;
+  --docs-gutter: 28px;
+  --docs-motion: 150ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .docs-root {
+    --docs-motion: 0ms;
+  }
+}

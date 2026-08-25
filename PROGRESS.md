@@ -38,7 +38,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Phase 1: Read path, shell, adapters, playground
 
-- [ ] **P1-T01** React package scaffold and primitives
+- [x] **P1-T01** React package scaffold and primitives
+  - Eight tsup entries (`.`, `./tree`, `./editor`, `./view`, `./shell`, three adapters) plus `dist/styles.css` and `dist/theme.css` from `build:css`. `components.json` on the Radix engine (`shadcn info` reports `base radix`) with the `@plate` registry; 17 primitives vendored into `src/ui` with their host coupling removed (no cookie, `Cmd+\` for the sidebar, no `next-themes`) and recorded in `REGISTRY-SYNC.md`. `styles.css` compiles utilities from the package's own sources with no preflight and no `:root` left in the output; `theme.css` is generated one-shot by `scripts/gen-theme.ts`. `cn` in `src/lib/utils.ts`. `publint`, `attw` and three new size budgets green.
 - [ ] **P1-T02** DocsProvider, namespace, queries
 - [ ] **P1-T03** Persisted cache and value cache
 - [ ] **P1-T04** Sidebar store and recents
@@ -102,5 +103,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T01
+- Current task: P1-T02
 - Last gate passed: Gate 0 (2026-08-25)

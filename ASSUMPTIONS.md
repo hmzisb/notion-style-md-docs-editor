@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-019 · P1-T01 · 2026-08-25
+Question: `@arethetypeswrong/cli` resolves every export, so `./styles.css` and `./theme.css` fail with "Resolution failed" - a CSS file has no types and never will.
+Assumed: `packages/react/.attw.json` sets `profile: esm-only` and `excludeEntrypoints: ["styles.css", "theme.css"]`, so the gate command in `scripts/gate.ts` stays exactly as written and checks the eight JS entries.
+Why: the alternative is shipping a `.d.ts` for a stylesheet, which would be a lie about what the file is.
+Cheap to reverse: yes
+
+## ASM-018 · P1-T01 · 2026-08-25
+Question: Tailwind emits the variables a utility depends on into `:root, :host`, which docs/11 section 4 forbids ("never `html`, `body`, bare tags, or `*`"), and the emitted block is also wrong here: `--radius-md: calc(var(--radius) * 0.8)` resolves at `:root`, where a plain host has no `--radius`, so every `rounded-md` inside the module would compute to 0.
+Assumed: `build-css.ts` rewrites the one `:root, :host` selector in the built sheet to `.docs-root` and then fails the build if any `:root`/`:host` survives. Tailwind's `@property` fallback block (`*, ::before, ::after, ::backdrop { --tw-*: initial }`) is left as written: it only restates initial values of Tailwind-private variables, and the module's own elements need them.
+Why: the rewrite is what makes the sheet both leak-free and correct for a non-Tailwind host; the guard means a future Tailwind release cannot reintroduce the leak quietly.
+Cheap to reverse: yes
+
+## ASM-017 · P1-T01 · 2026-08-25
+Question: docs/10 section 5 budgets `@docs/react`'s `.` entry at 25 kB gz "excl. peers", but `@docs/core` is a dependency of the package rather than a peer, and it already carries its own 40 kB budget.
+Assumed: `.size-limit.json` ignores `@docs/core` alongside the peers for all three react entries, and `./shell` is measured with no limit because docs/10 gives it no number.
+Why: counting core twice would make the 25 kB budget unreachable by construction; a measured-but-unbudgeted entry still shows growth in every `pnpm build`.
+Cheap to reverse: yes
+
 ## ASM-016 · Gate 0 · 2026-08-25
 Question: docs/10 section 5 budgets `@docs/core` at 40 KB **gz** excluding the platejs peers and `yaml`. `.size-limit.json` was measuring brotli (the `preset-small-lib` default), which read 39.58 kB; the same bundle gzipped is 44.74 kB, 4.74 kB over budget. Breakdown: zod 19.74 kB, remark-gfm and its mdast utils 12.89 kB, the module's own code 11.97 kB.
 Assumed: measure gzip, as the budget says, and cut the largest item - `contract/schemas.ts` and `contract/openapi.ts` now import `zod/mini` (the same zod 4.4.3, tree-shakeable functional API) instead of the classic chained API. `.min(1)` becomes `.check(z.minLength(1))`, `.optional()` becomes `z.optional(...)`, and `.meta({ id })` becomes `.register(z.globalRegistry, { id })`. Entry is 30.90 kB gzipped, and `contract/openapi.json` regenerates byte for byte identical.

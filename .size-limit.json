@@ -18,5 +18,76 @@
       "yaml"
     ],
     "gzip": true
+  },
+  {
+    "name": "@docs/react .",
+    "path": "packages/react/dist/index.js",
+    "limit": "25 kB",
+    "ignore": [
+      "@docs/core",
+      "@tanstack/react-query",
+      "react",
+      "react-dom",
+      "@platejs/basic-nodes",
+      "@platejs/callout",
+      "@platejs/caption",
+      "@platejs/code-block",
+      "@platejs/link",
+      "@platejs/list",
+      "@platejs/markdown",
+      "@platejs/media",
+      "@platejs/table",
+      "@platejs/toggle",
+      "platejs"
+    ],
+    "gzip": true
+  },
+  {
+    "name": "@docs/react ./tree + ./view",
+    "path": [
+      "packages/react/dist/tree/index.js",
+      "packages/react/dist/view/index.js"
+    ],
+    "limit": "80 kB",
+    "ignore": [
+      "@docs/core",
+      "@tanstack/react-query",
+      "react",
+      "react-dom",
+      "@platejs/basic-nodes",
+      "@platejs/callout",
+      "@platejs/caption",
+      "@platejs/code-block",
+      "@platejs/link",
+      "@platejs/list",
+      "@platejs/markdown",
+      "@platejs/media",
+      "@platejs/table",
+      "@platejs/toggle",
+      "platejs"
+    ],
+    "gzip": true
+  },
+  {
+    "name": "@docs/react ./shell",
+    "path": "packages/react/dist/shell/index.js",
+    "ignore": [
+      "@docs/core",
+      "@tanstack/react-query",
+      "react",
+      "react-dom",
+      "@platejs/basic-nodes",
+      "@platejs/callout",
+      "@platejs/caption",
+      "@platejs/code-block",
+      "@platejs/link",
+      "@platejs/list",
+      "@platejs/markdown",
+      "@platejs/media",
+      "@platejs/table",
+      "@platejs/toggle",
+      "platejs"
+    ],
+    "gzip": true
   }
 ]
