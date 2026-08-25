@@ -14,6 +14,30 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-047 · P1-T10 · 2026-08-25
+Question: a schema parse rebuilds an object in schema order, which loses the frontmatter key order docs/03 section 4.2 requires a provider to preserve.
+Assumed: `getPage` reorders the parsed `meta` back into the order the server sent, keeping any key the schema added.
+Why: the order is part of the contract the conformance suite checks, and the alternative — a loose schema that skips validation for `meta` — gives up the drift detection the parse exists for.
+Cheap to reverse: yes
+
+## ASM-046 · P1-T10 · 2026-08-25
+Question: docs/03 section 10 requires an optional method to exist exactly when its capability flag is on, but the http adapter learns its flags only from `getMeta`.
+Assumed: `search` and `uploadAsset` are attached to the provider object inside `getMeta`, and removed again if the backend withdraws the flag.
+Why: the same mutation `capabilities` already needs; a provider that always exposes the methods would offer a UI button the backend refuses.
+Cheap to reverse: yes
+
+## ASM-045 · P1-T10 · 2026-08-25
+Question: `updateMeta` takes a `renameFile` option, but the contract's `PATCH /pages/:id` has no field for it.
+Assumed: `renameFile: true` rejects with `unsupported` rather than being dropped silently.
+Why: the file-naming policy belongs to the backend over HTTP; dropping the flag would tell the caller a rename happened when it did not.
+Cheap to reverse: yes
+
+## ASM-044 · P1-T10 · 2026-08-25
+Question: a backend may advertise `capabilities.subscribe`, but the adapter has no `GET /events` client until P4-T02.
+Assumed: the adapter forces `subscribe: false` however the backend answers, and defines no `subscribe` method.
+Why: an advertised capability with nothing behind it breaks every caller that trusts the flag; P4-T02 flips it on with the listener in the same change.
+Cheap to reverse: yes
+
 ## ASM-043 · P1-T09 · 2026-08-25
 Question: docs/03 section 4.11 puts the index cache in the filesystem adapter, but the frontmatter read it caches lives in core's `createFileStoreProvider`.
 Assumed: `FileStoreProviderOptions` gains an optional `infoCache?: Map<string, PageInfo>`, and the adapter passes a `Map` subclass backed by IndexedDB.

@@ -52,7 +52,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `view/DocumentView.tsx` (`PlateView` over the codec's `BaseKit`, value cached L3 by `ns:id:version`, list wrapper overridden on `BaseListPlugin`), `view/nodes.tsx` (static components for the whole v1 block set, 24 px list marker column, to-do checkbox, code copy button, raw HTML hidden), `view/LinkStatic.tsx` (internal links through `resolvePageLink`, external ones through the `isSafeHref` policy, unresolved ones inert), `view/AssetImage.tsx` (`assetUrl` with a skeleton and an `ImageOff` notice), `core/links.ts` gains `isSafeHref`. Shell renders it in read mode. 16 RTL tests; `./tree + ./view` 30.18 kB gz.
 - [x] **P1-T09** Filesystem adapter
   - `adapters/filesystem-store.ts` (`FileStore` over a `FileSystemDirectoryHandle`: recursive listing with dot-dir and `node_modules` exclusion, directories derived from file paths, `File` reads, overwrite through a hidden temp file plus `move` where the engine has it, recursive `removeEntry`, native file move with copy + remove for directories, `stat`, optional polling `watch`), `adapters/filesystem.ts` (`createFileSystemProvider` with the IndexedDB index cache from docs/03 section 4.11 and its `onProgress`, `pickDirectory` with handle reuse and permission re-query, `getOpfsRoot`, `exportToDirectory`, `importFromDirectory`), `adapters/filesystem-fake.ts` (in-memory handle polyfill). Core gains `FileStoreProviderOptions.infoCache`. 29 unit tests plus 78 conformance cases over three store variants.
-- [ ] **P1-T10** HTTP adapter
+- [x] **P1-T10** HTTP adapter
+  - `adapters/http.ts` (`createHttpProvider` over docs/03 section 9: capabilities all-false until `getMeta` fills them, optional methods attached and withdrawn with their flag, bare versions in JSON and quoted in `ETag`/`If-Match`, error envelope mapped to `ProviderError`/`ConflictError` with a status fallback, `network` on a rejected fetch, sync or async `headers()`, `credentials`, `rootId`, every response parsed against the contract schemas with the frontmatter key order restored, pure-path `assetUrl` with traversal rejection), `adapters/http-handlers.ts` (msw handlers serving the contract over any provider, for tests). 18 unit tests plus 52 conformance cases over msw.
 - [ ] **P1-T11** Playground modes
 - [ ] **P1-T12** Command palette and global shortcuts
 - [ ] **P1-T13** E2E skeleton, a11y, perf baseline
@@ -107,6 +108,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T10
+- Current task: P1-T11
 - Open at Gate 1: `./shell` measures 67.9 kB gz against the 60 kB budget in docs/02 section 7 (DEV-012).
 - Last gate passed: Gate 0 (2026-08-25)
