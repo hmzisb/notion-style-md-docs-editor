@@ -2,12 +2,13 @@ import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from 
 import { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
 import type { DocsNavigation } from '@/data/types.js';
 import { PageTree, type PageTreeProps } from './PageTree.js';
 
-const page = (id: string, title: string): string => `---\nid: ${id}\ntitle: ${title}\n---\n\n# ${title}\n`;
+const page = (id: string, title: string): string =>
+  `---\nid: ${id}\ntitle: ${title}\n---\n\n# ${title}\n`;
 
 /**
  * Roots that cover every row shape: a page with children, two leaves, and a folder
@@ -70,25 +71,6 @@ const ready = async (): Promise<void> => {
     expect(screen.getByRole('tree')).toBeInTheDocument();
   });
 };
-
-/**
- * jsdom has no layout, so `offsetHeight` is 0 and the virtualizer would measure a viewport
- * that holds no rows. 800 px is a sidebar's worth: 29 rows plus overscan.
- */
-const VIEWPORT = 800;
-
-beforeAll(() => {
-  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
-    configurable: true,
-    value: VIEWPORT,
-  });
-  Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 240 });
-});
-
-afterAll(() => {
-  Reflect.deleteProperty(HTMLElement.prototype, 'offsetHeight');
-  Reflect.deleteProperty(HTMLElement.prototype, 'offsetWidth');
-});
 
 beforeEach(() => {
   localStorage.clear();

@@ -74,3 +74,29 @@ export function useSidebarStore<T>(selector?: (state: SidebarState) => T): T | S
     selector ?? ((state) => state),
   );
 }
+
+const seeded = new Set<string>();
+
+/**
+ * Host defaults (docs/08 section 4) are initial values, not overrides: a width the user dragged
+ * or a sidebar they opened wins on the next visit. Only a namespace that has never persisted
+ * anything takes them, which is why this reads the raw key instead of comparing values.
+ */
+export function seedSidebar(ns: string, defaults: { width?: number; collapsed?: boolean }): void {
+  if (seeded.has(ns)) return;
+  seeded.add(ns);
+  if (defaults.width === undefined && defaults.collapsed === undefined) return;
+
+  let stored: string | null = null;
+  try {
+    // Throws rather than returning null when there is no `localStorage` at all (server, private mode).
+    stored = globalThis.localStorage.getItem(`${ns}:sidebar`);
+  } catch {
+    stored = null;
+  }
+  if (stored !== null) return;
+
+  const store = sidebarStoreFor(ns).getState();
+  if (defaults.width !== undefined) store.setWidth(defaults.width);
+  if (defaults.collapsed !== undefined) store.setCollapsed(defaults.collapsed);
+}

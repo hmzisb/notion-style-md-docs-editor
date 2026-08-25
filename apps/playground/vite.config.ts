@@ -16,6 +16,7 @@ export default defineConfig({
       { find: '@docs/react/styles.css', replacement: `${reactSrc}/styles/styles.css` },
       { find: '@docs/react/theme.css', replacement: `${reactSrc}/styles/theme.css` },
       { find: '@docs/react/adapters/memory', replacement: `${reactSrc}/adapters/memory.ts` },
+      { find: '@docs/react/shell', replacement: `${reactSrc}/shell/index.ts` },
       { find: '@docs/react/tree', replacement: `${reactSrc}/tree/index.ts` },
       { find: '@docs/react', replacement: `${reactSrc}/index.ts` },
       { find: '@docs/core', replacement: at('../../packages/core/src/index.ts') },

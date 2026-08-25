@@ -44,10 +44,7 @@
   },
   {
     "name": "@docs/react ./tree + ./view",
-    "path": [
-      "packages/react/dist/tree/index.js",
-      "packages/react/dist/view/index.js"
-    ],
+    "path": ["packages/react/dist/tree/index.js", "packages/react/dist/view/index.js"],
     "limit": "80 kB",
     "ignore": [
       "@docs/core",

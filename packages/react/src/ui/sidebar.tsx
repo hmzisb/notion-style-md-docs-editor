@@ -13,7 +13,8 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/tooltip';
 import { PanelLeftIcon } from 'lucide-react';
 
 const SIDEBAR_WIDTH = '16rem';
-const SIDEBAR_WIDTH_MOBILE = '18rem';
+/** docs/06 section 4: the sheet sidebar is 280 px, not shadcn's 288. */
+const SIDEBAR_WIDTH_MOBILE = '17.5rem';
 const SIDEBAR_WIDTH_ICON = '3rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = '\\';
 
@@ -178,6 +179,8 @@ function Sidebar({
           style={
             {
               '--sidebar-width': SIDEBAR_WIDTH_MOBILE,
+              // `SheetContent`'s own `data-[side=left]:w-3/4` outranks the class above.
+              width: SIDEBAR_WIDTH_MOBILE,
             } as React.CSSProperties
           }
           side={side}

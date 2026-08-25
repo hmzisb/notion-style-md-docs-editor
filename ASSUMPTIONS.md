@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-031 · P1-T07 · 2026-08-25
+Question: jsdom answers no media query and measures every element as 0x0, so the shell tests would each need the same stubs as the tree tests.
+Assumed: `matchMedia`, `offsetWidth`/`offsetHeight` and the pointer-capture methods are stubbed once in `testing/setup.ts` rather than per test file.
+Why: they are gaps in the environment, not fixtures of one suite; a second copy in the shell tests would drift from the first.
+Cheap to reverse: yes
+
+## ASM-030 · P1-T07 · 2026-08-25
+Question: docs/06 section 15 asks for 44 px touch targets at 390 px, but a target is about the pointer, not the viewport.
+Assumed: the 768 px breakpoint drives it - `useIsMobile()` for the virtualiser's row height, `max-md:` for the sidebar and header buttons - not `pointer: coarse`.
+Why: the review step for every UI task is a screenshot at 390x844 taken with a mouse; a `pointer: coarse` rule would be invisible there and could never be verified.
+Cheap to reverse: yes
+
+## ASM-029 · P1-T07 · 2026-08-25
+Question: a Radix portal mounts on `document.body`, outside `.docs-root`, and docs/11 section 4 offers either the `container` prop or a `DocsPortalRoot` mounted by `DocsProvider`.
+Assumed: `lib/portal.ts` owns one lazily created `div.docs-root` (`display: contents`) on `document.body`, and every portal in `ui/` passes it as `container`.
+Why: it costs no render, no context and no provider element. It is one element per document, which CLAUDE.md section 8 would call a singleton, but it holds no instance state - two `DocsProvider`s share inert chrome. Known ceiling: two shells under different theme ancestors would share one container and one theme; the fix then is a per-provider container passed through context.
+Cheap to reverse: yes
+
+## ASM-028 · P1-T07 · 2026-08-25
+Question: `DocsShellSidebarOptions.defaultWidth` and `defaultCollapsed` compete with the persisted sidebar store, which docs/08 section 4 does not resolve.
+Assumed: they seed a namespace that has never persisted anything, once, during the first render; after that the store wins and the host defaults are ignored.
+Why: a host default that overrode the store would undo the user's own resize on every mount, and seeding during render avoids a second paint.
+Cheap to reverse: yes
+
+## ASM-027 · P1-T07 · 2026-08-25
+Question: docs/06 puts a title block, a mode toggle, a page menu, a search row and a toaster in the shell; none of their owners (P1-T08, P1-T12, P2, P3-T01) exist yet.
+Assumed: T07 ships the layout, the header, the states and the canvas title block only, and each control lands with the task that owns it.
+Why: the alternative is stub components that later tasks would have to unpick, against CLAUDE.md section 3 ("scaffold exactly what the task specifies").
+Cheap to reverse: yes
+
 ## ASM-026 · P1-T06 · 2026-08-25
 Question: docs/06 section 5 draws a tree row with `[chevron][icon][title][actions]` and reference v2 Appendix B passes `item.getProps()` straight onto the row.
 Assumed: the row takes primitives (`id`, `title`, `depth`, `expanded`, `active`, `focused`, ...) plus stable callbacks and writes its own ARIA, instead of spreading the headless-tree item props.

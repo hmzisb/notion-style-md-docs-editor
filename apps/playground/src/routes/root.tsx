@@ -40,8 +40,8 @@ function RootLayout(): React.JSX.Element {
 
   return (
     <DocsProvider provider={provider} navigation={navigation} queryClient={queryClient}>
-      <div className="docs-root flex min-h-dvh flex-col bg-background text-foreground">
-        <header className="flex h-11 items-center justify-between border-b px-4">
+      <div className="docs-root flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+        <header className="flex h-11 shrink-0 items-center justify-between border-b px-4">
           <Link to="/" className="text-sm font-medium">
             Docs playground
           </Link>

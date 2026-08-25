@@ -17,6 +17,20 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-012 · P1-T07 · 2026-08-25
+Spec said: docs/02 section 7 budgets `./shell` at 60 kB gz excluding the editor.
+Reality: with the shell assembled it measures 67.94 kB gz. Breakdown (minified bytes before gzip): own shell + tree + data code 32.7, tailwind-merge 26.5, `@tanstack/virtual-core` 21.8, `@headless-tree/core` 15.9, the Radix menu stack behind the breadcrumb overflow (`react-menu` 12.8, `react-collection` 7.0, `react-dropdown-menu` 5.2, `react-dismissable-layer` 5.2, `react-popper` 4.4, `react-focus-scope` 3.6, `react-roving-focus` 3.6) plus floating-ui 21.7, the sheet's `react-dialog` 4.8 with `react-remove-scroll` 5.8, `lucide-react` 4.0. The tree alone is 30 kB gz of it and is budgeted a second time under `./tree + ./view`.
+Decision: no limit is set on the `./shell` entry in `.size-limit.json` yet, and the overage is carried to Gate 1. The two candidate cuts - a lazily imported menu chunk, and pruning what the vendored sidebar drags in - can only be judged once P2's `PageMenu` and P3's row menus exist, because both consume the same Radix menu stack; cutting it now for one breadcrumb menu could buy nothing at all.
+Impact: `.size-limit.json` reports `./shell` without a limit, so a regression is visible but not fatal; `docs/execution/PHASE-1-REPORT.md` records the number and the decision.
+Reverse when: Gate 1 - either the menu stack moves into a lazy chunk and the 60 kB limit is set, or the budget is amended in docs/02 with this breakdown as the reason.
+
+## DEV-011 · P1-T07 · 2026-08-25
+Spec said: docs/11 section 4 - `styles.css` carries "no preflight ... no theme reset", only utilities plus the few component rules that cannot be utilities.
+Reality: without preflight a bare `border-r` (shadcn's vendored primitives are full of them) falls back to `currentColor`, so the mobile sheet, the menus and every card draw a near-black border in light mode and a near-white one in dark. shadcn ships this as a base rule on `*`, which the module may not use because it may not style anything outside its own subtree.
+Decision: `styles.css` gains one `@layer base` rule setting `border-color: var(--border)` and `outline-color: var(--ring)` on `.docs-root` and its descendants, plus an explicit `@layer theme, base, components, utilities` order so any `border-<color>` utility still wins. Nothing outside `.docs-root` is touched: a `<p>` next to the module keeps the browser default.
+Impact: `styles/styles.css`; the plain-host smoke test in P1-T13 gets the leak check for free.
+Reverse when: the module stops vendoring components that use uncoloured border utilities.
+
 ## DEV-010 · P1-T06 · 2026-08-25
 Spec said: docs/11 section 1 lists `lucide-react` as bundled "(per-icon imports)", and reference/architecture-v2.md line 123 repeats it.
 Reality: per-icon imports work for the fixed UI glyphs, but a page icon is author-supplied free text (`icon: lucide:book-open`, docs/03 section 3) and docs/06 section 136 has the icon picker browse the whole Lucide set. A static per-icon map of 1,600 icons is the entire library in the `./tree` entry; a curated subset would render the default glyph for any name outside it.

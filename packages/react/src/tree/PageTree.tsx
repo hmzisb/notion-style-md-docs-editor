@@ -7,6 +7,7 @@ import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
@@ -27,6 +28,8 @@ const OFFSCREEN: React.CSSProperties = {
 
 /** docs/06 section 4: `--docs-row-height`. Rows never measure: 5k of them stay cheap. */
 const ROW_HEIGHT = 28;
+/** docs/06 section 15: a row is a touch target below 768 px. */
+const ROW_HEIGHT_TOUCH = 44;
 const OVERSCAN = 8;
 /**
  * headless-tree needs one item above the visible roots; it is never rendered. Node ids are
@@ -179,16 +182,21 @@ function TreeBody({
   }, [tree, index.version]);
 
   const items = tree.getItems();
+  const rowHeight = useIsMobile() ? ROW_HEIGHT_TOUCH : ROW_HEIGHT;
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollRef.current,
-    estimateSize: () => ROW_HEIGHT,
+    estimateSize: () => rowHeight,
     overscan: OVERSCAN,
     getItemKey: (rowIndex) => items[rowIndex]?.getId() ?? rowIndex,
   });
   scrollToIndex.current = (rowIndex) => {
     virtualizer.scrollToIndex(rowIndex);
   };
+  // Sizes are cached per row, so crossing the touch breakpoint has to drop the cache.
+  useEffect(() => {
+    virtualizer.measure();
+  }, [virtualizer, rowHeight]);
 
   const containerProps = tree.getContainerProps(
     strings['tree.label'],
@@ -266,7 +274,7 @@ function TreeSkeleton({ className }: { className?: string }): React.JSX.Element 
       {SKELETON_ROWS.map((row, rowIndex) => (
         <div
           key={rowIndex}
-          className="flex h-7 items-center"
+          className="flex h-7 items-center max-md:h-11"
           style={{ paddingInlineStart: `calc(var(--docs-indent) * ${String(row.depth)} + 4px)` }}
         >
           <Skeleton className="h-3.5" style={{ width: row.width }} />

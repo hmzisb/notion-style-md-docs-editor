@@ -4,6 +4,9 @@
  * that cannot be utilities. No preflight, no theme reset: only `.docs-root` and its
  * descendants are ever styled.
  */
+/* Fixed here too, so a host that imports nothing but this sheet still layers it Tailwind's way. */
+@layer theme, base, components, utilities;
+
 @import 'tailwindcss/theme.css' layer(theme) theme(reference);
 @import 'tailwindcss/utilities.css' layer(utilities);
 @import 'tw-animate-css';
@@ -12,6 +15,21 @@
 @source '../**/*.tsx';
 
 @custom-variant dark (&:is(.dark *));
+
+@layer base {
+  /*
+   * shadcn's base sheet sets this on `*`; the module has no preflight and may not touch anything
+   * outside its own subtree (docs/11 section 4), so `border-*` utilities would draw in
+   * `currentColor`. In `base`, any explicit `border-<color>` utility still wins.
+   */
+  .docs-root,
+  .docs-root *,
+  .docs-root *::before,
+  .docs-root *::after {
+    border-color: var(--border);
+    outline-color: var(--ring);
+  }
+}
 
 /* shadcn's colour contract, read from the host or from theme.css (docs/06 section 2). */
 @theme inline {

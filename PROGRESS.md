@@ -47,7 +47,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P1-T05** Memory adapter entry and playground bootstrap
 - [x] **P1-T06** PageTree
   - `tree/PageTree.tsx` (headless-tree `syncDataLoader` + `hotkeysCore` + `search` over a virtualized list, synthetic root, expansion in the sidebar store, skeleton/empty/error states), `tree/PageTreeRow.tsx` (`React.memo` on primitives, roving tabindex, chevron button, `href` links, reserved action slot), `tree/IconGlyph.tsx` (emoji, lazy `DynamicIcon`, kind defaults). Type-ahead by title prefix. 12 RTL tests; `./tree + ./view` 29.8 kB gz.
-- [ ] **P1-T07** Shell
+- [x] **P1-T07** Shell
 - [ ] **P1-T08** DocumentView (read-only)
 - [ ] **P1-T09** Filesystem adapter
 - [ ] **P1-T10** HTTP adapter
@@ -105,5 +105,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T07
+- Current task: P1-T08
+- Open at Gate 1: `./shell` measures 67.9 kB gz against the 60 kB budget in docs/02 section 7 (DEV-012).
 - Last gate passed: Gate 0 (2026-08-25)
