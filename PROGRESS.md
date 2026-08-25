@@ -16,7 +16,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `tree.ts`: `buildIndex` (file + directory path forms), `ancestorsOf`, `isDescendant`, `descendantCount`, `subtreeIds`, `flatten` and immutable `applyRename`/`applyMeta`/`applyInsert`/`applyMove`/`applyRemove` with structural sharing. fast-check over 40-op sequences asserts no orphans, single parent, `childIds`↔`parentId` agreement, reachability and the move guard.
 - [x] **P0-T05** Frontmatter
   - `frontmatter.ts`: `splitFrontmatter`/`joinFrontmatter` with CRLF detection, 64 KB cap, malformed YAML → `validation`, BOM strip, unterminated delimiter treated as body. Passing the split result back to `join` re-emits the block byte for byte, so quoting **and comments** survive (better than the documented limitation). 20 variants round-trip and are idempotent; 59 tests.
-- [ ] **P0-T06** Paths and ordering
+- [x] **P0-T06** Paths and ordering
+  - `fs/paths.ts`: `slugify` (NFKD fold, 64-char cap), `uniqueSlug`, `pagePathFor`/`dirPathFor`/`assetBaseFor`, `isIndex`/`isHidden`/`isMarkdown`, `normalizePath` (traversal above root → `null`), `humanize`/`titleFromPath`. `fs/ordering.ts`: digit-run `compareNatural`, `compareSiblings` (ordered first, then pages before folders), `nextOrder`, `midpointOrder` with precision-loss detection, `renumber`. 54 tests incl. unicode titles, collisions, `page-2` before `page-10`, repeated halving until renumber.
 - [ ] **P0-T07** Link resolution
 - [ ] **P0-T08** Fixture corpus and perf generators
 - [ ] **P0-T09** Walk and MemoryFileStore
@@ -93,5 +94,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T06
+- Current task: P0-T07
 - Last gate passed: (none)

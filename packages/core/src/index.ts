@@ -69,3 +69,37 @@ export {
   type JoinOptions,
   type SplitResult,
 } from './frontmatter.js';
+
+export {
+  INDEX_FILE,
+  MAX_SLUG_LENGTH,
+  README_FILE,
+  assetBaseFor,
+  basename,
+  dirPathFor,
+  dirname,
+  extname,
+  humanize,
+  isHidden,
+  isIndex,
+  isMarkdown,
+  joinPath,
+  normalizePath,
+  pagePathFor,
+  slugify,
+  stem,
+  titleFromPath,
+  uniqueSlug,
+} from './fs/paths.js';
+
+export {
+  MIN_ORDER_GAP,
+  ORDER_STEP,
+  compareNatural,
+  compareSiblings,
+  midpointOrder,
+  nextOrder,
+  renumber,
+  sortSiblings,
+  type Sortable,
+} from './fs/ordering.js';
