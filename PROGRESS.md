@@ -18,7 +18,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `frontmatter.ts`: `splitFrontmatter`/`joinFrontmatter` with CRLF detection, 64 KB cap, malformed YAML → `validation`, BOM strip, unterminated delimiter treated as body. Passing the split result back to `join` re-emits the block byte for byte, so quoting **and comments** survive (better than the documented limitation). 20 variants round-trip and are idempotent; 59 tests.
 - [x] **P0-T06** Paths and ordering
   - `fs/paths.ts`: `slugify` (NFKD fold, 64-char cap), `uniqueSlug`, `pagePathFor`/`dirPathFor`/`assetBaseFor`, `isIndex`/`isHidden`/`isMarkdown`, `normalizePath` (traversal above root → `null`), `humanize`/`titleFromPath`. `fs/ordering.ts`: digit-run `compareNatural`, `compareSiblings` (ordered first, then pages before folders), `nextOrder`, `midpointOrder` with precision-loss detection, `renumber`. 54 tests incl. unicode titles, collisions, `page-2` before `page-10`, repeated halving until renumber.
-- [ ] **P0-T07** Link resolution
+- [x] **P0-T07** Link resolution
+  - `links.ts`: `parseHref` (query/fragment split, per-segment percent-decode, scheme and protocol-relative detection), `normalizeRelative`, `resolvePageLink` trying path → `.md` → `index.md`/`README.md`. 39-row resolve table plus `parseHref`/`normalizeRelative` cases; 51 tests.
 - [ ] **P0-T08** Fixture corpus and perf generators
 - [ ] **P0-T09** Walk and MemoryFileStore
 - [ ] **P0-T10** FileStore provider: read side
@@ -94,5 +95,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T07
+- Current task: P0-T08
 - Last gate passed: (none)

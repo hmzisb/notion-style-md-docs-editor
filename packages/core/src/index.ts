@@ -103,3 +103,10 @@ export {
   sortSiblings,
   type Sortable,
 } from './fs/ordering.js';
+
+export {
+  normalizeRelative,
+  parseHref,
+  resolvePageLink,
+  type ParsedHref,
+} from './links.js';
