@@ -135,3 +135,21 @@ export {
   type FileStoreProvider,
   type FileStoreProviderOptions,
 } from './fs/semantics.js';
+
+export {
+  BaseKit,
+  DEFAULT_STRINGIFY_OPTIONS,
+  createBaseKit,
+  type BaseKitOptions,
+  type StringifyOptions,
+} from './codec/base-kit.js';
+
+export {
+  createCodec,
+  defaultCodec,
+  markdownToValue,
+  normalizeMarkdown,
+  valueToMarkdown,
+  type Codec,
+  type CodecOptions,
+} from './codec/codec.js';

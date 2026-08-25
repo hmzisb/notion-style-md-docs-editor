@@ -4,8 +4,17 @@
     "path": "packages/core/dist/index.js",
     "limit": "40 kB",
     "ignore": [
-      "platejs",
+      "@platejs/basic-nodes",
+      "@platejs/callout",
+      "@platejs/caption",
+      "@platejs/code-block",
+      "@platejs/link",
+      "@platejs/list",
       "@platejs/markdown",
+      "@platejs/media",
+      "@platejs/table",
+      "@platejs/toggle",
+      "platejs",
       "yaml"
     ]
   }

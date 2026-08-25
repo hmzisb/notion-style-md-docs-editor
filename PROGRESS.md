@@ -30,7 +30,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `savePage` (conflict check against the file hash, id persisted on first write, unknown frontmatter keys and their order untouched, EOL preserved, null base on a folder writes its `index.md` and flips it to a page), `updateMeta` (title and icon into frontmatter, icon validated, optional `renameFile` for a fresh page which renames the directory for an index page), `createPage` (root / folder / directory page / leaf page with conversion, slug collision suffixes, `untitled` fallback, `order` only when placed at an index), `movePage` (path rewrite, subtree follows a directory move, order-only move inside the same directory, own-subtree guard, sibling renumber with `onRenumber`), `deletePage` (subtree, root-index guard). A per-path frontmatter cache keeps a write from re-reading the corpus. 32 provider-write tests.
 - [x] **P0-T12** Conformance suite
   - `testing/conformance.ts` exports `runProviderConformance(makeProvider, opts)`: every case in docs/03 section 10 driven through the `DocumentProvider` interface alone, so the same suite serves memory, the filesystem adapter and http. Cases discover what they need from the tree and fail with a seed hint when it is missing. Runs twice over the corpus (writable and read-only): 52 cases. Fixed along the way: `pnpm build` had never worked (tsup's dts worker cannot build a composite program, TS6307) and `size-limit` was measuring `yaml` against a budget that excludes it; `scripts/verify.sh` now runs `pnpm build` too.
-- [ ] **P0-T13** Markdown codec
+- [x] **P0-T13** Markdown codec
 - [ ] **P0-T14** Fidelity classifier and doctor
 - [ ] **Gate 0** green, `docs/execution/PHASE-0-REPORT.md` written
 
@@ -100,5 +100,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T13
+- Current task: P0-T14
 - Last gate passed: (none)

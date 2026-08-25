@@ -24,19 +24,48 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
+    "remark-gfm": "^4.0.1",
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
+    "@platejs/basic-nodes": "^53",
+    "@platejs/callout": "^53",
+    "@platejs/caption": "^53",
+    "@platejs/code-block": "^53",
+    "@platejs/link": "^53",
+    "@platejs/list": "^53",
+    "@platejs/markdown": "^53",
+    "@platejs/media": "^53",
+    "@platejs/table": "^53",
+    "@platejs/toggle": "^53",
+    "platejs": "^53",
     "vitest": ">=3"
   },
   "peerDependenciesMeta": {
+    "@platejs/callout": {
+      "optional": true
+    },
+    "@platejs/toggle": {
+      "optional": true
+    },
     "vitest": {
       "optional": true
     }
   },
   "devDependencies": {
+    "@platejs/basic-nodes": "^53.0.0",
+    "@platejs/callout": "^53.0.0",
+    "@platejs/caption": "^53.0.0",
+    "@platejs/code-block": "^53.0.0",
+    "@platejs/link": "^53.3.5",
+    "@platejs/list": "^53.1.3",
+    "@platejs/markdown": "^53.3.3",
+    "@platejs/media": "^53.1.4",
+    "@platejs/table": "^53.0.9",
+    "@platejs/toggle": "^53.0.0",
     "fast-check": "4.9.0",
+    "platejs": "^53.3.9",
     "tsup": "8.5.1",
     "vitest": "3.2.7"
   }

@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-013 · P0-T13 · 2026-08-25
+Question: docs/05 section 3 keeps `math` in `CodecOptions`, but section 2 lists math among the plugins v1 does not install, so `remark-math` is not a dependency.
+Assumed: `createCodec({ math: true })` throws with a message naming the missing dependency.
+Why: parsing `$x$` into math nodes that no rule can serialize would drop the formula from the file, which is worse than the option being unavailable; silently ignoring the flag would hide that from the host.
+Cheap to reverse: yes
+
+## ASM-012 · P0-T13 · 2026-08-25
+Question: mdast has one representation for a soft line break and a hard break (`\n` in a Plate text node), so a serializer has to pick one on the way out.
+Assumed: soft. A wrapped paragraph comes back wrapped exactly as the author left it; a source hard break (`\` or two trailing spaces) becomes a soft break, and an angle-bracket autolink `<https://x>` becomes the bare GFM form once.
+Why: Plate's default picks hard, which puts a trailing `\` on every wrapped line of every page in the corpus - 29 of 33 pages reformat on the first save. Hard breaks are rare in prose docs, wrapped paragraphs are universal.
+Cheap to reverse: no - reversing means a custom Plate node for a hard break, which the editor kit would have to render.
+
+## ASM-011 · P0-T13 · 2026-08-25
+Question: docs/05 section 2 lists Callout and Toggle as "P2 stretch, D-17", so it is not obvious whether their `Base*` plugins belong in the P0 kit.
+Assumed: both are in `BaseKit` from P0; only their Markdown rules wait for P2-T10 and P2-T11.
+Why: docs/05 section 5 says a rule that misses its budget means "keep the plugin out of the kit", which reads as removal from a kit that already has it; registering the plugin early costs nothing because no rule produces those node types yet.
+Cheap to reverse: yes
+
 ## ASM-010 · P0-T12 · 2026-08-25
 Question: docs/09 P0-T12 says the suite must run "against `createMemoryProvider` seeded from the corpus", but docs/08 puts `createMemoryProvider` in `@docs/react/adapters/memory`, and `@docs/react` has no source yet.
 Assumed: core's conformance test builds the same thing inline - `createFileStoreProvider(new MemoryFileStore(corpus))`, which is exactly what docs/02 line 145 says `createMemoryProvider` is - and the react adapter will call `runProviderConformance` again when it lands.

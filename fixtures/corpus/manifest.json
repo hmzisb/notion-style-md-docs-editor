@@ -42,7 +42,7 @@
       "order": 10,
       "icon": {
         "kind": "emoji",
-        "value": "\ud83d\ude80"
+        "value": "🚀"
       },
       "hasFrontmatter": true,
       "eol": "lf",
@@ -154,7 +154,7 @@
       "order": 20,
       "icon": {
         "kind": "emoji",
-        "value": "\ud83d\udd10"
+        "value": "🔐"
       },
       "hasFrontmatter": true,
       "eol": "lf",
@@ -498,12 +498,10 @@
       "eol": "lf",
       "bytes": 260,
       "fidelity": {
-        "level": "lossy",
-        "reasons": [
-          "html"
-        ]
+        "level": "exact",
+        "reasons": []
       },
-      "exactRoundTrip": false,
+      "exactRoundTrip": true,
       "covers": [
         "html-comment"
       ]
@@ -614,7 +612,7 @@
       "order": 50,
       "icon": {
         "kind": "emoji",
-        "value": "\ud83d\udcdd"
+        "value": "📝"
       },
       "hasFrontmatter": true,
       "eol": "lf",

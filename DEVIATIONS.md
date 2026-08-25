@@ -17,6 +17,20 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-004 · P0-T13 · 2026-08-25
+Spec said: docs/05 section 2 - "Keep underline only if the installed plugin round-trips `<u>` in non-MDX mode; otherwise remove the button and the `Cmd+U` shortcut and log the deviation."
+Reality: it does not. `<u>text</u>` parses to inline HTML, never to the mark, and the mark's stock rule serializes to `mdxJsxTextElement`, which non-MDX stringify rejects outright: `Cannot handle unknown node 'mdxJsxTextElement'`. The same is true of `highlight`, `kbd`, `subscript`, `superscript`, `comment` and `suggestion`.
+Decision: `BaseUnderlinePlugin` is out of `BaseKit`, and all seven marks are listed as `plainMarks`, so a value that arrives carrying one from anywhere else saves as plain words instead of throwing. P2's editor kit ships no underline button and no `Cmd+U`. `<u>` in a file survives byte for byte as raw HTML (DEV-003).
+Impact: `codec/base-kit.ts`; two tests in `codec.test.ts`; docs/05's block table row for Underline is not implemented; no public API change.
+Reverse when: Plate's Markdown plugin gains a non-MDX `<u>` rule pair, or the module turns MDX on.
+
+## DEV-003 · P0-T13 · 2026-08-25
+Spec said: docs/09 P0-T09 lists the corpus HTML comment as "(lossy)", and reference/architecture-v2.md line 414 reads "Plate drops raw HTML by default ... Lossy for `<details>`, `<img width>`, HTML comments".
+Reality: that is a statement about Plate's stock rules, and the stock behavior is worse than lossy - raw HTML deserializes to plain text and comes back escaped (`\<details>`, `\<!-- ... -->`), which silently breaks the block in the file. docs/05 section 4 defines a lossy reason as an "html node **not handled by a custom rule**", and D-16 defines lossy as information dropped.
+Decision: the codec registers a verbatim `html` rule pair, so raw HTML survives byte for byte in both directions. Nothing is dropped, so raw HTML alone no longer makes a page lossy: `specs/import-export.md` is declared `exact` in the corpus manifest, and `specs/index.md` (`<details>`) stays `exact` instead of waiting for the P2 toggle rule.
+Impact: `codec/base-kit.ts` (`FIDELITY_RULES.html`); `fixtures/corpus/manifest.json` (one page's fidelity level); `testing/corpus.test.ts` no longer requires an `html` reason in the corpus - P0-T14 unit tests that reason directly instead. `<details>` still has no editor block until P2-T11; it renders as its own text.
+Reverse when: a host needs raw HTML stripped rather than preserved - then this becomes a codec option, not a default.
+
 ## DEV-002 · P0-T11 · 2026-08-25
 Spec said: docs/03 section 4.2 - a page with a path-hash id gets "a fresh `generateId()` written into frontmatter" on its first write.
 Reality: docs/03 section 10 pins the opposite outcome three times in the conformance cases it requires - "save with null base on folder -> ... id preserved", "child of leaf page (conversion, id preserved)", "move between parents updates paths and keeps ids". Minting a new id on first write breaks every one of them, and it invalidates the id the UI is holding at the exact moment the user saves.

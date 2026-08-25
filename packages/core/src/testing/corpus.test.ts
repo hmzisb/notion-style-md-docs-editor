@@ -141,8 +141,10 @@ describe('corpus coverage', () => {
       expect(page.exactRoundTrip).toBe(page.fidelity.level === 'exact');
       if (page.fidelity.level === 'lossy') expect(page.fidelity.reasons.length).toBeGreaterThan(0);
     }
+    // No `html` reason: the codec keeps raw HTML byte for byte, so a page whose only
+    // unusual feature is HTML round trips exactly (DEV-003). The comment page still
+    // covers the feature; the reason itself is unit tested in the classifier.
     const reasons = new Set(manifest.pages.flatMap((page) => page.fidelity.reasons));
-    expect(reasons).toContain('html');
     expect(reasons).toContain('footnoteDefinition');
     expect(reasons).toContain('definition');
   });
