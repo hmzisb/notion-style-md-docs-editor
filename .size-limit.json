@@ -51,6 +51,7 @@
     "limit": "80 kB",
     "ignore": [
       "@docs/core",
+      "lucide-react/dynamic",
       "@tanstack/react-query",
       "react",
       "react-dom",
@@ -73,6 +74,7 @@
     "path": "packages/react/dist/shell/index.js",
     "ignore": [
       "@docs/core",
+      "lucide-react/dynamic",
       "@tanstack/react-query",
       "react",
       "react-dom",

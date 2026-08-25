@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-026 · P1-T06 · 2026-08-25
+Question: docs/06 section 5 draws a tree row with `[chevron][icon][title][actions]` and reference v2 Appendix B passes `item.getProps()` straight onto the row.
+Assumed: the row takes primitives (`id`, `title`, `depth`, `expanded`, `active`, `focused`, ...) plus stable callbacks and writes its own ARIA, instead of spreading the headless-tree item props.
+Why: docs/09 P1-T06 requires `React.memo` rows on primitive props, and `getProps()` returns a new object per render, so every row would re-render on every scroll tick.
+Cheap to reverse: yes
+
+## ASM-025 · P1-T06 · 2026-08-25
+Question: docs/07 section 2 lists type-ahead as "provided by headless-tree", but headless-tree's `searchFeature` only works when the host renders the input it owns, and docs/06 section 5 has no such input in the sidebar.
+Assumed: `PageTree` renders a visually hidden, focusable input wired to `getSearchInputElementProps()`, labelled "Find a page by name", after the tree container so headless-tree's keydown handler reaches it. Matching is by title prefix, per docs/07's wording.
+Why: without the input, typing a letter opens a search that swallows every following keystroke; with it, type-ahead behaves as the keyboard map describes and `Escape` returns the focus to the matched row.
+Cheap to reverse: yes
+
 ## ASM-024 · P1-T05 · 2026-08-25
 Question: the playground needs a demo corpus, but `MemoryProvider` takes files in memory and the corpus lives on disk under `fixtures/corpus/`.
 Assumed: `providers.ts` inlines the corpus with `import.meta.glob('../../../fixtures/corpus/**/*.md', { query: '?raw', eager: true })` and strips the prefix to get provider paths.

@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-010 · P1-T06 · 2026-08-25
+Spec said: docs/11 section 1 lists `lucide-react` as bundled "(per-icon imports)", and reference/architecture-v2.md line 123 repeats it.
+Reality: per-icon imports work for the fixed UI glyphs, but a page icon is author-supplied free text (`icon: lucide:book-open`, docs/03 section 3) and docs/06 section 136 has the icon picker browse the whole Lucide set. A static per-icon map of 1,600 icons is the entire library in the `./tree` entry; a curated subset would render the default glyph for any name outside it.
+Decision: fixed UI glyphs stay per-icon imports (`ChevronRight`, `FileText`, `Folder`). Author-chosen page icons go through `lucide-react/dynamic`'s `DynamicIcon`, behind `React.lazy`, so a workspace of emoji and default icons never loads it, and an unknown name falls back to the kind default. `size-limit` bundles with esbuild and no code splitting, so it inlines that dynamic import and every icon behind it (+196 kB gz); `lucide-react/dynamic` is therefore listed in `ignore` for the `./tree + ./view` and `./shell` budgets - the same treatment docs/02 section 7 already prescribes for the lazily loaded editor chunk. The lazy chunk costs ~14 kB gz plus ~0.3 kB per icon actually used, paid only by workspaces that use Lucide page icons; the phase report records both numbers.
+Impact: `tree/IconGlyph.tsx`; `.size-limit.json` (two `ignore` lists). `./tree + ./view` measures 29.8 kB gz.
+Reverse when: Lucide ships a tree-shakeable name-to-component map, or the product restricts page icons to a curated set - then `IconGlyph` imports that set directly and the `ignore` entry goes away.
+
 ## DEV-009 · P1-T03 · 2026-08-25
 Spec said: docs/04 section 1 - a persisted query record lives at key `ns:q:<hash>`.
 Reality: `experimental_createQueryPersister` builds its own storage key as `prefix + '-' + queryHash` and is the only thing that reads it back (`retrieveQuery`, `persisterGc`, `restoreQueries`, `removeQueries` all rebuild the same string). The separator is not an option, and `queryHash` is TanStack's own `hashKey` of the query key, not a hash the module chooses.

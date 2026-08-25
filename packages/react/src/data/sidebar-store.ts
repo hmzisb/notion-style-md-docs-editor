@@ -16,6 +16,8 @@ export interface SidebarState {
   toggleCollapsed: () => void;
   setWidth: (width: number) => void;
   setExpanded: (id: NodeId, expanded: boolean) => void;
+  /** Replaces the whole set: what the tree hands back after its own expand/collapse. */
+  setExpandedIds: (ids: readonly NodeId[]) => void;
   expandAll: (ids: readonly NodeId[]) => void;
   collapseAll: () => void;
   setLastOpenedPageId: (id: NodeId | null) => void;
@@ -42,6 +44,9 @@ export const sidebarStoreFor = perNamespace<SidebarState>('sidebar', (set) => ({
         expanded: Object.fromEntries(Object.entries(state.expanded).filter(([key]) => key !== id)),
       };
     });
+  },
+  setExpandedIds: (ids) => {
+    set({ expanded: Object.fromEntries(ids.map((id) => [id, true])) });
   },
   expandAll: (ids) => {
     set((state) => ({

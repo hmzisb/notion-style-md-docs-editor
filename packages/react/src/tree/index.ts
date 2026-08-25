@@ -1,2 +1,2 @@
-/** tree entry (docs/11 section 2). Populated by its phase task. */
-export {};
+/** tree entry (docs/08 section 2). */
+export { PageTree, type PageTreeProps } from './PageTree.js';

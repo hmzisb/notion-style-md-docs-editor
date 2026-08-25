@@ -10,6 +10,7 @@ export const defaultStrings = {
   // Sidebar and tree (docs/06 section 5, docs/07 sections 8-9).
   'tree.label': 'Pages',
   'tree.search': 'Search',
+  'tree.typeAhead': 'Find a page by name',
   'tree.home': 'Home',
   'tree.newPage': 'New page',
   'tree.newPageTooltip': 'New page',
