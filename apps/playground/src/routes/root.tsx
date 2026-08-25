@@ -4,7 +4,7 @@ import { Link, Outlet, createRootRoute, useNavigate } from '@tanstack/react-rout
 import { useEffect, useState } from 'react';
 import { Landing } from '../Landing.js';
 import { useDocsNavigation } from '../navigation.js';
-import { applyTheme, readTheme, watchSystemTheme, type Theme } from '../theme.js';
+import { applyTheme, readTheme, watchSystemTheme, watchTheme, type Theme } from '../theme.js';
 import { useWorkspace, type Workspace } from '../workspace.js';
 
 const queryClient = new QueryClient();
@@ -23,6 +23,13 @@ function ThemeSelect(): React.JSX.Element {
     applyTheme(theme);
   }, [theme]);
   useEffect(() => watchSystemTheme(() => theme), [theme]);
+  useEffect(
+    () =>
+      watchTheme(() => {
+        setTheme(readTheme());
+      }),
+    [],
+  );
 
   return (
     <label className="flex items-center gap-2 text-sm">

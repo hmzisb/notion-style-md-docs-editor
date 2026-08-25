@@ -16,6 +16,17 @@ export function applyTheme(theme: Theme): void {
   localStorage.setItem(STORAGE_KEY, theme);
   const dark = theme === 'dark' || (theme === 'system' && prefersDark());
   document.documentElement.classList.toggle('dark', dark);
+  window.dispatchEvent(new Event(THEME_EVENT));
+}
+
+const THEME_EVENT = 'playground:theme';
+
+/** The palette's Switch theme action changes it too, so the select follows rather than owns it. */
+export function watchTheme(onChange: () => void): () => void {
+  window.addEventListener(THEME_EVENT, onChange);
+  return () => {
+    window.removeEventListener(THEME_EVENT, onChange);
+  };
 }
 
 /** Follows the OS while the choice is `system`; returns an unsubscribe. */

@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-057 · P1-T12 · 2026-08-25
+Question: docs/07 section 4 says a "Search in content" row "runs `provider.search` after 250 ms debounce", which reads both as a row the reader picks and as an automatic run.
+Assumed: the search runs on its own once the query stops changing for 250 ms and is two characters long; the row is what the group shows while that is in flight, and the way to retry a failed one.
+Why: a palette that already knows the query should not ask twice for it; the row still exists for the two states that need a control.
+Cheap to reverse: yes
+
+## ASM-056 · P1-T12 · 2026-08-25
+Question: the palette's Switch theme action has to name a theme, but the host owns the theme and the module is never told which one is on.
+Assumed: the action reads `.dark` on `<html>` - the class docs/06 section 2 has the host apply - and calls `onThemeChange` with the other one.
+Why: the only honest source for "which theme is on" inside a module that does not own it is what the page is currently painted with.
+Cheap to reverse: yes
+
+## ASM-055 · P1-T12 · 2026-08-25
+Question: docs/09 P1-T12 stubs page creation "with a toast", and every user-facing string has to live in `strings.ts` (docs/06 section 14).
+Assumed: a `palette.createUnavailable` key carries the stub copy ("Creating pages is not available yet"), and P3-T01 deletes the key along with the stub.
+Why: a hard-coded string would be the one line of copy a host cannot override, for the one behaviour that is temporary.
+Cheap to reverse: yes
+
+## ASM-054 · P1-T12 · 2026-08-25
+Question: docs/07 section 1 scopes the global shortcuts to "inside `.docs-root`", which says nothing about a keystroke that arrives with nothing focused, or about two shells on one page.
+Assumed: a shortcut fires when the event target is inside this shell's root, or when nothing is focused and the target is the body. Two shells on a page both answer the body case.
+Why: with no focus there is no shell to attribute the keystroke to, and the alternative - the first shell wins - is arbitrary in the other direction.
+Cheap to reverse: yes
+
+## ASM-053 · P1-T12 · 2026-08-25
+Question: docs/07 section 2 writes the global shortcuts as `Cmd+...`, and `formatKeys` renders `Ctrl+...` off macOS, but nothing says which modifier the matcher accepts where.
+Assumed: `Mod` matches Cmd or Ctrl on every platform, matching the vendored `SidebarProvider` that already binds `Cmd+\` that way; only the glyphs are platform-specific.
+Why: one shell answering `Cmd+P` and `Ctrl+P` differently by platform would be a bug report from every reader on the wrong keyboard.
+Cheap to reverse: yes
+
 ## ASM-052 · P1-T11 · 2026-08-25
 Question: a test that provokes a failed request (a refused backend, offline) trips the docs/10 section 4 rule that a console error fails the run.
 Assumed: the e2e console allowlist admits `Failed to load resource: net::ERR_*`, which the browser logs before any handler sees it.

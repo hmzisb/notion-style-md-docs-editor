@@ -1,14 +1,18 @@
 import type { NodeId, PageMode } from '@docs/core';
 import { PanelLeftOpen } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
+import { toast } from 'sonner';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { seedSidebar, useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
+import { ALL_SCOPES, useHotkeys, type Hotkey } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { SidebarProvider, useSidebar } from '@/ui/sidebar';
+import { Toaster } from '@/ui/sonner';
+import { CommandPalette } from './CommandPalette.js';
 import { DocsSidebar } from './DocsSidebar.js';
 import { PageHeader } from './PageHeader.js';
 import { ShellContent } from './ShellContent.js';
@@ -53,9 +57,11 @@ export interface DocsShellProps {
  */
 export function DocsShell({
   pageId,
+  mode,
   rootId,
   slots,
   sidebar,
+  onThemeChange,
   className,
 }: DocsShellProps): React.JSX.Element {
   const { ns } = useDocs();
@@ -73,9 +79,12 @@ export function DocsShell({
   const storedWidth = useSidebarStore((state) => state.width);
   const width = Math.max(minWidth, Math.min(maxWidth, storedWidth));
   const sidebarId = useId();
+  // `.docs-root` itself: what the shortcuts measure "inside the module" against (docs/07 §1).
+  const rootRef = useRef<HTMLDivElement>(null);
 
   return (
     <SidebarProvider
+      ref={rootRef}
       open={!collapsed}
       onOpenChange={(open) => {
         if (collapsible) setCollapsed(!open);
@@ -95,12 +104,15 @@ export function DocsShell({
     >
       <ShellBody
         pageId={pageId}
+        mode={mode}
         rootId={rootId}
         slots={slots}
         collapsible={collapsible}
         minWidth={minWidth}
         maxWidth={maxWidth}
         sidebarId={sidebarId}
+        rootRef={rootRef}
+        onThemeChange={onThemeChange}
       />
     </SidebarProvider>
   );
@@ -108,26 +120,37 @@ export function DocsShell({
 
 interface ShellBodyProps {
   pageId: NodeId | null;
+  mode: PageMode;
   rootId?: NodeId;
   slots?: DocsShellSlots;
   collapsible: boolean;
   minWidth: number;
   maxWidth: number;
   sidebarId: string;
+  rootRef: React.RefObject<HTMLDivElement | null>;
+  onThemeChange?: (theme: 'light' | 'dark' | 'system') => void;
 }
+
+/** P2 flushes the open draft here; in P1 the point is that the browser offers nothing. */
+const swallow = (): void => undefined;
 
 function ShellBody({
   pageId,
+  mode,
   rootId,
   slots,
   collapsible,
   minWidth,
   maxWidth,
   sidebarId,
+  rootRef,
+  onThemeChange,
 }: ShellBodyProps): React.JSX.Element {
-  const { navigation, strings } = useDocs();
+  const { navigation, strings, capabilities } = useDocs();
   const { isMobile, open, toggleSidebar } = useSidebar();
+  const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
+  const [paletteOpen, setPaletteOpen] = useState(false);
 
   const openPage = useCallback(
     (id: NodeId, opts?: { mode?: PageMode }) => {
@@ -138,6 +161,55 @@ function ShellBody({
   const goHome = useCallback(() => {
     navigation.navigate({ pageId: null });
   }, [navigation]);
+  const openPalette = useCallback(() => {
+    setPaletteOpen(true);
+  }, []);
+  // Creation is wired in P3-T01 (docs/09); until then the palette says so instead of lying.
+  const createPage = useCallback(() => {
+    toast(strings['palette.createUnavailable']);
+  }, [strings]);
+
+  useHotkeys(
+    [
+      // docs/07 section 2. `Cmd+K` is the editor's Link, so only `Cmd+P` reaches in there.
+      { keys: 'Mod+P', scopes: ['global', 'tree', 'content', 'editor'], run: openPalette },
+      { keys: 'Mod+K', run: openPalette },
+      { keys: 'Mod+S', scopes: ALL_SCOPES, run: swallow },
+      {
+        keys: 'Mod+Shift+U',
+        run: () => {
+          const parentId = pageId === null ? null : (index?.byId[pageId]?.parentId ?? null);
+          if (parentId !== null) openPage(parentId);
+        },
+      },
+      ...(capabilities.write
+        ? ([
+            { keys: 'Mod+Alt+N', run: createPage },
+            {
+              keys: 'Mod+Shift+E',
+              scopes: ALL_SCOPES,
+              run: () => {
+                if (pageId !== null) {
+                  navigation.navigate({ pageId, mode: mode === 'edit' ? 'read' : 'edit' });
+                }
+              },
+            },
+          ] satisfies Hotkey[])
+        : []),
+      // Read mode leaves `Esc` to the tree and to whatever dialog is open.
+      ...(mode === 'edit'
+        ? ([
+            {
+              keys: 'Escape',
+              run: () => {
+                navigation.navigate({ pageId, mode: 'read' });
+              },
+            },
+          ] satisfies Hotkey[])
+        : []),
+    ],
+    rootRef,
+  );
 
   // Collapsed or on a phone, the only way back to the tree is this button (docs/06 sections 4-5).
   const leading =
@@ -162,6 +234,7 @@ function ShellBody({
         activeId={pageId}
         onOpen={openPage}
         onHome={goHome}
+        onSearch={openPalette}
         rootId={rootId}
         collapsible={collapsible}
         minWidth={minWidth}
@@ -171,6 +244,7 @@ function ShellBody({
       <section
         role="region"
         aria-label={strings['header.document']}
+        data-docs-content=""
         className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain"
         onScroll={(event) => {
           setScrolled(event.currentTarget.scrollTop > 0);
@@ -182,6 +256,7 @@ function ShellBody({
           rootId={rootId}
           leading={leading}
           actions={slots?.headerActions}
+          onSearch={openPalette}
           scrolled={scrolled}
         />
         <ShellContent
@@ -192,6 +267,23 @@ function ShellBody({
           onHome={goHome}
         />
       </section>
+      <CommandPalette
+        open={paletteOpen}
+        onOpenChange={setPaletteOpen}
+        rootId={rootId}
+        onOpenPage={openPage}
+        onCreatePage={createPage}
+        onThemeChange={onThemeChange}
+      />
+      {/*
+        docs/07 section 10: one toaster, mounted by the shell, inside `.docs-root` so it inherits
+        the module's variables. Sonner wraps its list in a plain static `<section>`, which the
+        grid would otherwise place in a second row and halve the two columns; `fixed` keeps it
+        out of the flow, and the list inside it is fixed to the viewport anyway.
+      */}
+      <div className="fixed">
+        <Toaster position="bottom-right" duration={4000} />
+      </div>
       <OpenedAnnouncer pageId={pageId} rootId={rootId} />
     </>
   );

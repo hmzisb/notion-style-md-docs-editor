@@ -1,11 +1,13 @@
 import type { NodeId, PageMode } from '@docs/core';
-import { House, PanelLeftClose } from 'lucide-react';
+import { House, PanelLeftClose, Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
 import { DEFAULT_SIDEBAR_WIDTH, useSidebarStore } from '@/data/sidebar-store.js';
+import { formatKeys } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { PageTree } from '@/tree/PageTree.js';
 import { Button } from '@/ui/button';
+import { Kbd } from '@/ui/kbd';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/ui/sidebar';
 import { ResizeHandle } from './ResizeHandle.js';
 
@@ -14,6 +16,8 @@ export interface DocsSidebarProps {
   activeId: NodeId | null;
   onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void;
   onHome: () => void;
+  /** The Search row opens the command palette (docs/06 section 5). */
+  onSearch: () => void;
   rootId?: NodeId;
   collapsible: boolean;
   minWidth: number;
@@ -31,6 +35,7 @@ export function DocsSidebar({
   activeId,
   onOpen,
   onHome,
+  onSearch,
   rootId,
   collapsible,
   minWidth,
@@ -74,6 +79,13 @@ export function DocsSidebar({
       <nav id={id} aria-label={strings['tree.label']} className="flex min-h-0 flex-1 flex-col">
         <div className="space-y-0.5 px-2 pt-1 pb-2">
           <NavRow
+            icon={<Search aria-hidden="true" className="size-4 text-muted-foreground/70" />}
+            onClick={onSearch}
+            trailing={<Kbd className="bg-transparent">{formatKeys('Mod+P')}</Kbd>}
+          >
+            {strings['tree.search']}
+          </NavRow>
+          <NavRow
             icon={<House aria-hidden="true" className="size-4 text-muted-foreground/70" />}
             onClick={onHome}
           >
@@ -113,10 +125,12 @@ export function DocsSidebar({
 function NavRow({
   icon,
   onClick,
+  trailing,
   children,
 }: {
   icon: ReactNode;
   onClick: () => void;
+  trailing?: ReactNode;
   children: ReactNode;
 }): React.JSX.Element {
   return (
@@ -130,6 +144,7 @@ function NavRow({
     >
       <span className="flex size-5 items-center justify-center">{icon}</span>
       <span className="truncate">{children}</span>
+      {trailing !== undefined && <span className="ms-auto ps-1">{trailing}</span>}
     </button>
   );
 }

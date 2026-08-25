@@ -25,6 +25,25 @@ window.matchMedia = (query: string): MediaQueryList =>
 Object.defineProperty(HTMLElement.prototype, 'offsetHeight', { configurable: true, value: 800 });
 Object.defineProperty(HTMLElement.prototype, 'offsetWidth', { configurable: true, value: 240 });
 
+/** jsdom ships no `ResizeObserver`, which cmdk's list measures itself with. */
+globalThis.ResizeObserver = class {
+  observe(): void {
+    return undefined;
+  }
+  unobserve(): void {
+    return undefined;
+  }
+  disconnect(): void {
+    return undefined;
+  }
+};
+
+/** jsdom does not scroll, and cmdk pulls the selected row into view on every keystroke. */
+Object.defineProperty(Element.prototype, 'scrollIntoView', {
+  configurable: true,
+  value: () => undefined,
+});
+
 /** jsdom implements no pointer capture, which both Radix and the resize handle call into. */
 for (const name of ['setPointerCapture', 'releasePointerCapture'] as const) {
   Object.defineProperty(HTMLElement.prototype, name, {

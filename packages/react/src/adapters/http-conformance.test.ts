@@ -12,7 +12,7 @@ import { createHttpProvider } from './http.js';
  */
 // jsdom transforms this file for the browser, where `import.meta.url` is an http URL and the
 // loader's own default root cannot be resolved. Vitest runs it from the package directory.
-const corpus = await loadCorpus({ root: `${process.cwd()}/../../fixtures/corpus` });
+const corpus = await loadCorpus();
 const seed: Record<string, string | Uint8Array> = {
   ...Object.fromEntries(corpus.manifest.pages.map((page) => [page.path, corpus.read(page.path)])),
   ...Object.fromEntries(corpus.assets),

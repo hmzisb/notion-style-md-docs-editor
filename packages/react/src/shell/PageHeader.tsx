@@ -1,9 +1,11 @@
 import type { NodeId } from '@docs/core';
+import { Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
 import { Breadcrumbs } from './Breadcrumbs.js';
 
@@ -16,6 +18,8 @@ export interface PageHeaderProps {
   leading?: ReactNode;
   /** Right of the reserved status area (docs/06 §6: the host `headerActions` slot). */
   actions?: ReactNode;
+  /** Below 768 px the sidebar is a sheet, so the palette needs a way in from here (docs/07 §4). */
+  onSearch?: () => void;
   /** The content region has been scrolled past 0, which fades the bottom border in. */
   scrolled?: boolean;
   className?: string;
@@ -31,6 +35,7 @@ export function PageHeader({
   rootId,
   leading,
   actions,
+  onSearch,
   scrolled = false,
   className,
 }: PageHeaderProps): React.JSX.Element {
@@ -63,6 +68,17 @@ export function PageHeader({
           aria-label={strings['status.label']}
           className="hidden min-w-[96px] justify-end text-end md:flex"
         />
+        {isMobile && onSearch !== undefined && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={strings['tree.search']}
+            onClick={onSearch}
+            className="size-11"
+          >
+            <Search aria-hidden="true" />
+          </Button>
+        )}
         {actions !== undefined && actions !== null && (
           <div
             role="toolbar"

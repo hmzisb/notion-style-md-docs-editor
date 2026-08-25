@@ -11,6 +11,8 @@ export function portalRoot(): HTMLElement | undefined {
   if (!root?.isConnected) {
     root = document.createElement('div');
     root.className = 'docs-root';
+    // Tells the shell's own root apart from this one, which carries variables for portals only.
+    root.dataset.docsPortal = '';
     // It carries variables only: every portalled surface positions itself against the viewport.
     root.style.display = 'contents';
     document.body.append(root);

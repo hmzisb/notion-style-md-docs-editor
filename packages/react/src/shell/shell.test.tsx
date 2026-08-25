@@ -54,7 +54,9 @@ function mount(props: Partial<DocsShellProps> = {}, files: Record<string, string
   return { navigate };
 }
 
-const root = (): HTMLElement => document.querySelector<HTMLElement>('.docs-root')!;
+/** The shell's own root: `portalRoot()` adds a second `.docs-root` to the body for portals. */
+const root = (): HTMLElement =>
+  document.querySelector<HTMLElement>('.docs-root:not([data-docs-portal])')!;
 const sidebarWidth = (): string => root().style.getPropertyValue('--docs-sidebar-width');
 
 const ready = async (): Promise<void> => {

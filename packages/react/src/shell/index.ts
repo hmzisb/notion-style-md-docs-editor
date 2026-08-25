@@ -1,5 +1,6 @@
 /** shell entry (docs/11 section 2): the assembled layout plus the pieces to compose without it. */
 export { Breadcrumbs, type BreadcrumbsProps } from './Breadcrumbs.js';
+export { CommandPalette, type CommandPaletteProps } from './CommandPalette.js';
 export {
   DocsShell,
   type DocsShellProps,

@@ -70,8 +70,14 @@ export interface LoadCorpusOptions {
 }
 
 async function defaultRoot(): Promise<string> {
-  const { fileURLToPath } = await import('node:url');
-  return fileURLToPath(new URL('../../../../fixtures/corpus', import.meta.url));
+  const url = await import('node:url');
+  const path = await import('node:path');
+  // Not `new URL('...', import.meta.url)`: Vite rewrites that pattern into an asset URL, which
+  // under jsdom comes back as `http://localhost/@fs/...` instead of a path (docs/10 section 1).
+  return path.resolve(
+    path.dirname(url.fileURLToPath(import.meta.url)),
+    '../../../../fixtures/corpus',
+  );
 }
 
 export async function loadCorpus(opts: LoadCorpusOptions = {}): Promise<Corpus> {
