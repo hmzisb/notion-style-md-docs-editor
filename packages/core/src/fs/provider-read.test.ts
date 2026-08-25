@@ -266,20 +266,3 @@ describe('subscribe', () => {
     expect('subscribe' in provider).toBe(false);
   });
 });
-
-describe('write methods before P0-T11', () => {
-  it('reject with unsupported rather than throwing raw errors', async () => {
-    const provider = corpusProvider();
-    for (const call of [
-      (): Promise<unknown> => provider.savePage('x', { body: '', baseVersion: null }),
-      (): Promise<unknown> => provider.updateMeta('x', {}),
-      (): Promise<unknown> => provider.createPage({ parentId: null, title: 'x' }),
-      (): Promise<unknown> => provider.movePage('x', { parentId: null, index: 0 }),
-      (): Promise<unknown> => provider.deletePage('x'),
-    ]) {
-      await expect(call()).rejects.toSatisfy(
-        (error: unknown) => isProviderError(error) && error.code === 'unsupported',
-      );
-    }
-  });
-});

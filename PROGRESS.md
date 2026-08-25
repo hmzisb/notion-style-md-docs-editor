@@ -26,7 +26,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `fs/walk.ts`: `buildSnapshotFromEntries` implementing the file-to-node mapping, README fallback, folder nodes, hidden/vendored exclusion, title fallback chain, sibling ordering, duplicate-id warnings and the `fnv1a64` snapshot version. `fs/memory-store.ts`: `MemoryFileStore` with recursive `remove`, prefix `move`, `stat`, `watch`, read-only mode and traversal rejection, every failure arriving as a rejected promise. `icon.ts`: `parseIcon`/`formatIcon`. `tree.ts` now registers the README and trailing-slash `idByPath` forms. 68 walk/store tests + 17 icon tests; the corpus walk is asserted node-by-node against the manifest.
 - [x] **P0-T10** FileStore provider: read side
   - `fs/semantics.ts`: `createFileStoreProvider` turns any `FileStore` into a `DocumentProvider`. Key and capabilities derive from the store (read-only stores lose write/move/delete/upload, `subscribe` follows `store.watch`), overridable per option. One cached walk backs `getTree`, dropped by `invalidate()` and by the store watcher, which then emits a `tree` change event. `getTree({ rootId })` serves a subtree with the scope node reparented to null. `getPage` returns an LF body, the `sha256:` file version, `updatedAt` from frontmatter then mtime, and `eol: 'crlf'` only for CRLF files. `assetUrl` resolves against the page directory, rejects traversal above the root, caches per path+mtime and revokes on `dispose`, falling back to a data URL where `URL.createObjectURL` is absent. Write methods are `unsupported` until P0-T11. 23 provider-read tests.
-- [ ] **P0-T11** FileStore provider: write side
+- [x] **P0-T11** FileStore provider: write side
+  - `savePage` (conflict check against the file hash, id persisted on first write, unknown frontmatter keys and their order untouched, EOL preserved, null base on a folder writes its `index.md` and flips it to a page), `updateMeta` (title and icon into frontmatter, icon validated, optional `renameFile` for a fresh page which renames the directory for an index page), `createPage` (root / folder / directory page / leaf page with conversion, slug collision suffixes, `untitled` fallback, `order` only when placed at an index), `movePage` (path rewrite, subtree follows a directory move, order-only move inside the same directory, own-subtree guard, sibling renumber with `onRenumber`), `deletePage` (subtree, root-index guard). A per-path frontmatter cache keeps a write from re-reading the corpus. 32 provider-write tests.
 - [ ] **P0-T12** Conformance suite
 - [ ] **P0-T13** Markdown codec
 - [ ] **P0-T14** Fidelity classifier and doctor
@@ -98,5 +99,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T11
+- Current task: P0-T12
 - Last gate passed: (none)

@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-009 · P0-T11 · 2026-08-25
+Question: a folder's id is `f_` + a hash of its directory path (docs/03 section 4.2), so moving the directory necessarily changes it, while section 4.6 says "ids are stable".
+Assumed: section 4.6's stability claim covers pages, whose ids live in frontmatter; `movePage` on a folder returns the node found at the destination path, under its new id.
+Why: the alternative is writing an `index.md` into every folder that is moved, which invents content the user did not ask for; the tree refresh the UI already does after a move carries the new id.
+Cheap to reverse: yes
+
+## ASM-008 · P0-T11 · 2026-08-25
+Question: `updateMeta` on a folder node has nowhere to write `title` or `icon`, because a folder has no frontmatter.
+Assumed: reject it with `unsupported` and a message pointing at saving an index page first.
+Why: docs/03 section 4.3 derives a folder's title from its directory name, so honouring a title patch would mean renaming the directory - a move with its own id and link consequences, and one neither section 4.7 nor the section 10 conformance cases ask for.
+Cheap to reverse: yes
+
 ## ASM-007 · P0-T10 · 2026-08-25
 Question: docs/03 section 4.9 defines `TreeSnapshot.version` for the whole tree; a `getTree({ rootId })` snapshot has a different node list and no version rule of its own.
 Assumed: the scoped version is `<full tree version>:<rootId>`.
