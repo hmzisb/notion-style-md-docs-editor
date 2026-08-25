@@ -53,6 +53,8 @@ export {
   dirFormOf,
   flatten,
   isDescendant,
+  isIndexPath,
+  pathAliases,
   subtreeIds,
 } from './tree.js';
 
@@ -110,3 +112,20 @@ export {
   resolvePageLink,
   type ParsedHref,
 } from './links.js';
+
+export { formatIcon, parseIcon } from './icon.js';
+
+export {
+  MemoryFileStore,
+  type MemoryFileSeed,
+  type MemoryFileStoreOptions,
+} from './fs/memory-store.js';
+
+export {
+  buildSnapshotFromEntries,
+  firstH1,
+  type PageInfo,
+  type ReadPageInfo,
+  type WalkResult,
+  type WalkWarning,
+} from './fs/walk.js';

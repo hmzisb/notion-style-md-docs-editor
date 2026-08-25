@@ -11,12 +11,32 @@ import { fnv1a64 } from './hash.js';
 
 const EMPTY_CHILDREN: readonly NodeId[] = Object.freeze([]);
 
+const INDEX_NAMES = ['index.md', 'README.md'];
+
+/** True for the two filenames that make a page own its directory (docs/03 section 4.1). */
+export function isIndexPath(path: string): boolean {
+  const at = path.lastIndexOf('/');
+  return INDEX_NAMES.includes(at === -1 ? path : path.slice(at + 1));
+}
+
 /** Directory form of a page path: `guides/auth/index.md` -> `guides/auth`, `a/b.md` -> `a/b`. */
 export function dirFormOf(path: string): string | null {
-  if (path.endsWith('/index.md')) return path.slice(0, -'/index.md'.length);
-  if (path === 'index.md') return '';
+  if (isIndexPath(path)) {
+    const at = path.lastIndexOf('/');
+    return at === -1 ? '' : path.slice(0, at);
+  }
   if (path.endsWith('.md')) return path.slice(0, -'.md'.length);
   return null;
+}
+
+/**
+ * Every `idByPath` key a node answers to (docs/03 section 4.1): the file path, its
+ * directory form, and for an index page the trailing-slash form authors write in links.
+ */
+export function pathAliases(path: string): string[] {
+  const dirForm = dirFormOf(path);
+  if (dirForm === null) return [path];
+  return isIndexPath(path) ? [path, dirForm, `${dirForm}/`] : [path, dirForm];
 }
 
 /**
@@ -30,10 +50,12 @@ export function buildIndex(snapshot: TreeSnapshot): TreeIndex {
 
   for (const node of snapshot.nodes) {
     byId[node.id] = node;
-    idByPath[node.path] = node.id;
-    const dirForm = dirFormOf(node.path);
-    // A real folder node owning the same path wins over a page's directory alias.
-    if (dirForm !== null && !(dirForm in idByPath)) idByPath[dirForm] = node.id;
+    const [path, ...aliases] = pathAliases(node.path);
+    if (path !== undefined) idByPath[path] = node.id;
+    // A real folder node, or an earlier index page, wins over a later directory alias.
+    for (const alias of aliases) {
+      if (!(alias in idByPath)) idByPath[alias] = node.id;
+    }
   }
   // Second pass: a folder node listed after its index page must still own its path.
   for (const node of snapshot.nodes) {
@@ -141,16 +163,14 @@ function replaceNode(
   const byId = { ...index.byId, [id]: next };
   let idByPath: Readonly<Record<string, NodeId>> = index.idByPath;
   if (next.path !== node.path) {
-    const stale = new Set<string>([node.path]);
-    const oldDir = dirFormOf(node.path);
-    if (oldDir !== null && index.idByPath[oldDir] === id) stale.add(oldDir);
+    const stale = new Set<string>(
+      pathAliases(node.path).filter((alias) => index.idByPath[alias] === id),
+    );
     const rebuilt: Record<string, NodeId> = Object.create(null) as Record<string, NodeId>;
     for (const [path, nodeId] of Object.entries(index.idByPath)) {
       if (!stale.has(path)) rebuilt[path] = nodeId;
     }
-    rebuilt[next.path] = id;
-    const newDir = dirFormOf(next.path);
-    if (newDir !== null) rebuilt[newDir] = id;
+    for (const alias of pathAliases(next.path)) rebuilt[alias] = id;
     idByPath = rebuilt;
   }
   return { version: nextVersion(index, salt), rootIds: index.rootIds, byId, idByPath };
@@ -210,9 +230,8 @@ export function applyInsert(
     if (parent) byId[parentId] = { ...parent, childIds: insertAt(parent.childIds, node.id, at) };
   }
 
-  const idByPath = { ...index.idByPath, [node.path]: node.id };
-  const dirForm = dirFormOf(node.path);
-  if (dirForm !== null) idByPath[dirForm] = node.id;
+  const idByPath = { ...index.idByPath };
+  for (const alias of pathAliases(node.path)) idByPath[alias] = node.id;
 
   return { version: nextVersion(index, `insert:${node.id}`), rootIds, byId, idByPath };
 }

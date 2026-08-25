@@ -22,7 +22,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `links.ts`: `parseHref` (query/fragment split, per-segment percent-decode, scheme and protocol-relative detection), `normalizeRelative`, `resolvePageLink` trying path → `.md` → `index.md`/`README.md`. 39-row resolve table plus `parseHref`/`normalizeRelative` cases; 51 tests.
 - [x] **P0-T08** Fixture corpus and perf generators
   - `fixtures/corpus/`: 33 pages over 5 levels (product, guides/{auth,billing,api/{rest,webhooks}}, specs, decisions, meeting-notes), one index-less folder, 4 assets, 2 ignored entries, 3 rule goldens. Covers frontmatter present/absent, `order`, emoji and Lucide icons, README-as-index, every link form, relative images, tables, task lists, nested/mixed lists, code in 6 languages, blockquotes, GFM alerts, `<details>`, HTML comment (lossy), reference links (reformat), footnote (lossy), CRLF, a 61 KB page. `manifest.json` declares kind/title/parent/order/icon/eol/bytes/fidelity per file. `fixtures/perf/gen.ts` writes a 5k-node tree and a 3k-block page to a temp dir; `loadCorpus()` in `@docs/core/testing`. 67 corpus tests + 3 generator tests.
-- [ ] **P0-T09** Walk and MemoryFileStore
+- [x] **P0-T09** Walk and MemoryFileStore
+  - `fs/walk.ts`: `buildSnapshotFromEntries` implementing the file-to-node mapping, README fallback, folder nodes, hidden/vendored exclusion, title fallback chain, sibling ordering, duplicate-id warnings and the `fnv1a64` snapshot version. `fs/memory-store.ts`: `MemoryFileStore` with recursive `remove`, prefix `move`, `stat`, `watch`, read-only mode and traversal rejection, every failure arriving as a rejected promise. `icon.ts`: `parseIcon`/`formatIcon`. `tree.ts` now registers the README and trailing-slash `idByPath` forms. 68 walk/store tests + 17 icon tests; the corpus walk is asserted node-by-node against the manifest.
 - [ ] **P0-T10** FileStore provider: read side
 - [ ] **P0-T11** FileStore provider: write side
 - [ ] **P0-T12** Conformance suite
@@ -96,5 +97,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T09
+- Current task: P0-T10
 - Last gate passed: (none)

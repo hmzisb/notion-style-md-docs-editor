@@ -14,6 +14,8 @@ import {
   dirFormOf,
   flatten,
   isDescendant,
+  isIndexPath,
+  pathAliases,
   subtreeIds,
 } from './tree.js';
 
@@ -359,5 +361,39 @@ describe('tree properties', () => {
     for (const id of Object.keys(index.byId)) {
       expect(subtreeIds(index, id).length).toBe(descendantCount(index, id) + 1);
     }
+  });
+});
+
+describe('path aliases', () => {
+  it('gives an index page its directory and trailing-slash forms', () => {
+    expect(pathAliases('guides/auth/index.md')).toEqual([
+      'guides/auth/index.md',
+      'guides/auth',
+      'guides/auth/',
+    ]);
+    expect(pathAliases('index.md')).toEqual(['index.md', '', '/']);
+  });
+
+  it('treats README.md as an index filename', () => {
+    expect(isIndexPath('guides/billing/README.md')).toBe(true);
+    expect(dirFormOf('guides/billing/README.md')).toBe('guides/billing');
+  });
+
+  it('gives a leaf page only its extensionless form', () => {
+    expect(pathAliases('guides/intro.md')).toEqual(['guides/intro.md', 'guides/intro']);
+    expect(isIndexPath('guides/intro.md')).toBe(false);
+  });
+
+  it('lets index.md keep the directory when README.md is also present', () => {
+    const index = buildIndex({
+      version: 'v1',
+      nodes: [
+        page('p_index', 'guides/index.md', null),
+        page('p_readme', 'guides/README.md', null),
+      ],
+    });
+    expect(index.idByPath.guides).toBe('p_index');
+    expect(index.idByPath['guides/']).toBe('p_index');
+    expect(index.idByPath['guides/README.md']).toBe('p_readme');
   });
 });
