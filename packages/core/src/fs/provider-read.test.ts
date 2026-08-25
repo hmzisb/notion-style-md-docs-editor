@@ -43,7 +43,7 @@ describe('identity and capabilities', () => {
       write: true,
       move: true,
       delete: true,
-      upload: true,
+      upload: false,
       search: false,
       subscribe: true,
     });

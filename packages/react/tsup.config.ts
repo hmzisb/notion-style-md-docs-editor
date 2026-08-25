@@ -3,7 +3,9 @@ import { defineConfig } from 'tsup';
 export default defineConfig({
   entry: { index: 'src/index.ts' },
   format: ['esm'],
-  dts: true,
+  // Same as core: a composite program needs an explicit file list, which tsup's dts
+  // worker does not build (TS6307).
+  dts: { compilerOptions: { composite: false, incremental: false, declarationMap: false } },
   sourcemap: true,
   splitting: true,
   treeshake: true,

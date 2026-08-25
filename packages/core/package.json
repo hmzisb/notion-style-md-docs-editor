@@ -27,6 +27,14 @@
     "yaml": "^2.9.0",
     "zod": "^4.4.3"
   },
+  "peerDependencies": {
+    "vitest": ">=3"
+  },
+  "peerDependenciesMeta": {
+    "vitest": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "fast-check": "4.9.0",
     "tsup": "8.5.1",

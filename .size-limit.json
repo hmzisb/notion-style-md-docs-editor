@@ -3,6 +3,10 @@
     "name": "@docs/core",
     "path": "packages/core/dist/index.js",
     "limit": "40 kB",
-    "ignore": ["platejs", "@platejs/markdown"]
+    "ignore": [
+      "platejs",
+      "@platejs/markdown",
+      "yaml"
+    ]
   }
 ]

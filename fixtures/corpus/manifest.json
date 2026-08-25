@@ -42,7 +42,7 @@
       "order": 10,
       "icon": {
         "kind": "emoji",
-        "value": "🚀"
+        "value": "\ud83d\ude80"
       },
       "hasFrontmatter": true,
       "eol": "lf",
@@ -154,7 +154,7 @@
       "order": 20,
       "icon": {
         "kind": "emoji",
-        "value": "🔐"
+        "value": "\ud83d\udd10"
       },
       "hasFrontmatter": true,
       "eol": "lf",
@@ -614,7 +614,7 @@
       "order": 50,
       "icon": {
         "kind": "emoji",
-        "value": "📝"
+        "value": "\ud83d\udcdd"
       },
       "hasFrontmatter": true,
       "eol": "lf",
@@ -637,7 +637,7 @@
       "icon": null,
       "hasFrontmatter": true,
       "eol": "lf",
-      "bytes": 264,
+      "bytes": 303,
       "fidelity": {
         "level": "exact",
         "reasons": []
@@ -645,7 +645,8 @@
       "exactRoundTrip": true,
       "covers": [
         "task-list",
-        "nested-task-list"
+        "nested-task-list",
+        "unknown-frontmatter-keys"
       ]
     },
     {

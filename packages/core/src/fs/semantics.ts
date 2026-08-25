@@ -127,7 +127,9 @@ export function createFileStoreProvider(
     write: writable,
     move: writable,
     delete: writable,
-    upload: writable,
+    // `uploadAsset` and `search` arrive in later phases; advertising a capability with
+    // no method behind it is what breaks the callers that trust the flag.
+    upload: false,
     search: false,
     subscribe: typeof store.watch === 'function',
     ...opts.capabilities,

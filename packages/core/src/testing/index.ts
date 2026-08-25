@@ -8,3 +8,5 @@ export {
   type FidelityLevel,
   type LoadCorpusOptions,
 } from './fixtures.js';
+
+export { runProviderConformance, type ConformanceOptions } from './conformance.js';
