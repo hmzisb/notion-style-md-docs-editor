@@ -6,7 +6,7 @@
  * so a host can put this in CI before adopting the module on a corpus.
  */
 import { readFile, readdir } from 'node:fs/promises';
-import { relative, resolve, sep } from 'node:path';
+import { resolve, sep } from 'node:path';
 import {
   classifyFidelity,
   defaultCodec,
@@ -25,8 +25,13 @@ if (folder === undefined) {
 }
 
 const root = resolve(folder);
+const entries = await readdir(root, { recursive: true }).catch((error: NodeJS.ErrnoException) => {
+  console.error(`doctor: cannot read ${folder}: ${error.code ?? error.message}`);
+  process.exit(2);
+});
+
 // Same exclusions as the provider walk, so the table lists the pages the module would show.
-const paths = (await readdir(root, { recursive: true }))
+const paths = entries
   .map((path) => path.split(sep).join('/'))
   .filter((path) => path.endsWith('.md') && !isHidden(path))
   .sort();
@@ -58,7 +63,7 @@ const count = (level: Fidelity['level']): number =>
   rows.filter((row) => row.fidelity.level === level).length;
 const lossy = count('lossy');
 console.log(
-  `\n${String(rows.length)} pages in ${relative(process.cwd(), root) || '.'}: ` +
+  `\n${String(rows.length)} pages in ${folder}: ` +
     `${String(count('exact'))} exact, ${String(count('reformat'))} reformat, ${String(lossy)} lossy`,
 );
 

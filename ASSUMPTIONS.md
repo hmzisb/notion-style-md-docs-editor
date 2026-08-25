@@ -14,6 +14,12 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-016 · Gate 0 · 2026-08-25
+Question: docs/10 section 5 budgets `@docs/core` at 40 KB **gz** excluding the platejs peers and `yaml`. `.size-limit.json` was measuring brotli (the `preset-small-lib` default), which read 39.58 kB; the same bundle gzipped is 44.74 kB, 4.74 kB over budget. Breakdown: zod 19.74 kB, remark-gfm and its mdast utils 12.89 kB, the module's own code 11.97 kB.
+Assumed: measure gzip, as the budget says, and cut the largest item - `contract/schemas.ts` and `contract/openapi.ts` now import `zod/mini` (the same zod 4.4.3, tree-shakeable functional API) instead of the classic chained API. `.min(1)` becomes `.check(z.minLength(1))`, `.optional()` becomes `z.optional(...)`, and `.meta({ id })` becomes `.register(z.globalRegistry, { id })`. Entry is 30.90 kB gzipped, and `contract/openapi.json` regenerates byte for byte identical.
+Why: the budget is a hard number in docs/10 and Phase 1 adds to this entry; 9 kB of headroom is worth one mechanical rewrite. Schemas stay in the root entry, exactly as docs/08 lists them.
+Cheap to reverse: yes - the classic API is the same package; the cost is 14 kB gz.
+
 ## ASM-015 · P0-T14 · 2026-08-25
 Question: docs/05 section 4 step 3 makes `reformat` conditional on `deepEqual(mdastA, mdastB)`, but the two reformats the same section names (`heading_level_clamped`, `definition`) both change the tree by definition, so no page with a reason could ever be a reformat.
 Assumed: the known reformats are applied to the source tree before the comparison - headings clamped to H3, references inlined by the same `remarkInlineRefs` pass the codec parses with - and the trees must match after that. An unexplained difference is still `lossy`, with the reason `content_changed`.

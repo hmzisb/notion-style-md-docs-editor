@@ -37,7 +37,8 @@ const GATE_0: Step[] = [
   },
   {
     name: 'doctor on corpus',
-    run: 'pnpm doctor fixtures/corpus --allow-lossy',
+    // `pnpm run`, not the shorthand: pnpm 10 parses `--allow-lossy` itself (DEV-005).
+    run: 'pnpm run doctor fixtures/corpus --allow-lossy',
     needs: ['scripts/doctor.ts'],
   },
 ];
