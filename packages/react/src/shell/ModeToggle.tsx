@@ -1,8 +1,11 @@
 import type { PageMode } from '@docs/core';
 import { Loader2 } from 'lucide-react';
 import { useDocs } from '@/data/context.js';
+import { format } from '@/data/strings.js';
+import { relativeTime } from '@/lib/relative-time.js';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/tooltip';
 
 export interface ModeToggleProps {
   mode: PageMode;
@@ -12,6 +15,8 @@ export interface ModeToggleProps {
    * control, never over the page, and the control stays clickable while it spins.
    */
   loading?: boolean;
+  /** Epoch ms of the last save. In edit mode the tooltip reads "Saved ..." (docs/06 section 9). */
+  savedAt?: number | null;
   className?: string;
 }
 
@@ -20,12 +25,13 @@ export function ModeToggle({
   mode,
   onChange,
   loading = false,
+  savedAt = null,
   className,
 }: ModeToggleProps): React.JSX.Element {
   const { strings } = useDocs();
   const editing = mode === 'edit';
 
-  return (
+  const button = (
     <Button
       variant={editing ? 'default' : 'ghost'}
       size="sm"
@@ -39,5 +45,17 @@ export function ModeToggle({
       {loading && <Loader2 className="size-3.5 animate-spin" aria-hidden="true" />}
       {editing ? strings['header.done'] : strings['header.edit']}
     </Button>
+  );
+
+  if (!editing || savedAt === null) return button;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{button}</TooltipTrigger>
+        <TooltipContent side="bottom">
+          {format(strings['header.savedAt'], { time: relativeTime(savedAt) })}
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }

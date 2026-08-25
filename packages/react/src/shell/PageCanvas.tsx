@@ -8,10 +8,17 @@ import type { PlateEditor } from '@/editor/index.js';
 import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { DocumentView } from '@/view/DocumentView.js';
+import { PageBanners } from './Banners.js';
 import { EmptyState } from './EmptyState.js';
 
 /** Where a click must not start editing (docs/07 section 7): links and every control. */
 const NOT_TEXT = 'a, button, summary, input, [role="button"], [role="checkbox"]';
+
+/**
+ * docs/05 section 6: past this many top-level blocks the page opens read-only behind the large
+ * page banner, so a reader never pays for an editor they did not ask for.
+ */
+const MAX_BLOCKS = 5000;
 
 /** A click that moved this far is a drag, not a caret placement (docs/07 section 7). */
 const DRAG_THRESHOLD = 4;
@@ -55,7 +62,12 @@ export function PageCanvas({
   const offset = useRef<number | null>(null);
   const pointerDown = useRef<{ x: number; y: number } | null>(null);
 
-  const editable = capabilities.write;
+  // The guard is lifted for the rest of the page session, not for the mode: a reader who asked
+  // for the editor once keeps it when they go back to read and in again (docs/05 section 8).
+  const [insisted, setInsisted] = useState(false);
+  const large = session.value.length > MAX_BLOCKS && !insisted;
+
+  const editable = capabilities.write && !large;
   const wants = editable && (mode === 'edit' || swapped);
   const showEditor = wants && chunk !== null;
 
@@ -90,6 +102,12 @@ export function PageCanvas({
   useEffect(() => {
     if (mode === 'edit' && showEditor) applyFocus();
   }, [mode, showEditor, applyFocus]);
+
+  /** Both "Edit anyway" buttons: the large-page guard is the one that has to come off first. */
+  const editAnyway = useCallback(() => {
+    setInsisted(true);
+    onModeChange('edit');
+  }, [onModeChange]);
 
   const requestEdit = useCallback(
     (focus: PendingFocus) => {
@@ -175,6 +193,13 @@ export function PageCanvas({
       onKeyDownCapture={onKeyDownCapture}
       onBlur={onBlur}
     >
+      <PageBanners
+        pageId={page.id}
+        session={session}
+        mode={mode}
+        largePage={large}
+        onEdit={editAnyway}
+      />
       {node.icon !== undefined && (
         <div className="pb-2">
           <IconGlyph

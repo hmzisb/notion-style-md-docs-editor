@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-068 · P2-T04 · 2026-08-26
+Question: docs/05 section 6 makes a page over 5,000 blocks open read-only behind the large-page banner, but the guard itself is P4-T04's task, not T04's.
+Assumed: the guard ships with its banner - `PageCanvas` counts top-level blocks and withholds the editor until "Edit anyway" - so the banner is never dead UI; P4-T04 keeps the 5k fixture, the e2e and the budget check.
+Why: a banner whose only button lifts a guard that does not exist would have to be written twice and reviewed on a screenshot that lies.
+Cheap to reverse: yes
+
+## ASM-067 · P2-T04 · 2026-08-26
+Question: docs/05 section 4 names fidelity reasons in mdast terms (`html`, `footnoteDefinition`, `unknown_node:<type>`); docs/06 section 10 renders them in a sentence.
+Assumed: seven `reason.*` strings translate the known tokens ("raw HTML", "footnotes", ...), `reason.unknown` covers `unknown_node:<type>`, and an unknown token falls back to itself rather than being dropped.
+Why: every user-facing string is overridable through `strings` (docs/08 section 3), and a reason the reader cannot parse is worse than a raw node type.
+Cheap to reverse: yes
+
+## ASM-066 · P2-T04 · 2026-08-26
+Question: docs/06 section 9 gives the offline state a tooltip but no click action, which would leave that tooltip out of reach of the keyboard.
+Assumed: the offline pill is a button whose click saves now, like the error pill; only `Saving…` renders as plain text, since there is nothing to do about it.
+Why: an unreachable tooltip is an a11y defect (docs/07 section 9), and "retry now" is what the reader wants when they see the retry time.
+Cheap to reverse: yes
+
 ## ASM-065 · P2-T03 · 2026-08-26
 Question: docs/04 section 3.1 puts the draft's serialization in `requestIdleCallback` with "fallback `setTimeout 0`", and the module's existing `requestIdle` helper (written for the editor preload) had neither a deadline nor a per-caller delay.
 Assumed: `requestIdle(run, timeoutMs)` now passes `{ timeout: timeoutMs }` to `requestIdleCallback` and uses `timeoutMs` for the fallback; the draft calls it with `0`, the preload keeps `200`.

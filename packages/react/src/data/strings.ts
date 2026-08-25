@@ -67,6 +67,15 @@ export const defaultStrings = {
   'banner.largePage': 'Large page: opened in read mode for performance.',
   'banner.largePageEdit': 'Edit anyway',
 
+  // What the lossy banner calls a fidelity reason (docs/05 section 4 names them in mdast terms).
+  'reason.html': 'raw HTML',
+  'reason.math': 'math',
+  'reason.definition': 'reference-style links',
+  'reason.footnoteDefinition': 'footnotes',
+  'reason.heading_level_clamped': 'headings below H3',
+  'reason.content_changed': 'formatting this editor cannot keep',
+  'reason.unknown': '{type} blocks',
+
   // Empty and error cards (docs/06 section 11).
   'empty.noSelection.title': 'Select a page',
   'empty.noSelection.body': 'Choose a page from the sidebar or press ⌘P to search.',

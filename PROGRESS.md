@@ -68,7 +68,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `./editor` entry: `DocumentEditor` (docs/08 section 5 props; `value` is initial-only, the session owns parsing, `readOnly` flips in place on one `usePlateEditor` instance), `EditorErrorBoundary`, `createEditorKit` (React kits over the headless `BaseKit`, typed as `AnyPlatePlugin | AnySlatePlugin`, `toolbar: 'none'` drops the floating toolbar - ASM-059). 25 Plate registry items vendored into `editor/ui` by hand (DEV-015) with their kits; `lib/block-styles.ts` is the one class table both `view/nodes.tsx` and the editor nodes read, so a mode swap moves nothing (docs/05 section 8). `react-hooks` wired into ESLint (ASM-060) with a scoped override for the vendored files (DEV-016). 40 RTL tests, every corpus page mounted without a console error. `./editor` measures 166.66 kB gz against a 260 kB budget.
 - [x] **P2-T02** Shell mode transitions and editor loading
 - [x] **P2-T03** Document session and drafts
-- [ ] **P2-T04** Save status and banners
+- [x] **P2-T04** Save status and banners
 - [ ] **P2-T05** Blocks, slash menu, floating toolbar, autoformat
 - [ ] **P2-T06** Block DnD and block selection
 - [ ] **P2-T07** Title edit and icon picker
@@ -112,6 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P2-T04
-- Open at Gate 2: `./shell` measures 96.7 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB as a ratchet; the cut is due once `PageMenu` exists, and `size-limit`'s `ignore` now makes a lazy palette/toaster/menu chunk measurable (DEV-012, ASM-063).
+- Current task: P2-T05
+- Open at Gate 2: `./shell` measures 101.3 kB gz against the 60 kB budget in docs/02 section 7, capped at 102 kB as a ratchet; the cut is due once `PageMenu` exists, and `size-limit`'s `ignore` now makes a lazy palette/toaster/menu chunk measurable (DEV-012, ASM-063).
 - Last gate passed: Gate 1 (2026-08-26)

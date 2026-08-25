@@ -3,12 +3,14 @@ import { Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
+import { useSessionState } from '@/data/session-store.js';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
 import { Breadcrumbs } from './Breadcrumbs.js';
 import { ModeToggle } from './ModeToggle.js';
+import { SaveStatus } from './SaveStatus.js';
 
 export interface PageHeaderProps {
   pageId: NodeId | null;
@@ -48,9 +50,10 @@ export function PageHeader({
   scrolled = false,
   className,
 }: PageHeaderProps): React.JSX.Element {
-  const { strings, capabilities } = useDocs();
+  const { ns, strings, capabilities } = useDocs();
   const isMobile = useIsMobile();
   const { data: index, isPending } = useTreeIndex(rootId);
+  const session = useSessionState(ns, pageId);
 
   return (
     <header
@@ -75,11 +78,19 @@ export function PageHeader({
         {/* `role="status"` is what makes the name legal here: a bare `div` may not carry one. */}
         <div
           role="status"
+          aria-live="polite"
           aria-label={strings['status.label']}
           className="hidden min-w-[96px] justify-end text-end md:flex"
-        />
+        >
+          <SaveStatus pageId={pageId} />
+        </div>
         {pageId !== null && onModeChange !== undefined && capabilities.write && (
-          <ModeToggle mode={mode} onChange={onModeChange} loading={editorLoading} />
+          <ModeToggle
+            mode={mode}
+            onChange={onModeChange}
+            loading={editorLoading}
+            savedAt={session?.status === 'clean' ? session.lastSavedAt : null}
+          />
         )}
         {isMobile && onSearch !== undefined && (
           <Button

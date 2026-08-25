@@ -16,6 +16,7 @@ import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
 import { formatKeys } from '@/lib/hotkeys';
+import { relativeTime } from '@/lib/relative-time.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import {
   Command,
@@ -361,21 +362,6 @@ function breadcrumb(index: TreeIndex, id: NodeId): string {
 const selectedPageId = (list: HTMLElement | null): NodeId | null =>
   list?.querySelector<HTMLElement>('[cmdk-item][aria-selected="true"][data-page-id]')?.dataset
     .pageId ?? null;
-
-const RELATIVE = new Intl.RelativeTimeFormat(undefined, { numeric: 'auto', style: 'narrow' });
-const STEPS: readonly (readonly [Intl.RelativeTimeFormatUnit, number])[] = [
-  ['day', 86_400_000],
-  ['hour', 3_600_000],
-  ['minute', 60_000],
-];
-
-function relativeTime(at: number, now: number = Date.now()): string {
-  const elapsed = at - now;
-  for (const [unit, ms] of STEPS) {
-    if (Math.abs(elapsed) >= ms) return RELATIVE.format(Math.round(elapsed / ms), unit);
-  }
-  return RELATIVE.format(0, 'minute');
-}
 
 function useDebounced(value: string, ms: number): string {
   const [debounced, setDebounced] = useState(value);

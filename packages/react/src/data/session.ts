@@ -93,6 +93,26 @@ interface Live {
 }
 
 /**
+ * The open sessions by `ns:id`. `SaveStatus` sits in the header, outside the page it reports
+ * on (docs/06 section 9), and its Unsaved changes and Couldn't save states save on click.
+ */
+const flushes = new Map<string, () => Promise<void>>();
+
+/** Saves page `id` now, if it is open. A no-op for a page nothing is editing. */
+export function flushSession(ns: string, id: NodeId): void {
+  void flushes.get(`${ns}:${id}`)?.();
+}
+
+/** Called by the hook for as long as the page is open. Returns the way to take it back. */
+export function registerSession(ns: string, id: NodeId, flush: () => Promise<void>): () => void {
+  const key = `${ns}:${id}`;
+  flushes.set(key, flush);
+  return () => {
+    flushes.delete(key);
+  };
+}
+
+/**
  * The write path (docs/04 section 3): one session per open page, driving the draft and save
  * timers, the retry schedule, the conflict and draft decisions, and the `beforeunload` guard.
  * Status lives in the namespace's session store, which outlives this hook, so the header and
@@ -142,13 +162,16 @@ export function useDocumentSession(page: PageDocument): DocumentSession {
 
   // A new namespace re-keys the whole provider, so this only unmounts with the page: flush what
   // the user typed, then let the timers go (docs/04 section 3.1, "unmount").
+  // The registration is what lets the status pill, which renders outside this page, save now.
   useEffect(() => {
     const session = api;
+    const registered = registerSession(ns, id, session.flush);
     return () => {
+      registered();
       void session.flush();
       session.stop();
     };
-  }, [api]);
+  }, [api, id, ns]);
 
   // docs/04 section 3.3: the draft for this page decides how it opens. The read is async, so it
   // can land after the editor has mounted; `apply` goes through the same reset path either way.
