@@ -55,3 +55,17 @@ export {
   isDescendant,
   subtreeIds,
 } from './tree.js';
+
+export {
+  KNOWN_META_KEYS,
+  MAX_FRONTMATTER_BYTES,
+  applyEol,
+  detectEol,
+  joinFrontmatter,
+  setMetaKey,
+  splitFrontmatter,
+  toLf,
+  type Eol,
+  type JoinOptions,
+  type SplitResult,
+} from './frontmatter.js';

@@ -14,7 +14,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `hash.ts` (`sha256Hex`/`pageVersion` over Web Crypto, `fnv1a64`) and `ids.ts` (ULID-style `generateId` monotonic within a ms, `pathHashId`, `folderHashId`). Published SHA-256 and FNV-1a vectors; 10k ids unique; 1000 same-ms ids strictly increasing.
 - [x] **P0-T04** Tree index and pure ops
   - `tree.ts`: `buildIndex` (file + directory path forms), `ancestorsOf`, `isDescendant`, `descendantCount`, `subtreeIds`, `flatten` and immutable `applyRename`/`applyMeta`/`applyInsert`/`applyMove`/`applyRemove` with structural sharing. fast-check over 40-op sequences asserts no orphans, single parent, `childIds`↔`parentId` agreement, reachability and the move guard.
-- [ ] **P0-T05** Frontmatter
+- [x] **P0-T05** Frontmatter
+  - `frontmatter.ts`: `splitFrontmatter`/`joinFrontmatter` with CRLF detection, 64 KB cap, malformed YAML → `validation`, BOM strip, unterminated delimiter treated as body. Passing the split result back to `join` re-emits the block byte for byte, so quoting **and comments** survive (better than the documented limitation). 20 variants round-trip and are idempotent; 59 tests.
 - [ ] **P0-T06** Paths and ordering
 - [ ] **P0-T07** Link resolution
 - [ ] **P0-T08** Fixture corpus and perf generators
@@ -92,5 +93,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T05
+- Current task: P0-T06
 - Last gate passed: (none)
