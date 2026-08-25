@@ -8,7 +8,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 - [x] **P0-T01** Workspace bootstrap
   - pnpm workspace (core, react, playground, fixtures, smoke), strict TS project refs, ESLint flat config with `boundaries` verified firing, Prettier, Vitest projects, Changesets, tsup, size-limit/publint/attw, `scripts/gate.ts`, CI. `pnpm i && pnpm typecheck && pnpm lint && pnpm test` green.
-- [ ] **P0-T02** Core models and contract schemas
+- [x] **P0-T02** Core models and contract schemas
+  - `model.ts`, `provider.ts`, `errors.ts`, zod v4 `contract/schemas.ts`, `contract/version.ts`; `contract/openapi.ts` generates OpenAPI 3.1 with `$ref`s from the zod registry; committed `contract/openapi.json` verified byte-identical by test. 14 tests.
 - [ ] **P0-T03** Hashing and ids
 - [ ] **P0-T04** Tree index and pure ops
 - [ ] **P0-T05** Frontmatter
@@ -89,5 +90,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T02
+- Current task: P0-T03
 - Last gate passed: (none)

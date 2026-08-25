@@ -58,6 +58,19 @@ const POLICIES = [
   allow('smoke', REACT_INTERNALS.concat(['core', 'smoke'])),
 ];
 
+const NO_PLATE_REACT = {
+  group: ['platejs/react', '@platejs/*/react'],
+  message: 'Plate React entry points belong to editor/ and view/ only.',
+};
+const NO_HEADLESS_TREE = {
+  group: ['@headless-tree/*'],
+  message: 'headless-tree belongs to tree/ only.',
+};
+const NO_NODE_BUILTINS = {
+  group: ['node:*'],
+  message: '@docs/core is platform-neutral. Node built-ins belong to scripts/ and generators.',
+};
+
 /** Nothing in the packages may reach for the host document, URL bar or a router. */
 const NO_HOST_GLOBALS = [
   {
@@ -151,43 +164,29 @@ export default tseslint.config(
     ignores: ['**/*.test.ts', '**/*.test.tsx', '**/*.config.ts', '**/testing/**', '**/test/**'],
     rules: {
       'no-console': 'error',
-      'no-restricted-imports': [
-        'error',
-        {
-          patterns: [
-            {
-              group: ['platejs/react', '@platejs/*/react'],
-              message: 'Plate React entry points belong to editor/ and view/ only.',
-            },
-            {
-              group: ['@headless-tree/*'],
-              message: 'headless-tree belongs to tree/ only.',
-            },
-          ],
-        },
-      ],
+      'no-restricted-imports': ['error', { patterns: [NO_PLATE_REACT, NO_HEADLESS_TREE] }],
     },
   },
+  // core is platform-neutral: no React, no DOM, no Node built-ins (docs/02 section 2).
   {
-    files: [
-      'packages/react/src/editor/**/*.{ts,tsx}',
-      'packages/react/src/view/**/*.{ts,tsx}',
-      'packages/core/src/codec/**/*.ts',
-    ],
+    files: ['packages/core/src/**/*.ts'],
+    ignores: ['packages/core/src/contract/openapi.ts', 'packages/core/src/**/*.test.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
-        {
-          patterns: [
-            { group: ['@headless-tree/*'], message: 'headless-tree belongs to tree/ only.' },
-          ],
-        },
+        { patterns: [NO_PLATE_REACT, NO_HEADLESS_TREE, NO_NODE_BUILTINS] },
       ],
     },
   },
+  // Only editor/ and view/ may use the Plate React entry points.
+  {
+    files: ['packages/react/src/editor/**/*.{ts,tsx}', 'packages/react/src/view/**/*.{ts,tsx}'],
+    rules: { 'no-restricted-imports': ['error', { patterns: [NO_HEADLESS_TREE] }] },
+  },
+  // Only tree/ may use headless-tree.
   {
     files: ['packages/react/src/tree/**/*.{ts,tsx}'],
-    rules: { 'no-restricted-imports': 'off' },
+    rules: { 'no-restricted-imports': ['error', { patterns: [NO_PLATE_REACT] }] },
   },
 
   // Config files and scripts: no type-aware program, allow console.

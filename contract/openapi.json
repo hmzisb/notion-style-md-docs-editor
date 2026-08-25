@@ -1,0 +1,1020 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Docs module HTTP contract",
+    "version": "1.0.0",
+    "description": "Client-side contract implemented by the `http` adapter of @docs/react. Generated from the zod schemas in @docs/core; do not edit by hand.",
+    "license": {
+      "name": "MIT"
+    }
+  },
+  "servers": [
+    {
+      "url": "/api/docs",
+      "description": "Host-defined base path."
+    }
+  ],
+  "paths": {
+    "/meta": {
+      "get": {
+        "operationId": "getMeta",
+        "summary": "Backend capabilities and contract version.",
+        "responses": {
+          "200": {
+            "description": "Backend meta.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BackendMeta"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/tree": {
+      "get": {
+        "operationId": "getTree",
+        "summary": "Full ordered tree snapshot.",
+        "parameters": [
+          {
+            "name": "root",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Serve a scoped subtree."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Tree snapshot.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted version.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreeSnapshot"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown root id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pages/{id}": {
+      "get": {
+        "operationId": "getPage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Page document.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted version.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PageDocument"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "savePage",
+        "summary": "Save the body. `If-Match` carries the base version.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          },
+          {
+            "name": "If-Match",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Quoted base version. Omitted only when converting a folder to a page."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SavePageInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Saved.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted version.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveResult"
+                }
+              }
+            }
+          },
+          "201": {
+            "description": "Folder converted to a page.",
+            "headers": {
+              "ETag": {
+                "description": "Quoted version.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SaveResult"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Version conflict; `currentVersion` is set.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          },
+          "412": {
+            "description": "`If-Match` missing on an existing page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateMeta",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PageMetaPatch"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated node.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreeNode"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deletePage",
+        "summary": "Delete the node and its whole subtree.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Deleted."
+          },
+          "404": {
+            "description": "Unknown page.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pages": {
+      "post": {
+        "operationId": "createPage",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePageInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Created node.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreeNode"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown parent.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pages/{id}/move": {
+      "post": {
+        "operationId": "movePage",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MovePageInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Moved node.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TreeNode"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Move into own subtree.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/assets/{path}": {
+      "get": {
+        "operationId": "getAsset",
+        "parameters": [
+          {
+            "name": "path",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Posix path relative to the root."
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Asset bytes.",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Unknown asset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/pages/{id}/assets": {
+      "post": {
+        "operationId": "uploadAsset",
+        "summary": "Requires `capabilities.upload`.",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Opaque node id."
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Stored asset.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadAssetResult"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Uploads unsupported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/search": {
+      "get": {
+        "operationId": "search",
+        "summary": "Requires `capabilities.search`.",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "root",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Hits.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SearchHit"
+                  }
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Search unsupported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/events": {
+      "get": {
+        "operationId": "events",
+        "summary": "Server-sent stream of ChangeEvent. Requires `capabilities.subscribe`.",
+        "responses": {
+          "200": {
+            "description": "Event stream.",
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "$ref": "#/components/schemas/ChangeEvent"
+                }
+              }
+            }
+          },
+          "405": {
+            "description": "Subscriptions unsupported.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorEnvelope"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BackendMeta": {
+        "type": "object",
+        "properties": {
+          "contractVersion": {
+            "type": "integer",
+            "exclusiveMinimum": 0,
+            "maximum": 9007199254740991
+          },
+          "capabilities": {
+            "$ref": "#/components/schemas/ProviderCapabilities"
+          },
+          "title": {
+            "type": "string"
+          },
+          "rootId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "contractVersion",
+          "capabilities"
+        ],
+        "additionalProperties": false
+      },
+      "ChangeEvent": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "tree"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "version"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "const": "page"
+              },
+              "id": {
+                "type": "string"
+              },
+              "version": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "type",
+              "id",
+              "version"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "CreatePageInput": {
+        "type": "object",
+        "properties": {
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "parentId",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "ErrorEnvelope": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "$ref": "#/components/schemas/ProviderErrorCode"
+              },
+              "message": {
+                "type": "string"
+              },
+              "currentVersion": {
+                "type": "string"
+              },
+              "details": {}
+            },
+            "required": [
+              "code",
+              "message"
+            ],
+            "additionalProperties": false
+          }
+        },
+        "required": [
+          "error"
+        ],
+        "additionalProperties": false
+      },
+      "MovePageInput": {
+        "type": "object",
+        "properties": {
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "index": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          }
+        },
+        "required": [
+          "parentId",
+          "index"
+        ],
+        "additionalProperties": false
+      },
+      "NodeKind": {
+        "type": "string",
+        "enum": [
+          "page",
+          "folder"
+        ]
+      },
+      "PageDocument": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "meta": {
+            "$ref": "#/components/schemas/PageMeta"
+          },
+          "body": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "eol": {
+            "type": "string",
+            "enum": [
+              "lf",
+              "crlf"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "meta",
+          "body",
+          "version",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "PageIcon": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "emoji"
+              },
+              "value": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "kind",
+              "value"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "const": "lucide"
+              },
+              "name": {
+                "type": "string",
+                "minLength": 1
+              }
+            },
+            "required": [
+              "kind",
+              "name"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "PageMeta": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          },
+          "order": {
+            "type": "number"
+          }
+        },
+        "additionalProperties": {}
+      },
+      "PageMetaPatch": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      },
+      "ProviderCapabilities": {
+        "type": "object",
+        "properties": {
+          "write": {
+            "type": "boolean"
+          },
+          "move": {
+            "type": "boolean"
+          },
+          "delete": {
+            "type": "boolean"
+          },
+          "upload": {
+            "type": "boolean"
+          },
+          "search": {
+            "type": "boolean"
+          },
+          "subscribe": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "write",
+          "move",
+          "delete",
+          "upload",
+          "search",
+          "subscribe"
+        ],
+        "additionalProperties": false
+      },
+      "ProviderErrorCode": {
+        "type": "string",
+        "enum": [
+          "not_found",
+          "conflict",
+          "forbidden",
+          "validation",
+          "unsupported",
+          "network",
+          "quota",
+          "internal"
+        ]
+      },
+      "SavePageInput": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string"
+          },
+          "baseVersion": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "required": [
+          "body",
+          "baseVersion"
+        ],
+        "additionalProperties": false
+      },
+      "SaveResult": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string",
+            "minLength": 1
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "version",
+          "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "SearchHit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "title": {
+            "type": "string"
+          },
+          "snippet": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title"
+        ],
+        "additionalProperties": false
+      },
+      "TreeNode": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "kind": {
+            "$ref": "#/components/schemas/NodeKind"
+          },
+          "title": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "parentId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "childIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "icon": {
+            "$ref": "#/components/schemas/PageIcon"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "title",
+          "path",
+          "parentId",
+          "childIds"
+        ],
+        "additionalProperties": false
+      },
+      "TreeSnapshot": {
+        "type": "object",
+        "properties": {
+          "version": {
+            "type": "string"
+          },
+          "nodes": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/TreeNode"
+            }
+          }
+        },
+        "required": [
+          "version",
+          "nodes"
+        ],
+        "additionalProperties": false
+      },
+      "UploadAssetResult": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "url"
+        ],
+        "additionalProperties": false
+      }
+    }
+  }
+}
