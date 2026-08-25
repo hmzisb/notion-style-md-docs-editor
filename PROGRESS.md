@@ -42,7 +42,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - Eight tsup entries (`.`, `./tree`, `./editor`, `./view`, `./shell`, three adapters) plus `dist/styles.css` and `dist/theme.css` from `build:css`. `components.json` on the Radix engine (`shadcn info` reports `base radix`) with the `@plate` registry; 17 primitives vendored into `src/ui` with their host coupling removed (no cookie, `Cmd+\` for the sidebar, no `next-themes`) and recorded in `REGISTRY-SYNC.md`. `styles.css` compiles utilities from the package's own sources with no preflight and no `:root` left in the output; `theme.css` is generated one-shot by `scripts/gen-theme.ts`. `cn` in `src/lib/utils.ts`. `publint`, `attw` and three new size budgets green.
 - [x] **P1-T02** DocsProvider, namespace, queries
   - `data/keys.ts` (`createNamespace` = `docs:<instance>:<fnv1a64(provider.key)>`, `createKeys`), `data/events.ts` (`DocsEvent`, an emitter that rethrows a throwing host handler on its own task), `data/strings.ts` (162 keys plus `format`), `data/queries.ts` (`metaQuery`/`treeQuery`/`pageQuery` with the docs/04 lifetimes, `useMeta`, `useTreeIndex` with a version-memoized `select`, `usePage` idle on `null`), `data/online.ts`, `data/DocsProvider.tsx` (host or internal `QueryClient`, subtree remount on namespace change, stable emitter, resolved options, capabilities from meta with a provider fallback). 20 tests.
-- [ ] **P1-T03** Persisted cache and value cache
+- [x] **P1-T03** Persisted cache and value cache
 - [ ] **P1-T04** Sidebar store and recents
 - [ ] **P1-T05** Memory adapter entry and playground bootstrap
 - [ ] **P1-T06** PageTree
@@ -104,5 +104,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P1-T03
+- Current task: P1-T04
 - Last gate passed: Gate 0 (2026-08-25)

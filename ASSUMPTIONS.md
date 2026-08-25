@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-021 · P1-T03 · 2026-08-25
+Question: `persisterFn` is generic (`<T, TQueryKey>`), and a generic function in a `useQuery` options literal drives inference for the whole query to `unknown` - `staleTime` then fails to typecheck against the typed `queryOptions` spread.
+Assumed: `queryPersister<T, K>(persister)` in `data/cache/persister.ts` returns the same function annotated as `QueryPersister<T, K> | undefined`, and every call site names its data and key types.
+Why: it is an annotation, not a cast - the generic instantiates to the concrete signature - so the query keeps its real data type and no `any` enters the module.
+Cheap to reverse: yes
+
+## ASM-020 · P1-T03 · 2026-08-25
+Question: docs/04 section 1 names `CACHE_SCHEMA_VERSION` as half of the persist `buster` but never gives it a starting value.
+Assumed: `CACHE_SCHEMA_VERSION = 1`, so the buster is `1:1` against `CONTRACT_VERSION` 1; it is bumped whenever the shape written to IndexedDB changes.
+Why: records written before the module shipped do not exist, so version 1 is the first schema anyone can have; keeping it separate from the contract version means a cache-only shape change does not have to pretend the provider contract moved.
+Cheap to reverse: yes
+
 ## ASM-019 · P1-T01 · 2026-08-25
 Question: `@arethetypeswrong/cli` resolves every export, so `./styles.css` and `./theme.css` fail with "Resolution failed" - a CSS file has no types and never will.
 Assumed: `packages/react/.attw.json` sets `profile: esm-only` and `excludeEntrypoints: ["styles.css", "theme.css"]`, so the gate command in `scripts/gate.ts` stays exactly as written and checks the eight JS entries.

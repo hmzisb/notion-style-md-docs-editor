@@ -8,6 +8,7 @@ import type {
 } from '@docs/core';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
+import type { DocsPersister } from './cache/persister.js';
 import type { DocsEvent, DocsEventHandler } from './events.js';
 import type { DocsKeys } from './keys.js';
 import type { DocsStrings } from './strings.js';
@@ -67,4 +68,6 @@ export interface DocsContextValue {
   capabilities: ProviderCapabilities;
   meta: BackendMeta | null;
   options: DocsOptions;
+  /** L2 (docs/04 section 1). `null` when the host turned query persistence off. */
+  persister: DocsPersister | null;
 }

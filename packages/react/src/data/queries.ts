@@ -2,6 +2,7 @@ import { buildIndex, type NodeId, type TreeIndex, type TreeSnapshot } from '@doc
 import type { BackendMeta, DocumentProvider, PageDocument } from '@docs/core';
 import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { queryPersister } from './cache/persister.js';
 import { useDocs } from './context.js';
 import type { DocsKeys } from './keys.js';
 
@@ -46,7 +47,7 @@ export function useMeta(): UseQueryResult<BackendMeta> {
  * `TreeIndex` object, and the rows that depend on it do not re-render (docs/04 section 1).
  */
 export function useTreeIndex(rootId?: NodeId): UseQueryResult<TreeIndex> {
-  const { provider, keys } = useDocs();
+  const { keys, persister, provider } = useDocs();
   const select = useMemo(() => {
     let cached: TreeIndex | undefined;
     return (snapshot: TreeSnapshot): TreeIndex => {
@@ -54,11 +55,19 @@ export function useTreeIndex(rootId?: NodeId): UseQueryResult<TreeIndex> {
       return cached;
     };
   }, []);
-  return useQuery({ ...treeQuery(provider, keys, rootId), select });
+  return useQuery({
+    ...treeQuery(provider, keys, rootId),
+    select,
+    persister: queryPersister<TreeSnapshot, ReturnType<DocsKeys['tree']>>(persister),
+  });
 }
 
 /** `null` while no page is open: the query stays idle rather than fetching a missing id. */
 export function usePage(id: NodeId | null): UseQueryResult<PageDocument> {
-  const { provider, keys } = useDocs();
-  return useQuery({ ...pageQuery(provider, keys, id ?? ''), enabled: id !== null });
+  const { keys, persister, provider } = useDocs();
+  return useQuery({
+    ...pageQuery(provider, keys, id ?? ''),
+    enabled: id !== null,
+    persister: queryPersister<PageDocument, ReturnType<DocsKeys['page']>>(persister),
+  });
 }

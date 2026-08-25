@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
 import { isProviderError } from '@docs/core';
+import { createDocsPersister, resolvePersist, scheduleGc } from './cache/persister.js';
 import { DocsContext, useDocs } from './context.js';
 import { createEmitter, type DocsEventHandler } from './events.js';
 import { createKeys, createNamespace } from './keys.js';
@@ -68,6 +69,26 @@ function DocsRoot({ ns, ...props }: DocsProviderProps & { ns: string }): React.J
     ],
   );
 
+  // One persister per namespace, set per query rather than on the client (docs/04 section 8),
+  // so a host client shared with the rest of the app never persists anything of its own.
+  const persist = resolvePersist(options.persist);
+  const persister = useMemo(
+    () =>
+      persist.queries
+        ? createDocsPersister({
+            ns,
+            maxAgeMs: persist.maxAgeMs,
+            onUnavailable: () => {
+              onEvent({ type: 'warning', code: 'storage_unavailable' });
+            },
+          })
+        : null,
+    [ns, persist.queries, persist.maxAgeMs, onEvent],
+  );
+
+  // After first paint, in idle time: drop records from another schema or past their max age.
+  useEffect(() => (persister === null ? undefined : scheduleGc(persister)), [persister]);
+
   const meta = useQuery(metaQuery(provider, keys));
 
   // A backend the module cannot reach is the host's problem too: it may want to log it or
@@ -89,8 +110,9 @@ function DocsRoot({ ns, ...props }: DocsProviderProps & { ns: string }): React.J
       capabilities: meta.data?.capabilities ?? provider.capabilities,
       meta: meta.data ?? null,
       options,
+      persister,
     }),
-    [provider, navigation, ns, keys, strings, onEvent, meta.data, options],
+    [provider, navigation, ns, keys, strings, onEvent, meta.data, options, persister],
   );
 
   return <DocsContext.Provider value={value}>{children}</DocsContext.Provider>;

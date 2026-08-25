@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-009 · P1-T03 · 2026-08-25
+Spec said: docs/04 section 1 - a persisted query record lives at key `ns:q:<hash>`.
+Reality: `experimental_createQueryPersister` builds its own storage key as `prefix + '-' + queryHash` and is the only thing that reads it back (`retrieveQuery`, `persisterGc`, `restoreQueries`, `removeQueries` all rebuild the same string). The separator is not an option, and `queryHash` is TanStack's own `hashKey` of the query key, not a hash the module chooses.
+Decision: the module passes the prefix `<ns>:q` and lets the library join, so records land at `ns:q-["<ns>","page","<id>"]`. The part the docs actually rely on holds: every record the module writes is prefixed with the instance namespace, so two instances never collide and `persisterGc` only walks its own keys.
+Impact: `data/cache/persister.ts`; `cache.test.ts` builds expected keys with `hashKey` rather than hardcoding them. No public API change - the key is never exposed.
+Reverse when: the persister gains a `key` option, or the module writes its own persister and owns the format end to end.
+
 ## DEV-008 · P1-T01 · 2026-08-25
 Spec said: docs/11 section 4 - `theme.css` "appends the sidebar fallback block from docs/06 section 2".
 Reality: docs/06 section 2 puts every `--docs-*` variable in `styles.css`, and the fallback only earns its name when it loads without `theme.css` - a host that supplies its own shadcn variables never imports `theme.css`, and that is exactly the host whose `--sidebar` may be missing.
