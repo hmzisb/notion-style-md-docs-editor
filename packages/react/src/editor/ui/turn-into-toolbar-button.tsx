@@ -7,7 +7,6 @@ import type { TElement } from 'platejs';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import {
   CheckIcon,
-  ChevronRightIcon,
   FileCodeIcon,
   Heading1Icon,
   Heading2Icon,
@@ -20,6 +19,8 @@ import {
 } from 'lucide-react';
 import { KEYS } from 'platejs';
 import { useEditorRef, useSelectionFragmentProp } from 'platejs/react';
+import { useDocs } from '@/data/context.js';
+import type { DocsStrings } from '@/data/strings.js';
 
 import {
   DropdownMenu,
@@ -31,77 +32,35 @@ import { getBlockType, setBlockType } from '@/editor/transforms';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 
+interface TurnIntoItem {
+  icon: React.ReactNode;
+  /** The name the slash menu gives the same block (docs/06 section 8). */
+  name: keyof DocsStrings;
+  value: string;
+}
+
 /**
  * docs/06 section 8. Trimmed to the blocks the module ships (docs/05 section 2): H4-H6 clamp
- * to H3 in the codec, and code drawings and columns have no plugin here.
+ * to H3 in the codec, code drawings and columns have no plugin here, and toggle waits for
+ * the serialization rule of P2-T11 (docs/05 section 5).
  */
-export const turnIntoItems = [
-  {
-    icon: <PilcrowIcon />,
-    keywords: ['paragraph'],
-    label: 'Text',
-    value: KEYS.p,
-  },
-  {
-    icon: <Heading1Icon />,
-    keywords: ['title', 'h1'],
-    label: 'Heading 1',
-    value: 'h1',
-  },
-  {
-    icon: <Heading2Icon />,
-    keywords: ['subtitle', 'h2'],
-    label: 'Heading 2',
-    value: 'h2',
-  },
-  {
-    icon: <Heading3Icon />,
-    keywords: ['subtitle', 'h3'],
-    label: 'Heading 3',
-    value: 'h3',
-  },
-  {
-    icon: <ListIcon />,
-    keywords: ['unordered', 'ul', '-'],
-    label: 'Bulleted list',
-    value: KEYS.ul,
-  },
-  {
-    icon: <ListOrderedIcon />,
-    keywords: ['ordered', 'ol', '1'],
-    label: 'Numbered list',
-    value: KEYS.ol,
-  },
-  {
-    icon: <SquareIcon />,
-    keywords: ['checklist', 'task', 'checkbox', '[]'],
-    label: 'To-do list',
-    value: KEYS.listTodo,
-  },
-  {
-    icon: <ChevronRightIcon />,
-    keywords: ['collapsible', 'expandable'],
-    label: 'Toggle list',
-    value: KEYS.toggle,
-  },
-  {
-    icon: <FileCodeIcon />,
-    keywords: ['```'],
-    label: 'Code',
-    value: KEYS.codeBlock,
-  },
-  {
-    icon: <QuoteIcon />,
-    keywords: ['citation', 'blockquote', '>'],
-    label: 'Quote',
-    value: KEYS.blockquote,
-  },
+export const turnIntoItems: TurnIntoItem[] = [
+  { icon: <PilcrowIcon />, name: 'editor.block.p', value: KEYS.p },
+  { icon: <Heading1Icon />, name: 'editor.block.h1', value: KEYS.h1 },
+  { icon: <Heading2Icon />, name: 'editor.block.h2', value: KEYS.h2 },
+  { icon: <Heading3Icon />, name: 'editor.block.h3', value: KEYS.h3 },
+  { icon: <ListIcon />, name: 'editor.block.ul', value: KEYS.ul },
+  { icon: <ListOrderedIcon />, name: 'editor.block.ol', value: KEYS.ol },
+  { icon: <SquareIcon />, name: 'editor.block.listTodo', value: KEYS.listTodo },
+  { icon: <FileCodeIcon />, name: 'editor.block.codeBlock', value: KEYS.codeBlock },
+  { icon: <QuoteIcon />, name: 'editor.block.blockquote', value: KEYS.blockquote },
 ];
 
 type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuPrimitive.Root>;
 
-export function TurnIntoToolbarButton(props: DropdownMenuProps) {
+export function TurnIntoToolbarButton(props: DropdownMenuProps): React.JSX.Element {
   const editor = useEditorRef();
+  const { strings } = useDocs();
   const [open, setOpen] = React.useState(false);
 
   const value = useSelectionFragmentProp({
@@ -116,8 +75,13 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton className="min-w-[125px]" pressed={open} tooltip="Turn into" isDropdown>
-          {selectedItem?.label}
+        <ToolbarButton
+          className="h-7 min-w-[125px]"
+          pressed={open}
+          tooltip={strings['editor.toolbar.turnInto']}
+          isDropdown
+        >
+          {selectedItem === undefined ? null : strings[selectedItem.name]}
         </ToolbarButton>
       </DropdownMenuTrigger>
 
@@ -134,9 +98,9 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
           onValueChange={(type) => {
             setBlockType(editor, type);
           }}
-          label="Turn into"
+          label={strings['editor.toolbar.turnInto']}
         >
-          {turnIntoItems.map(({ icon, label, value: itemValue }) => (
+          {turnIntoItems.map(({ icon, name, value: itemValue }) => (
             <DropdownMenuRadioItem
               key={itemValue}
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
@@ -148,7 +112,7 @@ export function TurnIntoToolbarButton(props: DropdownMenuProps) {
                 </DropdownMenuPrimitive.ItemIndicator>
               </span>
               {icon}
-              {label}
+              {strings[name]}
             </DropdownMenuRadioItem>
           ))}
         </ToolbarMenuGroup>

@@ -3,7 +3,6 @@
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { triggerFloatingLink } from '@platejs/link/react';
-import { insertMedia } from '@platejs/media';
 import { TablePlugin } from '@platejs/table/react';
 import { KEYS, PathApi, type NodeEntry, type Path, type TElement } from 'platejs';
 import type { PlateEditor } from 'platejs/react';
@@ -15,10 +14,23 @@ import type { PlateEditor } from 'platejs/react';
  * only matter to a `@platejs/suggestion` this module does not install.
  */
 
-const insertList = (editor: PlateEditor, type: string): void => {
-  editor.tf.insertNodes(editor.api.create.block({ indent: 1, listStyleType: type }), {
-    select: true,
-  });
+/** A to-do without `checked` saves as a plain bullet, so the list type carries it. */
+const listProps = (type: string): Record<string, unknown> =>
+  type === KEYS.listTodo
+    ? { indent: 1, listStyleType: type, checked: false }
+    : { indent: 1, listStyleType: type };
+
+/**
+ * After the block the caret is in, never inside it: inserting at the selection splits the
+ * block, and the split takes the DOM node the caret lives in with it, so a slash menu driven
+ * by the mouse would leave the editor with no focus at all.
+ */
+const insertAfter = (editor: PlateEditor, node: TElement, at: Path): void => {
+  editor.tf.insertNodes(node, { at: PathApi.next(at), select: true });
+};
+
+const insertList = (editor: PlateEditor, type: string, at: Path): void => {
+  insertAfter(editor, editor.api.create.block(listProps(type)), at);
 };
 
 const createBlockquote = (editor: PlateEditor): TElement => ({
@@ -31,7 +43,7 @@ const selectBlockquoteStart = (editor: PlateEditor, path: Path): void => {
   if (start) editor.tf.select(start);
 };
 
-const insertBlockMap: Record<string, (editor: PlateEditor, type: string) => void> = {
+const insertBlockMap: Record<string, (editor: PlateEditor, type: string, at: Path) => void> = {
   [KEYS.listTodo]: insertList,
   [KEYS.ol]: insertList,
   [KEYS.ul]: insertList,
@@ -41,9 +53,10 @@ const insertBlockMap: Record<string, (editor: PlateEditor, type: string) => void
   [KEYS.codeBlock]: (editor) => {
     insertCodeBlock(editor, { select: true });
   },
-  [KEYS.img]: (editor) => {
-    // Opens the URL prompt and resolves when the user is done with it; nothing waits on that.
-    void insertMedia(editor, { select: true, type: KEYS.img });
+  [KEYS.img]: (editor, _type, at) => {
+    // `insertMedia` asks for the URL through `window.prompt`; `ImageElement` asks for it in
+    // the block itself instead (docs/05 section 6), so the block goes in empty.
+    insertAfter(editor, editor.api.create.block({ type: KEYS.img, url: '' }), at);
   },
   [KEYS.table]: (editor) => {
     editor.getTransforms(TablePlugin).insert.table({}, { select: true });
@@ -86,14 +99,18 @@ export const insertBlock = (
     }
 
     const insert = insertBlockMap[type];
-    if (insert) insert(editor, type);
+    if (insert) insert(editor, type, path);
     else
       editor.tf.insertNodes(editor.api.create.block({ type }), {
         at: PathApi.next(path),
         select: true,
       });
 
-    if (!isSameBlockType) editor.tf.removeNodes({ previousEmptyBlock: true });
+    // The block the caret started in is left behind, empty, above the new one. `removeNodes`'s
+    // own `previousEmptyBlock` reads the block the caret is in now, and a table parks it in a
+    // cell, where that paragraph is not a sibling; the path it started at still finds it.
+    if (!isSameBlockType && isCurrentBlockEmpty && editor.api.node(path)?.[0] === currentNode)
+      editor.tf.removeNodes({ at: path });
   });
 };
 
@@ -102,7 +119,7 @@ export const insertInlineElement = (editor: PlateEditor, type: string): void => 
 };
 
 const setList = (editor: PlateEditor, type: string, entry: NodeEntry<TElement>): void => {
-  editor.tf.setNodes(editor.api.create.block({ indent: 1, listStyleType: type }), { at: entry[1] });
+  editor.tf.setNodes(editor.api.create.block(listProps(type)), { at: entry[1] });
 };
 
 const setBlockMap: Record<

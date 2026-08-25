@@ -1,0 +1,154 @@
+import type { Locator, Page } from '@playwright/test';
+import { expect, freshVisit, openWorkspace, test } from './fixtures.js';
+
+/**
+ * docs/09 P2-T05: the block set, driven the way a user drives it - slash menu, floating
+ * toolbar, keyboard - and read back off disk as the Markdown of docs/05 section 2. The
+ * snippet per block is unit-tested in `packages/react/src/editor/blocks.test.ts`; what only
+ * a browser can prove is that the menu and the shortcuts run those same transforms and that
+ * what they produce survives a save.
+ */
+
+const EDITOR = '[data-slate-editor]';
+const FILE = 'blocks.md';
+
+test.beforeEach(async ({ page, mode }) => {
+  // The demo workspace lives in memory, so there are no bytes to assert against.
+  test.skip(mode !== 'opfs', 'reads the saved file back out of OPFS');
+
+  await freshVisit(page);
+  await page.evaluate(
+    async (seed) => {
+      const root = await navigator.storage.getDirectory();
+      const dir = await root.getDirectoryHandle('workspace', { create: true });
+      const writable = await (await dir.getFileHandle(seed.name, { create: true })).createWritable();
+      await writable.write(seed.body);
+      await writable.close();
+    },
+    { name: FILE, body: '# Blocks\n' },
+  );
+
+  await openWorkspace(page, 'opfs');
+  await page.getByRole('link', { name: 'Blocks' }).click();
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+  // A slash command starts in an empty block, which is what `Enter` at the end of the heading
+  // the page opens with leaves the caret in.
+  await page.locator(EDITOR).getByRole('heading', { name: 'Blocks' }).click();
+  await page.keyboard.press('End');
+  await page.keyboard.press('Enter');
+});
+
+/** Leaves the editor, which is what flushes the session (docs/04 section 3.1). */
+async function done(page: Page): Promise<void> {
+  await page.getByRole('button', { name: 'Done' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'false');
+}
+
+/**
+ * The bytes on disk. Polled, because the save is a debounce behind the last keystroke - and a
+ * read that lands mid-write throws `NotReadableError`, which is a retry, not a failure.
+ */
+const saved = (page: Page): Promise<string> =>
+  page.evaluate(async (name) => {
+    try {
+      const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace');
+      return await (await (await dir.getFileHandle(name)).getFile()).text();
+    } catch {
+      return '';
+    }
+  }, FILE);
+
+/** The slash menu, scoped: the page has another listbox in the theme control. */
+const menu = (page: Page): Locator => page.getByRole('listbox');
+
+/** Opens the menu, filters it the way a user does, and takes the block by name. */
+async function slash(page: Page, name: string): Promise<void> {
+  await page.keyboard.type(`/${name}`);
+  const item = menu(page).getByRole('option', { name });
+  await expect(item).toBeVisible();
+  await item.click();
+  // Clicking a block leaves the caret where the menu was, so the next thing typed is content.
+  await expect(page.locator(EDITOR)).toBeFocused();
+}
+
+test('the slash menu writes every block it offers as Markdown', async ({ page }) => {
+  await slash(page, 'Heading 2');
+  await page.keyboard.type('Section');
+  await page.keyboard.press('Enter');
+
+  await slash(page, 'Bulleted list');
+  await page.keyboard.type('Item');
+  await page.keyboard.press('Enter');
+
+  await slash(page, 'To-do list');
+  await page.keyboard.type('Task');
+  // docs/07 section 2: `Cmd+Enter` ticks the box the caret is in.
+  await page.keyboard.press('ControlOrMeta+Enter');
+  await page.keyboard.press('Enter');
+
+  await slash(page, 'Divider');
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('## Section\n');
+  const markdown = await saved(page);
+  expect(markdown).toContain('- Item\n');
+  // Two lists in a row cannot share a marker without merging into one, so the second takes
+  // remark's other bullet. `bullet: '-'` (docs/05 section 3) is what the first list gets.
+  expect(markdown).toMatch(/^[-*] \[x\] Task$/m);
+  expect(markdown).toContain('---\n');
+  // docs/05 section 2: the heading the file opened with is still the heading it saves - under
+  // the frontmatter the first save stamps the page id into (docs/04 section 4).
+  expect(markdown).toMatch(/^# Blocks$/m);
+});
+
+test('the slash menu groups its blocks and says when nothing matches', async ({ page }) => {
+  await page.keyboard.type('/');
+  await expect(menu(page).getByRole('option', { name: 'Heading 1' })).toBeVisible();
+  // docs/06 section 8: four groups, each with its own label, and a description per row.
+  for (const label of ['Basic blocks', 'Lists', 'Media', 'Advanced'])
+    await expect(menu(page).getByText(label, { exact: true })).toBeVisible();
+  await expect(menu(page).getByText('Big section heading')).toBeVisible();
+
+  // docs/11 section 4: a popover portalled outside `.docs-root` gets none of the module's
+  // variables, and paints as bare text over the page.
+  expect(await menu(page).evaluate((el) => el.closest('.docs-root') !== null)).toBe(true);
+
+  await page.keyboard.type('zzz');
+  await expect(page.getByText('No results')).toBeVisible();
+  await expect(menu(page).getByRole('option')).toHaveCount(0);
+
+  // docs/07 section 4: Escape closes the menu and leaves the text alone.
+  await page.keyboard.press('Escape');
+  await expect(page.getByText('No results')).toBeHidden();
+});
+
+test('the floating toolbar marks a selection', async ({ page }) => {
+  await page.keyboard.type('Bold me');
+  // Selecting backwards over the last word is what puts the toolbar up.
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Shift+ArrowLeft');
+
+  // Radix draws the mark buttons as toggle items, so the label is what identifies them - and
+  // an icon-only control that has none is unusable with a screen reader (docs/06 section 13).
+  const toolbar = page.getByRole('toolbar', { name: 'Formatting' });
+  await expect(toolbar).toBeVisible();
+  await expect(toolbar.getByLabel('Turn into')).toBeVisible();
+  await toolbar.getByLabel('Bold').click();
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('Bold **me**\n');
+});
+
+test('the block shortcuts move and duplicate the block the caret is in', async ({ page }) => {
+  await page.keyboard.type('One');
+  await page.keyboard.press('Enter');
+  await page.keyboard.type('Two');
+
+  // docs/07 section 2: `Cmd+Shift+Up` moves the block, `Cmd+D` duplicates it.
+  await page.keyboard.press('ControlOrMeta+Shift+ArrowUp');
+  await page.keyboard.press('ControlOrMeta+d');
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('Two\n\nTwo\n\nOne\n');
+});

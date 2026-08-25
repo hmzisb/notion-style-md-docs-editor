@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-017 · P2-T05 · 2026-08-26
+Spec said: docs/05 section 3 pins `bullet: '-'` so a save never reflows a file the user did not touch (D-02).
+Reality: `- Item\n- [x] Task\n` is one GFM list with one task item, but Plate's indent lists model a to-do as its own `listStyleType`, so the value holds two lists. Two lists in a row cannot share a marker without merging back into one, and remark writes the second with its other bullet: the page comes back as `- Item\n\n* [x] Task\n`.
+Decision: accept it. `bullet` stays `-`, which is what every list that is not directly preceded by a list of another type gets, and what the golden corpus covers. `bulletOther` cannot also be `-`; the only other fix is to model a to-do as a bullet item carrying `checked`, which is not how `@platejs/list` renders one.
+Impact: a file that mixes bullet and to-do items inside a single list reflows on its first save. No corpus page does; `blocks.spec.ts` accepts either marker for the second list and says why.
+Reverse when: `@platejs/list` models a to-do as a `checked` bullet item, or the serializer learns to merge sibling lists that differ only by `checked`.
+
 ## DEV-016 · P2-T01 · 2026-08-26
 Spec said: docs/02 section 2 and docs/11 section 6 hold every file in the repo to the same `strictTypeChecked` + `stylisticTypeChecked` lint.
 Reality: the 25 copied Plate registry files fail 60 of those rules after `--fix` - `no-unsafe-*` on Plate's `any`-typed element props, `no-non-null-assertion`, `no-unnecessary-condition`, `no-deprecated`. None is a correctness finding; rewriting them all would fork the vendored source and make a later re-add unmergeable, which is the one thing docs/11 section 5 asks us to protect.

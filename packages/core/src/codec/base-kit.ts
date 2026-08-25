@@ -28,7 +28,7 @@ import {
 import { BaseImagePlugin } from '@platejs/media';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTogglePlugin } from '@platejs/toggle';
-import { getPluginType, type AnySlatePlugin, type Descendant } from 'platejs';
+import { getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
 
@@ -97,12 +97,15 @@ const FIDELITY_RULES: MdRules = {
    * the text on `\n` and emits a hard break, which puts a trailing `\` on every wrapped
    * line of every paragraph in the corpus and breaks marks that span a wrap.
    */
+  /**
+   * The void node the slash menu opens in. It carries no text - the query lives in the menu's
+   * own input - but an autosave can catch a page while the menu is up, and with no rule the
+   * serializer warns to a console that has to stay clean (docs/10 section 4).
+   */
+  [KEYS.slashInput]: { serialize: () => ({ type: 'text', value: '' }) },
   p: {
     serialize: (node, options) => ({
-      children: convertNodesSerialize(
-        options.preserveEmptyParagraphs === false ? node.children : node.children.map(unempty),
-        options,
-      ) as MdParagraph['children'],
+      children: convertNodesSerialize(node.children, options) as MdParagraph['children'],
       type: 'paragraph',
     }),
   },
@@ -127,10 +130,6 @@ function keepAlertMarker(first: MdBlockquote['children'][number] | undefined): v
     ...first.children.slice(1),
   ];
 }
-
-/** Plate's marker for an empty paragraph: without it the blank block is lost on the way out. */
-const unempty = (child: Descendant): Descendant =>
-  'text' in child && child.text === '' ? { ...child, text: '\u200b' } : child;
 
 export interface BaseKitOptions {
   /** Merged over {@link DEFAULT_STRINGIFY_OPTIONS}. */

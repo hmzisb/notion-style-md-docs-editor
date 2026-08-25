@@ -10,6 +10,8 @@ import { TooltipProvider } from '@/ui/tooltip';
 import { EditorContext, type EditorContextValue } from './context.js';
 import { createEditorKit } from './kits/editor-kit.js';
 import { Editor, EditorContainer } from './ui/editor';
+import { FloatingToolbarButtons } from './ui/floating-toolbar-buttons';
+import { Toolbar } from './ui/toolbar';
 
 export interface DocumentEditorProps {
   pageId: NodeId;
@@ -92,6 +94,16 @@ export function DocumentEditor({
             onChange(next);
           }}
         >
+          {/* docs/06 section 8 designs one toolbar; `'fixed'` is the same buttons, parked at
+              the top of the editor for a host that wants them always visible (docs/08 s.5). */}
+          {toolbar === 'fixed' && (
+            <Toolbar
+              aria-label={strings['editor.toolbar.label']}
+              className="sticky top-0 z-10 h-9 gap-0.5 rounded-lg border border-border bg-popover p-1 text-popover-foreground"
+            >
+              <FloatingToolbarButtons />
+            </Toolbar>
+          )}
           <EditorContainer
             className={cn('h-auto overflow-visible', className)}
             onClick={

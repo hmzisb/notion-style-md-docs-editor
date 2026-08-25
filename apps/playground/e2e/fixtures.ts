@@ -70,3 +70,20 @@ export async function openWorkspace(page: Page, mode: Mode): Promise<void> {
 }
 
 export const tree = (page: Page): Locator => page.getByRole('tree');
+
+/**
+ * Runs a palette action by name, the way the keyboard runs it: the row is filtered down to
+ * itself and taken with `Enter`. Clicking it instead waits for a row that is still moving -
+ * the list re-orders as the recents land, and under load that wait outlives the test.
+ */
+export async function runAction(page: Page, name: string): Promise<void> {
+  const dialog = page.getByRole('dialog', { name: 'Search pages and actions' });
+  await page.keyboard.press('ControlOrMeta+p');
+  await dialog.getByPlaceholder('Search pages…').fill(name);
+  await expect(dialog.getByRole('option', { name }).first()).toHaveAttribute(
+    'aria-selected',
+    'true',
+  );
+  await page.keyboard.press('Enter');
+  await expect(dialog).toBeHidden();
+}

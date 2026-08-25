@@ -12,7 +12,6 @@ import {
   DropdownMenuRadioGroup,
   DropdownMenuSeparator,
 } from '@/ui/dropdown-menu';
-import { Separator } from '@/ui/separator';
 import { Tooltip, TooltipTrigger } from '@/ui/tooltip';
 import { cn } from '@/lib/utils';
 
@@ -257,12 +256,13 @@ export function ToolbarToggleItem({
 
 export function ToolbarGroup({ children, className }: React.ComponentProps<'div'>) {
   return (
-    <div className={cn('group/toolbar-group', 'relative hidden has-[button]:flex', className)}>
-      <div className="flex items-center">{children}</div>
+    <div
+      className={cn('group/toolbar-group', 'relative hidden items-center has-[button]:flex', className)}
+    >
+      <div className="flex items-center gap-0.5">{children}</div>
 
-      <div className="group-last/toolbar-group:hidden! mx-1.5 py-0.5">
-        <Separator orientation="vertical" />
-      </div>
+      {/* docs/06 section 8 sizes the separator between two groups; the last group has none. */}
+      <div className="group-last/toolbar-group:hidden! mx-0.5 h-5 w-px shrink-0 bg-border" />
     </div>
   );
 }
@@ -288,7 +288,15 @@ function withTooltip<T extends React.ElementType>(Component: T) {
       setMounted(true);
     }, []);
 
-    const component = <Component {...(props as React.ComponentProps<T>)} />;
+    // An icon-only control has no accessible name of its own, and the tooltip is already the
+    // label a sighted user reads: it is the accessible one too, unless the caller passed a
+    // better one (docs/06 section 13).
+    const labelled =
+      typeof tooltip === 'string' && (props as { 'aria-label'?: string })['aria-label'] === undefined
+        ? { ...props, 'aria-label': tooltip }
+        : props;
+
+    const component = <Component {...(labelled as React.ComponentProps<T>)} />;
 
     if (tooltip && mounted) {
       return (

@@ -24,8 +24,9 @@ import {
   useHTMLInputCursorState,
 } from '@platejs/combobox/react';
 import { cva } from 'class-variance-authority';
-import { useComposedRef, useEditorRef } from 'platejs/react';
+import { type PlateEditor, useComposedRef, useEditorRef } from 'platejs/react';
 
+import { portalRoot } from '@/lib/portal';
 import { cn } from '@/lib/utils';
 
 type FilterFn = (
@@ -277,7 +278,9 @@ const InlineComboboxContent: typeof ComboboxPopover = ({ className, ...props }) 
   }
 
   return (
-    <Portal>
+    // CHANGE: Ariakit portals to `document.body` like Radix does, and the module's variables
+    // live on `.docs-root` (docs/11 section 4), so the menu would paint with no theme at all.
+    <Portal portalElement={portalRoot()}>
       <ComboboxPopover
         className={cn(
           'z-500 max-h-[288px] w-[300px] overflow-y-auto rounded-md bg-popover shadow-md',
@@ -305,6 +308,23 @@ const comboboxItemVariants = cva(
   },
 );
 
+/**
+ * The combobox input is a DOM node inside the editable, so removing it drops the browser's
+ * focus to `<body>` with no blur event on the editor. Slate does not see that, and its own
+ * `tf.focus()` returns early while it believes the editor still has focus - the second slash
+ * command of a session would leave the caret nowhere. `tf.blur()` is what tells it the truth;
+ * `tf.focus()` then puts the DOM selection back where the transform left the caret, which a
+ * bare `element.focus()` would not, so the next keystroke lands in the new block.
+ */
+const restoreFocus = (editor: PlateEditor): void => {
+  setTimeout(() => {
+    const el = editor.api.toDOMNode(editor);
+    if (!el || el.contains(document.activeElement)) return;
+    editor.tf.blur();
+    editor.tf.focus();
+  }, 0);
+};
+
 const InlineComboboxItem = ({
   className,
   focusEditor = true,
@@ -323,6 +343,7 @@ const InlineComboboxItem = ({
   const { value } = props;
 
   const { filter, removeInput } = React.useContext(InlineComboboxContext);
+  const editor = useEditorRef();
 
   const store = useComboboxContext()!;
 
@@ -339,9 +360,15 @@ const InlineComboboxItem = ({
   return (
     <ComboboxItem
       className={cn(comboboxItemVariants(), className)}
+      // CHANGE: without this the mouse takes the focus off the editor on its way to the item,
+      // and the block the click inserts is left with the caret nowhere.
+      onMouseDown={(event) => {
+        event.preventDefault();
+      }}
       onClick={(event) => {
         removeInput(focusEditor);
         onClick?.(event);
+        if (focusEditor) restoreFocus(editor);
       }}
       {...props}
     />

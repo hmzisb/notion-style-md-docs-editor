@@ -1,30 +1,25 @@
 'use client';
 
-import * as React from 'react';
-
-import type { PlateEditor, PlateElementProps } from 'platejs/react';
-
 import {
-  ChevronRightIcon,
   Code2,
-  ImageIcon,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
-  LightbulbIcon,
-  ListIcon,
+  ImageIcon,
   LinkIcon,
+  ListIcon,
   ListOrdered,
+  Minus,
   PilcrowIcon,
   Quote,
   Square,
   Table,
 } from 'lucide-react';
-import { type TComboboxInputElement, KEYS } from 'platejs';
-import { PlateElement } from 'platejs/react';
-
+import { KEYS, type TComboboxInputElement } from 'platejs';
+import { PlateElement, type PlateEditor, type PlateElementProps } from 'platejs/react';
+import { useDocs } from '@/data/context.js';
+import type { DocsStrings } from '@/data/strings.js';
 import { insertBlock, insertInlineElement } from '@/editor/transforms';
-
 import {
   InlineCombobox,
   InlineComboboxContent,
@@ -35,161 +30,194 @@ import {
   InlineComboboxItem,
 } from './inline-combobox';
 
-interface Group {
-  group: string;
-  items: {
-    icon: React.ReactNode;
-    value: string;
-    onSelect: (editor: PlateEditor, value: string) => void;
-    className?: string;
-    focusEditor?: boolean;
-    keywords?: string[];
-    label?: string;
-  }[];
+interface SlashItem {
+  icon: React.ReactNode;
+  /** The block type the item inserts, and the key the combobox filters on. */
+  value: string;
+  /** Both lines of the row (docs/06 section 8), as string keys so a host can retitle them. */
+  name: keyof DocsStrings;
+  description: keyof DocsStrings;
+  /** Extra search terms: the Markdown that produces the block, and the usual other names. */
+  keywords?: string[];
+  /** An inline element opens its own popover, which is what takes the focus back. */
+  inline?: boolean;
+}
+
+interface SlashGroup {
+  label: keyof DocsStrings;
+  items: SlashItem[];
 }
 
 /**
- * docs/06 section 8, trimmed to the v1 block set (docs/05 section 2): the registry item's AI
- * group and its advanced blocks - TOC, columns, equations, excalidraw, code drawings, dates
- * and footnotes - have no plugin in this module. P2-T05 gives the labels their strings.
+ * docs/06 section 8, over the v1 block set (docs/05 section 2): the registry item's AI group
+ * and its advanced blocks - TOC, columns, equations, excalidraw, dates and footnotes - have
+ * no plugin in this module, so they are not offered. Callout and toggle do have one, but
+ * neither has a serialization rule yet (P2-T10 and P2-T11), and docs/05 section 5 keeps a
+ * block out of this menu until its rule round-trips.
  */
-const groups: Group[] = [
+const GROUPS: SlashGroup[] = [
   {
-    group: 'Basic blocks',
+    label: 'editor.slash.basic',
     items: [
       {
         icon: <PilcrowIcon />,
-        keywords: ['paragraph'],
-        label: 'Text',
         value: KEYS.p,
+        name: 'editor.block.p',
+        description: 'editor.blockDesc.p',
+        keywords: ['paragraph', 'plain'],
       },
       {
         icon: <Heading1Icon />,
-        keywords: ['title', 'h1'],
-        label: 'Heading 1',
         value: KEYS.h1,
+        name: 'editor.block.h1',
+        description: 'editor.blockDesc.h1',
+        keywords: ['title', 'h1', '#'],
       },
       {
         icon: <Heading2Icon />,
-        keywords: ['subtitle', 'h2'],
-        label: 'Heading 2',
         value: KEYS.h2,
+        name: 'editor.block.h2',
+        description: 'editor.blockDesc.h2',
+        keywords: ['subtitle', 'h2', '##'],
       },
       {
         icon: <Heading3Icon />,
-        keywords: ['subtitle', 'h3'],
-        label: 'Heading 3',
         value: KEYS.h3,
-      },
-      {
-        icon: <ListIcon />,
-        keywords: ['unordered', 'ul', '-'],
-        label: 'Bulleted list',
-        value: KEYS.ul,
-      },
-      {
-        icon: <ListOrdered />,
-        keywords: ['ordered', 'ol', '1'],
-        label: 'Numbered list',
-        value: KEYS.ol,
-      },
-      {
-        icon: <Square />,
-        keywords: ['checklist', 'task', 'checkbox', '[]'],
-        label: 'To-do list',
-        value: KEYS.listTodo,
-      },
-      {
-        icon: <ChevronRightIcon />,
-        keywords: ['collapsible', 'expandable'],
-        label: 'Toggle',
-        value: KEYS.toggle,
-      },
-      {
-        icon: <Code2 />,
-        keywords: ['```'],
-        label: 'Code Block',
-        value: KEYS.codeBlock,
-      },
-      {
-        icon: <Table />,
-        label: 'Table',
-        value: KEYS.table,
+        name: 'editor.block.h3',
+        description: 'editor.blockDesc.h3',
+        keywords: ['subtitle', 'h3', '###'],
       },
       {
         icon: <Quote />,
-        keywords: ['citation', 'blockquote', 'quote', '>'],
-        label: 'Blockquote',
         value: KEYS.blockquote,
+        name: 'editor.block.blockquote',
+        description: 'editor.blockDesc.blockquote',
+        keywords: ['citation', 'quote', '>'],
       },
       {
-        description: 'Insert a highlighted block.',
-        icon: <LightbulbIcon />,
-        keywords: ['note'],
-        label: 'Callout',
-        value: KEYS.callout,
+        icon: <Minus />,
+        value: KEYS.hr,
+        name: 'editor.block.hr',
+        description: 'editor.blockDesc.hr',
+        keywords: ['divider', 'rule', 'separator', '---'],
       },
-      {
-        icon: <ImageIcon />,
-        keywords: ['picture', 'media', '!['],
-        label: 'Image',
-        value: KEYS.img,
-      },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value, { upsert: true });
-      },
-    })),
+    ],
   },
   {
-    group: 'Inline',
+    label: 'editor.slash.lists',
     items: [
       {
-        focusEditor: true,
+        icon: <ListIcon />,
+        value: KEYS.ul,
+        name: 'editor.block.ul',
+        description: 'editor.blockDesc.ul',
+        keywords: ['unordered', 'bullet', 'ul', '-'],
+      },
+      {
+        icon: <ListOrdered />,
+        value: KEYS.ol,
+        name: 'editor.block.ol',
+        description: 'editor.blockDesc.ol',
+        keywords: ['ordered', 'ol', '1.'],
+      },
+      {
+        icon: <Square />,
+        value: KEYS.listTodo,
+        name: 'editor.block.listTodo',
+        description: 'editor.blockDesc.listTodo',
+        keywords: ['checklist', 'task', 'checkbox', '[]'],
+      },
+    ],
+  },
+  {
+    label: 'editor.slash.media',
+    items: [
+      {
+        icon: <ImageIcon />,
+        value: KEYS.img,
+        name: 'editor.block.img',
+        description: 'editor.blockDesc.img',
+        keywords: ['picture', 'photo', 'media', '!['],
+      },
+    ],
+  },
+  {
+    label: 'editor.slash.advanced',
+    items: [
+      {
+        icon: <Code2 />,
+        value: KEYS.codeBlock,
+        name: 'editor.block.codeBlock',
+        description: 'editor.blockDesc.codeBlock',
+        keywords: ['snippet', 'fence', '```'],
+      },
+      {
+        icon: <Table />,
+        value: KEYS.table,
+        name: 'editor.block.table',
+        description: 'editor.blockDesc.table',
+        keywords: ['grid', 'rows', 'columns'],
+      },
+      {
         icon: <LinkIcon />,
-        keywords: ['url', 'href'],
-        label: 'Link',
         value: KEYS.link,
+        name: 'editor.block.link',
+        description: 'editor.blockDesc.link',
+        keywords: ['url', 'href', 'anchor'],
+        inline: true,
       },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertInlineElement(editor, value);
-      },
-    })),
+    ],
   },
 ];
 
-export function SlashInputElement(props: PlateElementProps<TComboboxInputElement>) {
+const select = (editor: PlateEditor, item: SlashItem): void => {
+  if (item.inline) insertInlineElement(editor, item.value);
+  else insertBlock(editor, item.value, { upsert: true });
+};
+
+export function SlashInputElement(
+  props: PlateElementProps<TComboboxInputElement>,
+): React.JSX.Element {
   const { editor, element } = props;
+  const { strings } = useDocs();
 
   return (
     <PlateElement {...props} as="span">
       <InlineCombobox element={element} trigger="/">
         <InlineComboboxInput />
 
-        <InlineComboboxContent>
-          <InlineComboboxEmpty>No results</InlineComboboxEmpty>
+        {/* docs/06 section 8: the popover surface, with the group padding of a menu. */}
+        <InlineComboboxContent className="max-h-80 w-72 rounded-lg border border-border p-1 text-popover-foreground">
+          <InlineComboboxEmpty>{strings['editor.slash.empty']}</InlineComboboxEmpty>
 
-          {groups.map(({ group, items }) => (
-            <InlineComboboxGroup key={group}>
-              <InlineComboboxGroupLabel>{group}</InlineComboboxGroupLabel>
+          {GROUPS.map((group) => (
+            <InlineComboboxGroup key={group.label}>
+              <InlineComboboxGroupLabel className="mt-0 mb-0 px-2 py-1.5">
+                {strings[group.label]}
+              </InlineComboboxGroupLabel>
 
-              {items.map(({ focusEditor, icon, keywords, label, value, onSelect }) => (
+              {group.items.map((item) => (
                 <InlineComboboxItem
-                  key={value}
-                  value={value}
+                  key={item.value}
+                  value={item.value}
                   onClick={() => {
-                    onSelect(editor, value);
+                    select(editor, item);
                   }}
-                  label={label}
-                  focusEditor={focusEditor}
-                  group={group}
-                  keywords={keywords}
+                  className="h-auto items-center gap-2 px-2 py-1"
+                  label={strings[item.name]}
+                  focusEditor={item.inline !== true}
+                  group={strings[group.label]}
+                  keywords={item.keywords}
                 >
-                  <div className="mr-2 text-muted-foreground">{icon}</div>
-                  {label ?? value}
+                  <div className="flex size-8 shrink-0 items-center justify-center rounded-md border border-border bg-background">
+                    {item.icon}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="truncate">{strings[item.name]}</div>
+                    <div className="truncate text-xs text-muted-foreground">
+                      {strings[item.description]}
+                    </div>
+                  </div>
                 </InlineComboboxItem>
               ))}
             </InlineComboboxGroup>

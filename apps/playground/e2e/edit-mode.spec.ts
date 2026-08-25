@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, test, tree } from './fixtures.js';
+import { expect, freshVisit, openWorkspace, runAction, test, tree } from './fixtures.js';
 
 /**
  * docs/09 P2-T02: the read/edit swap. docs/05 section 8 pins the mechanics (one scroll
@@ -17,8 +17,7 @@ test.beforeEach(async ({ page }) => {
 
   // The corpus opens collapsed, and this page is three levels down; it is the one page long
   // enough to scroll, which is what the offset assertions need.
-  await page.keyboard.press('ControlOrMeta+p');
-  await page.getByRole('option', { name: 'Expand all' }).click();
+  await runAction(page, 'Expand all');
   const row = page.getByRole('treeitem', { name: /Large page/ }).first();
   await row.scrollIntoViewIfNeeded();
   await row.click();

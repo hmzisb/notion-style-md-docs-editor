@@ -14,6 +14,10 @@ import { TurnIntoToolbarButton } from './turn-into-toolbar-button';
  * registry item also offers AI, comments, suggestions, equations and underline; none of those
  * plugins are installed (docs/05 section 2), so none of their buttons are here.
  */
+
+/** docs/06 section 8: `size-7` icon buttons, against the `h-9 p-1` bar. */
+const MARK = 'size-7 min-w-7 p-0';
+
 export function FloatingToolbarButtons(): React.JSX.Element | null {
   const readOnly = useEditorReadOnly();
   const { strings } = useDocs();
@@ -21,29 +25,48 @@ export function FloatingToolbarButtons(): React.JSX.Element | null {
   if (readOnly) return null;
 
   return (
-    <ToolbarGroup>
-      <TurnIntoToolbarButton />
+    <>
+      <ToolbarGroup>
+        <TurnIntoToolbarButton />
+      </ToolbarGroup>
 
-      <MarkToolbarButton nodeType={KEYS.bold} tooltip={strings['editor.toolbar.bold']}>
-        <BoldIcon />
-      </MarkToolbarButton>
+      <ToolbarGroup>
+        <MarkToolbarButton
+          nodeType={KEYS.bold}
+          tooltip={strings['editor.toolbar.bold']}
+          className={MARK}
+        >
+          <BoldIcon />
+        </MarkToolbarButton>
 
-      <MarkToolbarButton nodeType={KEYS.italic} tooltip={strings['editor.toolbar.italic']}>
-        <ItalicIcon />
-      </MarkToolbarButton>
+        <MarkToolbarButton
+          nodeType={KEYS.italic}
+          tooltip={strings['editor.toolbar.italic']}
+          className={MARK}
+        >
+          <ItalicIcon />
+        </MarkToolbarButton>
 
-      <MarkToolbarButton
-        nodeType={KEYS.strikethrough}
-        tooltip={strings['editor.toolbar.strikethrough']}
-      >
-        <StrikethroughIcon />
-      </MarkToolbarButton>
+        <MarkToolbarButton
+          nodeType={KEYS.strikethrough}
+          tooltip={strings['editor.toolbar.strikethrough']}
+          className={MARK}
+        >
+          <StrikethroughIcon />
+        </MarkToolbarButton>
 
-      <MarkToolbarButton nodeType={KEYS.code} tooltip={strings['editor.toolbar.code']}>
-        <Code2Icon />
-      </MarkToolbarButton>
+        <MarkToolbarButton
+          nodeType={KEYS.code}
+          tooltip={strings['editor.toolbar.code']}
+          className={MARK}
+        >
+          <Code2Icon />
+        </MarkToolbarButton>
+      </ToolbarGroup>
 
-      <LinkToolbarButton />
-    </ToolbarGroup>
+      <ToolbarGroup>
+        <LinkToolbarButton className={MARK} />
+      </ToolbarGroup>
+    </>
   );
 }

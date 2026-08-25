@@ -16,6 +16,8 @@ import { IndentKit } from './indent-kit.js';
 import { LinkKit } from './link-kit.js';
 import { ListKit } from './list-kit.js';
 import { MediaKit } from './media-kit.js';
+import { ShortcutsKit } from './shortcuts-kit.js';
+import { SlashKit } from './slash-kit.js';
 import { TableKit } from './table-kit.js';
 import { ToggleKit } from './toggle-kit.js';
 
@@ -45,6 +47,7 @@ const REACT_KITS: EditorPlugin[] = [
   ...TableKit,
   ...LinkKit,
   ...MediaKit,
+  ...SlashKit,
   ...CalloutKit,
   ...ToggleKit,
 ];
@@ -52,6 +55,7 @@ const REACT_KITS: EditorPlugin[] = [
 /** Behavior with no headless twin: none of it changes what a page serializes to. */
 const EDITOR_ONLY: EditorPlugin[] = [
   ...AutoformatKit,
+  ...ShortcutsKit,
   ...ExitBreakKit,
   ...BlockSelectionKit,
   ...DndKit,
@@ -61,7 +65,7 @@ const EDITOR_ONLY: EditorPlugin[] = [
 export interface EditorKitOptions {
   /** The host's strings, for the placeholders that are baked into plugin options. */
   strings: DocsStrings;
-  /** `'none'` leaves the selection toolbar out; docs/06 has no design for a fixed one yet. */
+  /** `'fixed'` parks the same buttons above the editor, so the floating one is dropped. */
   toolbar?: 'floating' | 'fixed' | 'none';
   /** Extra plugins, appended last so a host can override a component by key. */
   plugins?: EditorPlugin[];
@@ -82,7 +86,7 @@ export function createEditorKit({
     // `MarkdownPlugin` and its rules, exactly as the codec configured them.
     ...BaseKit.filter((base) => headlessOnly(base, covered)),
     ...EDITOR_ONLY,
-    ...(toolbar === 'none' ? [] : FloatingToolbarKit),
+    ...(toolbar === 'floating' ? FloatingToolbarKit : []),
     ...createBlockPlaceholderKit(strings),
     ...plugins,
   ];

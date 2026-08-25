@@ -14,6 +14,60 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-077 · P2-T05 · 2026-08-26
+Question: the slash menu's popover is an Ariakit `Portal`, which mounts on `document.body` - outside `.docs-root`, where none of the module's variables reach (docs/11 section 4).
+Assumed: it renders into `portalRoot()`, the same container every Radix portal in `ui/` uses.
+Why: without it the menu paints as bare text with a black border over the page, which the 1440 and 390 screenshots of docs/06 section 12 showed in both themes; the container already exists for exactly this reason.
+Cheap to reverse: yes
+
+## ASM-076 · P2-T05 · 2026-08-26
+Question: choosing a block with the mouse leaves the editor with no DOM focus at all from the second slash command of a session onwards - the combobox input is removed while Slate still believes the editor is focused, so `tf.focus()` returns early and the next keystroke goes to `<body>`.
+Assumed: `InlineComboboxItem` prevents the default on `mousedown` and, after the item's transform, calls `tf.blur()` then `tf.focus()` on a macrotask.
+Why: `blur` is what corrects Slate's stale focus flag, and going back in through `tf.focus()` (rather than `element.focus()`) restores the DOM selection the transform left, so the first character typed lands in the new block.
+Cheap to reverse: yes
+
+## ASM-075 · P2-T05 · 2026-08-26
+Question: docs/05 section 2 puts a block in the slash menu; `@plate/transforms`'s stock `insertBlock` inserts at the selection and clears the old block with `removeNodes({ previousEmptyBlock: true })`.
+Assumed: every block is inserted at `PathApi.next(path)` and the empty block left behind is removed by the path it started at, guarded by a node identity check.
+Why: inserting at the selection splits the block the caret lives in, and `previousEmptyBlock` reads from wherever the caret ended up - a table parks it in a cell, where the paragraph above is not a sibling, so a stray empty block was left over the table.
+Cheap to reverse: yes
+
+## ASM-074 · P2-T05 · 2026-08-26
+Question: the image entry in the stock slash menu calls `insertMedia`, which asks for the URL through `window.prompt`.
+Assumed: it inserts an empty `img` block instead, and `ImageElement` asks for the URL in the block itself (docs/05 section 6).
+Why: a native prompt is unstyleable, untranslatable through `strings` (docs/08 section 3) and unreachable in the e2e; the block already has to handle an empty `url` for a page that arrives with one.
+Cheap to reverse: yes
+
+## ASM-073 · P2-T05 · 2026-08-26
+Question: an autosave can catch a page while the slash menu is open, and `slash_input` is a void node with no serialization rule - `@platejs/markdown` warns `Unreachable code: {"type":"slash_input"}` to a console that docs/10 section 4 requires to stay clean.
+Assumed: the base kit serializes `slash_input` to empty text.
+Why: the query lives in the menu's own DOM input, never in the value, so there is nothing to write; the alternative is suppressing the save while a menu is up, which loses keystrokes.
+Cheap to reverse: yes
+
+## ASM-072 · P2-T05 · 2026-08-26
+Question: Plate's exit-break binds `Cmd+Enter` to "insert a block after this one", and docs/07 section 2 gives `Cmd+Enter` to the to-do checkbox.
+Assumed: docs/07 wins - exit-break keeps `Cmd+Shift+Enter` (insert before) and loses `Cmd+Enter`.
+Why: the shortcut table is the contract a reader learns; the block-after behaviour is one `Enter` away at the end of a block.
+Cheap to reverse: yes
+
+## ASM-071 · P2-T05 · 2026-08-26
+Question: docs/06 section 13 wants every control to carry an accessible name, and Radix draws the mark buttons as `role="radio"` toggle items whose only content is an icon.
+Assumed: `withTooltip` passes its string tooltip through as `aria-label` unless the caller gave a better one, and the floating toolbar itself is labelled `Formatting`.
+Why: the tooltip is already the name a sighted user reads, so it is the one a screen reader should read; without it the mark buttons had no accessible name at all, which the e2e now locates them by.
+Cheap to reverse: yes
+
+## ASM-070 · P2-T05 · 2026-08-26
+Question: docs/05 section 6 keeps a trailing empty paragraph under the last block, and Plate marks an empty paragraph with a zero-width space so Markdown can carry it.
+Assumed: the codec strips trailing empty paragraphs before serializing and marks only top-level blank paragraphs.
+Why: without the strip, every save of a page ending in a heading or a table grows a `\u200b` line; with the marker applied everywhere, an empty table cell - a paragraph too - is rewritten to `| \u200b |`, which is bytes the user never touched (D-02).
+Cheap to reverse: yes
+
+## ASM-069 · P2-T05 · 2026-08-26
+Question: `blocks.spec.ts` has to read back the Markdown a block saved, but page creation and any download UI are P3 work, so a test has nowhere to write.
+Assumed: the spec seeds `workspace/blocks.md` straight into OPFS before the app opens, and reads the bytes back out of OPFS after leaving edit mode.
+Why: bytes on disk are the only assertion that covers the codec, the autosave and the transform together; the alternative asserts the editor's own value, which is what the unit tests already do.
+Cheap to reverse: yes
+
 ## ASM-068 · P2-T04 · 2026-08-26
 Question: docs/05 section 6 makes a page over 5,000 blocks open read-only behind the large-page banner, but the guard itself is P4-T04's task, not T04's.
 Assumed: the guard ships with its banner - `PageCanvas` counts top-level blocks and withholds the editor until "Edit anyway" - so the banner is never dead UI; P4-T04 keeps the 5k fixture, the e2e and the budget check.

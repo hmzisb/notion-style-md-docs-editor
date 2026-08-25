@@ -39,6 +39,6 @@ export const BasicMarksKit = [
   }),
   StrikethroughPlugin.configure({
     inputRules: [StrikethroughRules.markdown()],
-    shortcuts: { toggle: { keys: 'mod+shift+x' } },
+    shortcuts: { toggle: { keys: 'mod+shift+s' } },
   }),
 ];

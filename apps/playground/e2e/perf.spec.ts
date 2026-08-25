@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, test, tree } from './fixtures.js';
+import { expect, freshVisit, openWorkspace, runAction, test, tree } from './fixtures.js';
 
 /**
  * docs/10 section 5, the two budgets Phase 1 can already measure. Numbers land in
@@ -81,8 +81,7 @@ test.describe('budgets (docs/10 section 5)', () => {
     await open('Roadmap');
 
     // The row has to be in the tree to be clicked, and the corpus opens collapsed.
-    await page.keyboard.press('ControlOrMeta+p');
-    await page.getByRole('option', { name: 'Expand all' }).click();
+    await runAction(page, 'Expand all');
 
     const row = page.getByRole('treeitem', { name: /Getting started/ }).first();
     await row.scrollIntoViewIfNeeded();
@@ -107,8 +106,7 @@ test.describe('budgets (docs/10 section 5)', () => {
     await expect(tree(page)).toBeVisible();
 
     // Every folder open, so the virtualizer has 5,000 rows to scroll through rather than ten.
-    await page.keyboard.press('ControlOrMeta+p');
-    await page.getByRole('option', { name: 'Expand all' }).click();
+    await runAction(page, 'Expand all');
     await expect
       .poll(async () => page.getByRole('treeitem').count(), { message: 'rows after expand all' })
       .toBeGreaterThan(20);
