@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-052 · P1-T11 · 2026-08-25
+Question: a test that provokes a failed request (a refused backend, offline) trips the docs/10 section 4 rule that a console error fails the run.
+Assumed: the e2e console allowlist admits `Failed to load resource: net::ERR_*`, which the browser logs before any handler sees it.
+Why: the app's answer to an unreachable backend is asserted in the test itself; failing on the browser's own log would make that case untestable.
+Cheap to reverse: yes
+
+## ASM-051 · P1-T11 · 2026-08-25
+Question: P1-T11 is verified by an e2e spec, but docs/09 puts the Playwright config in P1-T13.
+Assumed: the config, the fixtures and `modes.spec.ts` land here; T13 adds the axe, perf and Lighthouse work on top. The `opfs-webkit` project runs only `@smoke`-tagged specs, because WebKit under Playwright cannot open an OPFS directory.
+Why: a spec cannot run without a config, and the webkit project earns its keep by proving the landing adapts to a browser with no directory picker rather than by failing on an engine limitation.
+Cheap to reverse: yes
+
+## ASM-050 · P1-T11 · 2026-08-25
+Question: which modes may restore themselves when the playground loads.
+Assumed: demo, browser storage and remote reopen on load; a folder waits on the landing for the click that its permission prompt needs.
+Why: `requestPermission` outside a user gesture is refused, so an automatic folder restore would land on a permission error instead of a workspace.
+Cheap to reverse: yes
+
+## ASM-049 · P1-T11 · 2026-08-25
+Question: docs/01 section 5.7 asks that switching folders never shows stale pages, but two different folders can both be named `docs`, and the cache namespace is built from the provider key.
+Assumed: every folder the user picks takes the next picker slot, and the key is `fs:<slot>:<name>`; an OPFS import takes the next epoch, and the key is `opfs:workspace:<epoch>`.
+Why: the slot is already what the handle is filed under, so it is a workspace identity that survives a reload and is unique per pick; an import replaces the workspace wholesale, which is the same event.
+Cheap to reverse: yes
+
+## ASM-048 · P1-T11 · 2026-08-25
+Question: what a first visit shows, before any mode has been chosen.
+Assumed: the landing. `WorkspaceSettings.mode` is `null` until the user picks, rather than defaulting to demo.
+Why: docs/01 section 5.7 makes the landing the first run; a default that skips it would hide three of the four modes from anyone who never presses the workspace button.
+Cheap to reverse: yes
+
 ## ASM-047 · P1-T10 · 2026-08-25
 Question: a schema parse rebuilds an object in schema order, which loses the frontmatter key order docs/03 section 4.2 requires a provider to preserve.
 Assumed: `getPage` reorders the parsed `meta` back into the order the server sent, keeping any key the schema added.

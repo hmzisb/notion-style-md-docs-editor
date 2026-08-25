@@ -15,7 +15,12 @@ export default defineConfig({
     alias: [
       { find: '@docs/react/styles.css', replacement: `${reactSrc}/styles/styles.css` },
       { find: '@docs/react/theme.css', replacement: `${reactSrc}/styles/theme.css` },
+      {
+        find: '@docs/react/adapters/filesystem',
+        replacement: `${reactSrc}/adapters/filesystem.ts`,
+      },
       { find: '@docs/react/adapters/memory', replacement: `${reactSrc}/adapters/memory.ts` },
+      { find: '@docs/react/adapters/http', replacement: `${reactSrc}/adapters/http.ts` },
       { find: '@docs/react/shell', replacement: `${reactSrc}/shell/index.ts` },
       { find: '@docs/react/tree', replacement: `${reactSrc}/tree/index.ts` },
       { find: '@docs/react', replacement: `${reactSrc}/index.ts` },

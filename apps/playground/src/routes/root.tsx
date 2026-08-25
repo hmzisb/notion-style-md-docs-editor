@@ -1,13 +1,20 @@
 import { DocsProvider } from '@docs/react';
 import { QueryClient } from '@tanstack/react-query';
-import { Link, Outlet, createRootRoute } from '@tanstack/react-router';
+import { Link, Outlet, createRootRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
+import { Landing } from '../Landing.js';
 import { useDocsNavigation } from '../navigation.js';
-import { providerFor } from '../providers.js';
 import { applyTheme, readTheme, watchSystemTheme, type Theme } from '../theme.js';
+import { useWorkspace, type Workspace } from '../workspace.js';
 
 const queryClient = new QueryClient();
-const provider = providerFor('demo');
+
+const MODE_LABELS: Record<string, string> = {
+  demo: 'Demo',
+  folder: 'Folder',
+  opfs: 'Browser storage',
+  remote: 'Remote',
+};
 
 function ThemeSelect(): React.JSX.Element {
   const [theme, setTheme] = useState<Theme>(() => readTheme());
@@ -35,23 +42,60 @@ function ThemeSelect(): React.JSX.Element {
   );
 }
 
-function RootLayout(): React.JSX.Element {
-  const navigation = useDocsNavigation();
+/** Back to the landing, which is where every mode is switched from. */
+function WorkspaceButton({ workspace }: { workspace: Workspace }): React.JSX.Element | null {
+  const navigate = useNavigate();
+  const { settings, provider } = workspace;
+  // On the landing there is nothing to leave, so the control is not there either.
+  if (provider === null) return null;
+  const label =
+    settings.mode === 'folder'
+      ? (settings.folder?.name ?? 'Folder')
+      : (MODE_LABELS[settings.mode ?? ''] ?? 'none');
 
   return (
-    <DocsProvider provider={provider} navigation={navigation} queryClient={queryClient}>
-      <div className="docs-root flex h-dvh flex-col overflow-hidden bg-background text-foreground">
-        <header className="flex h-11 shrink-0 items-center justify-between border-b px-4">
-          <Link to="/" className="text-sm font-medium">
-            Docs playground
-          </Link>
+    <button
+      type="button"
+      className="rounded border px-2 py-1 text-sm"
+      onClick={() => {
+        void navigate({ to: '/' });
+        workspace.leave();
+      }}
+    >
+      Workspace: <span className="font-medium">{label}</span>
+    </button>
+  );
+}
+
+function RootLayout(): React.JSX.Element {
+  const navigation = useDocsNavigation();
+  const workspace = useWorkspace();
+
+  return (
+    <div className="docs-root flex h-dvh flex-col overflow-hidden bg-background text-foreground">
+      <header className="flex h-11 shrink-0 items-center justify-between border-b px-4">
+        <Link to="/" className="text-sm font-medium">
+          Docs playground
+        </Link>
+        <div className="flex items-center gap-3">
+          <WorkspaceButton workspace={workspace} />
           <ThemeSelect />
-        </header>
-        <main className="min-h-0 flex-1">
-          <Outlet />
-        </main>
-      </div>
-    </DocsProvider>
+        </div>
+      </header>
+      <main className="min-h-0 flex-1 overflow-y-auto">
+        {workspace.provider === null ? (
+          <Landing workspace={workspace} />
+        ) : (
+          <DocsProvider
+            provider={workspace.provider}
+            navigation={navigation}
+            queryClient={queryClient}
+          >
+            <Outlet />
+          </DocsProvider>
+        )}
+      </main>
+    </div>
   );
 }
 
