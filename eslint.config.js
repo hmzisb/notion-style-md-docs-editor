@@ -135,6 +135,17 @@ export default tseslint.config(
         { allowConstantLoopConditions: true },
       ],
       eqeqeq: ['error', 'always', { null: 'ignore' }],
+      // `const { id: _id, ...rest } = patch` is how the pure ops drop structural fields.
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          args: 'after-used',
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+          ignoreRestSiblings: true,
+        },
+      ],
       'no-restricted-syntax': ['error', ...NO_HOST_GLOBALS],
     },
   },

@@ -12,7 +12,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `model.ts`, `provider.ts`, `errors.ts`, zod v4 `contract/schemas.ts`, `contract/version.ts`; `contract/openapi.ts` generates OpenAPI 3.1 with `$ref`s from the zod registry; committed `contract/openapi.json` verified byte-identical by test. 14 tests.
 - [x] **P0-T03** Hashing and ids
   - `hash.ts` (`sha256Hex`/`pageVersion` over Web Crypto, `fnv1a64`) and `ids.ts` (ULID-style `generateId` monotonic within a ms, `pathHashId`, `folderHashId`). Published SHA-256 and FNV-1a vectors; 10k ids unique; 1000 same-ms ids strictly increasing.
-- [ ] **P0-T04** Tree index and pure ops
+- [x] **P0-T04** Tree index and pure ops
+  - `tree.ts`: `buildIndex` (file + directory path forms), `ancestorsOf`, `isDescendant`, `descendantCount`, `subtreeIds`, `flatten` and immutable `applyRename`/`applyMeta`/`applyInsert`/`applyMove`/`applyRemove` with structural sharing. fast-check over 40-op sequences asserts no orphans, single parent, `childIds`↔`parentId` agreement, reachability and the move guard.
 - [ ] **P0-T05** Frontmatter
 - [ ] **P0-T06** Paths and ordering
 - [ ] **P0-T07** Link resolution
@@ -91,5 +92,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T04
+- Current task: P0-T05
 - Last gate passed: (none)

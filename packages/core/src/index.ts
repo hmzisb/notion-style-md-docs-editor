@@ -39,3 +39,19 @@ export {
   isGeneratedId,
   pathHashId,
 } from './ids.js';
+
+export {
+  ancestorsOf,
+  applyInsert,
+  applyMeta,
+  applyMove,
+  applyRemove,
+  applyRename,
+  buildIndex,
+  childIdsOf,
+  descendantCount,
+  dirFormOf,
+  flatten,
+  isDescendant,
+  subtreeIds,
+} from './tree.js';
