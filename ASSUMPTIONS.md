@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-065 · P2-T03 · 2026-08-26
+Question: docs/04 section 3.1 puts the draft's serialization in `requestIdleCallback` with "fallback `setTimeout 0`", and the module's existing `requestIdle` helper (written for the editor preload) had neither a deadline nor a per-caller delay.
+Assumed: `requestIdle(run, timeoutMs)` now passes `{ timeout: timeoutMs }` to `requestIdleCallback` and uses `timeoutMs` for the fallback; the draft calls it with `0`, the preload keeps `200`.
+Why: a draft is the copy of the user's work that survives a killed tab, so it may not wait on an idle period that a busy tab never gives; `{ timeout: 0 }` is the spec's own "no deadline" and matches "in `requestIdleCallback`", while the fallback delay is what docs/04 asks for literally. The tests drive the fallback path: jsdom's stand-in is not on the fake clock and takes a number where the DOM takes an options object.
+Cheap to reverse: yes
+
+## ASM-064 · P2-T03 · 2026-08-26
+Question: docs/04 section 3 sketches `DocumentSession` and names four session fields (`status`, `lastSavedAt`, `retryAt`, `draftRestored`), but the banners and the status pill of docs/06 sections 9-10 need three more facts, and docs/08 section 5 says the session owns the editor ref without saying how it gets one.
+Assumed: `SessionState` also carries `draftMismatch`, `draftAt` and `pending`, and `DocumentSession` gains one method, `bind(editor)`.
+Why: `draftMismatch` is the only way to tell the "This page changed since your unsaved edits" banner from the restored-draft one (docs/04 section 3.3 defines both, the state sketch names neither); `draftAt` is the "<relative time>" both banners print; `pending` separates "dirty with a timer running", which docs/06 section 9 renders as nothing, from "dirty and paused", which it renders as a button. `bind` is `DocumentEditor`'s `onReady` handed on - the session needs `editor.tf.setValue` for conflict Reload, draft Discard and a silent refresh, and the shell already holds that instance for its own caret work. Nothing was dropped: every field of the sketch is still there.
+Cheap to reverse: yes
+
 ## ASM-063 · P2-T02 · 2026-08-26
 Question: docs/02 line 168 requires `./shell` to be measured without the editor chunk, and offers the Tailwind host's Vite report as the fallback "if the tool counts dynamic chunks" - which `size-limit` does.
 Assumed: the entry keeps `size-limit` and lists the dynamic specifier `./editor/index.js` in `ignore`, which esbuild takes as `external` and so leaves out of the bundle it weighs; the Vite fallback is not needed.

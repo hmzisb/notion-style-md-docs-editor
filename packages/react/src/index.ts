@@ -12,6 +12,8 @@ export {
   usePage,
   useTreeIndex,
 } from './data/queries.js';
+export { useDocumentSession, type DocumentSession, type SessionEditor } from './data/session.js';
+export type { SessionState, SessionStatus } from './data/session-store.js';
 export { MAX_RECENTS, useRecents, type Recent, type RecentsState } from './data/cache/recents.js';
 export { useOnline } from './data/online.js';
 export { DEFAULT_SIDEBAR_WIDTH, useSidebarStore, type SidebarState } from './data/sidebar-store.js';

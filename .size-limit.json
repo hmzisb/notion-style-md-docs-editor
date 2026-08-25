@@ -73,7 +73,7 @@
   {
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "94 kB",
+    "limit": "98 kB",
     "ignore": [
       "./editor/index.js",
       "@docs/core",

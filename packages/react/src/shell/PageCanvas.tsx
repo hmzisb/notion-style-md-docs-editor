@@ -2,7 +2,7 @@ import type { NodeId, PageDocument, PageMode, TreeNode } from '@docs/core';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDocs } from '@/data/context.js';
-import { usePageValue } from '@/data/use-page-value.js';
+import { useDocumentSession } from '@/data/session.js';
 import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import type { PlateEditor } from '@/editor/index.js';
 import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
@@ -47,7 +47,7 @@ export function PageCanvas({
 }: PageCanvasProps): React.JSX.Element {
   const { capabilities, strings } = useDocs();
   const chunk = useEditorChunk();
-  const value = usePageValue(page);
+  const session = useDocumentSession(page);
   const [swapped, setSwapped] = useState(false);
 
   const editorRef = useRef<PlateEditor | null>(null);
@@ -101,13 +101,23 @@ export function PageCanvas({
     [applyFocus, mode, onModeChange, regionRef],
   );
 
+  const bind = session.bind;
   const onReady = useCallback(
     (editor: PlateEditor) => {
       editorRef.current = editor;
+      bind(editor);
       applyFocus();
     },
-    [applyFocus],
+    [applyFocus, bind],
   );
+
+  // docs/04 section 3.1: leaving the editor flushes. Focus that stays inside the canvas - a
+  // toolbar button, the title - is still editing, so only a blur that leaves counts.
+  const flush = session.flush;
+  const onBlur = (event: React.FocusEvent<HTMLElement>): void => {
+    if (event.currentTarget.contains(event.relatedTarget)) return;
+    void flush();
+  };
 
   useHotkeys(
     editable && mode === 'read'
@@ -163,6 +173,7 @@ export function PageCanvas({
       }}
       onPointerUp={onPointerUp}
       onKeyDownCapture={onKeyDownCapture}
+      onBlur={onBlur}
     >
       {node.icon !== undefined && (
         <div className="pb-2">
@@ -198,12 +209,11 @@ export function PageCanvas({
           <chunk.DocumentEditor
             pageId={page.id}
             page={node}
-            value={value}
+            value={session.value}
             readOnly={mode === 'read'}
             toolbar={toolbar}
             onReady={onReady}
-            /* P2-T03 owns saving: until the session lands, an edit lives in the editor only. */
-            onChange={noop}
+            onChange={session.onChange}
             className="pt-4"
           />
         </chunk.EditorErrorBoundary>
@@ -213,8 +223,6 @@ export function PageCanvas({
     </article>
   );
 }
-
-const noop = (): void => undefined;
 
 /**
  * docs/07 section 7: a click into read mode puts the caret where the reader clicked. The

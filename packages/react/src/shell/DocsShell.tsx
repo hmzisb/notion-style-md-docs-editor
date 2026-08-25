@@ -9,6 +9,7 @@ import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import { seedSidebar, useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
 import { ALL_SCOPES, useHotkeys, type Hotkey } from '@/lib/hotkeys';
+import { cancelIdle, requestIdle } from '@/lib/idle';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { SidebarProvider, useSidebar } from '@/ui/sidebar';
@@ -379,15 +380,4 @@ function useOnce(effect: () => void): void {
     done.current = true;
     effect();
   }
-}
-
-/** `requestIdleCallback` where it exists; a macrotask everywhere else. */
-function requestIdle(run: () => void): number {
-  if (typeof requestIdleCallback === 'function') return requestIdleCallback(run);
-  return window.setTimeout(run, 200);
-}
-
-function cancelIdle(handle: number): void {
-  if (typeof cancelIdleCallback === 'function') cancelIdleCallback(handle);
-  else clearTimeout(handle);
 }
