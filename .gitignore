@@ -1,0 +1,14 @@
+node_modules/
+dist/
+dist-types/
+.tsbuild/
+*.tsbuildinfo
+coverage/
+.turbo/
+.vite/
+playwright-report/
+test-results/
+blob-report/
+.DS_Store
+*.local
+apps/playground/e2e/__screenshots__/**/*-actual.png

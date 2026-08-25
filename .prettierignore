@@ -1,0 +1,18 @@
+dist
+.tsbuild
+coverage
+pnpm-lock.yaml
+contract/openapi.json
+playwright-report
+test-results
+
+# Handover package: kept byte-for-byte as delivered.
+docs/**/*.md
+reference/**/*.md
+templates/**/*.md
+CLAUDE.md
+README.md
+PROGRESS.md
+DEVIATIONS.md
+ASSUMPTIONS.md
+fixtures/**

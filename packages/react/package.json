@@ -1,0 +1,39 @@
+{
+  "name": "@docs/react",
+  "version": "0.0.0",
+  "description": "Notion-grade Markdown docs UI for React: tree, viewer, editor, shell and adapters.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --passWithNoTests"
+  },
+  "dependencies": {
+    "@docs/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^18.3 || ^19",
+    "react-dom": "^18.3 || ^19"
+  },
+  "devDependencies": {
+    "@types/react": "19.2.18",
+    "@types/react-dom": "19.2.5",
+    "react": "19.2.8",
+    "react-dom": "19.2.8",
+    "tsup": "8.5.1",
+    "vitest": "3.2.7"
+  }
+}

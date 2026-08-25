@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023"],
+    "types": ["node"],
+    "outDir": ".tsbuild/tools",
+    "tsBuildInfoFile": ".tsbuild/tools.tsbuildinfo",
+    "rootDir": "."
+  },
+  "include": ["scripts/**/*.ts"]
+}

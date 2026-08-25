@@ -1,0 +1,10 @@
+packages:
+  - packages/*
+  - apps/*
+  - smoke/*
+
+onlyBuiltDependencies:
+  - esbuild
+  - '@tailwindcss/oxide'
+  - msw
+  - unrs-resolver

@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": [],
+    "rootDir": "src",
+    "outDir": "../../.tsbuild/playground",
+    "tsBuildInfoFile": "../../.tsbuild/playground.tsbuildinfo",
+    "paths": {
+      "@/*": ["./apps/playground/src/*"],
+      "@docs/core": ["packages/core/src/index.ts"],
+      "@docs/core/testing": ["packages/core/src/testing/index.ts"],
+      "@docs/react": ["packages/react/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "references": [{ "path": "../../packages/core" }, { "path": "../../packages/react" }]
+}

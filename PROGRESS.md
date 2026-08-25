@@ -6,7 +6,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Phase 0: Foundation
 
-- [ ] **P0-T01** Workspace bootstrap
+- [x] **P0-T01** Workspace bootstrap
+  - pnpm workspace (core, react, playground, fixtures, smoke), strict TS project refs, ESLint flat config with `boundaries` verified firing, Prettier, Vitest projects, Changesets, tsup, size-limit/publint/attw, `scripts/gate.ts`, CI. `pnpm i && pnpm typecheck && pnpm lint && pnpm test` green.
 - [ ] **P0-T02** Core models and contract schemas
 - [ ] **P0-T03** Hashing and ids
 - [ ] **P0-T04** Tree index and pure ops
@@ -88,5 +89,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: (none)
+- Current task: P0-T02
 - Last gate passed: (none)
