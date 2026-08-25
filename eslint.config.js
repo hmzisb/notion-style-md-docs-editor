@@ -181,7 +181,12 @@ export default tseslint.config(
   // core is platform-neutral: no React, no DOM, no Node built-ins (docs/02 section 2).
   {
     files: ['packages/core/src/**/*.ts'],
-    ignores: ['packages/core/src/contract/openapi.ts', 'packages/core/src/**/*.test.ts'],
+    ignores: [
+      'packages/core/src/contract/openapi.ts',
+      // The corpus loader reads the repo's fixtures; it lazily imports node built-ins.
+      'packages/core/src/testing/fixtures.ts',
+      'packages/core/src/**/*.test.ts',
+    ],
     rules: {
       'no-restricted-imports': [
         'error',

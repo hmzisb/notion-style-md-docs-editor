@@ -1,0 +1,713 @@
+{
+  "version": 1,
+  "description": "Corpus manifest: the expected walk, ordering and fidelity of every file under fixtures/corpus. Tests read this file; adding a page means adding an entry here (docs/10 section 6).",
+  "counts": {
+    "pages": 33,
+    "folders": 1,
+    "assets": 4,
+    "ignored": 2,
+    "rules": 3
+  },
+  "pages": [
+    {
+      "path": "index.md",
+      "kind": "page",
+      "title": "Docs corpus",
+      "parentPath": null,
+      "order": null,
+      "icon": {
+        "kind": "lucide",
+        "name": "library"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 540,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "root-index",
+        "lucide-icon",
+        "relative-links",
+        "relative-image"
+      ]
+    },
+    {
+      "path": "product/index.md",
+      "kind": "page",
+      "title": "Product",
+      "parentPath": "index.md",
+      "order": 10,
+      "icon": {
+        "kind": "emoji",
+        "value": "🚀"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 215,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "emoji-icon",
+        "order",
+        "parent-link"
+      ]
+    },
+    {
+      "path": "product/roadmap.md",
+      "kind": "page",
+      "title": "Roadmap",
+      "parentPath": "product/index.md",
+      "order": 10,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 222,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "ordered-list",
+        "nested-ordered-list",
+        "blockquote"
+      ]
+    },
+    {
+      "path": "product/pricing.md",
+      "kind": "page",
+      "title": "Pricing",
+      "parentPath": "product/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 226,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "no-frontmatter",
+        "h1-title",
+        "table"
+      ]
+    },
+    {
+      "path": "guides/index.md",
+      "kind": "page",
+      "title": "Guides",
+      "parentPath": "index.md",
+      "order": 20,
+      "icon": {
+        "kind": "lucide",
+        "name": "book-open"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 450,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "link-forms",
+        "percent-encoded-link",
+        "fragment-link",
+        "query-link"
+      ]
+    },
+    {
+      "path": "guides/getting-started.md",
+      "kind": "page",
+      "title": "Getting started",
+      "parentPath": "guides/index.md",
+      "order": 10,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 362,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "nested-list",
+        "mixed-list",
+        "code-bash"
+      ]
+    },
+    {
+      "path": "guides/auth/index.md",
+      "kind": "page",
+      "title": "Authentication",
+      "parentPath": "guides/index.md",
+      "order": 20,
+      "icon": {
+        "kind": "emoji",
+        "value": "🔐"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 394,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "gfm-alert",
+        "relative-image",
+        "emoji-icon"
+      ]
+    },
+    {
+      "path": "guides/auth/tokens.md",
+      "kind": "page",
+      "title": "Tokens",
+      "parentPath": "guides/auth/index.md",
+      "order": 10,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 341,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "code-python",
+        "heading-anchor"
+      ]
+    },
+    {
+      "path": "guides/auth/sessions.md",
+      "kind": "page",
+      "title": "Sessions",
+      "parentPath": "guides/auth/index.md",
+      "order": 20,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 309,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "h3",
+        "code-sql"
+      ]
+    },
+    {
+      "path": "guides/auth/troubleshooting.md",
+      "kind": "page",
+      "title": "Troubleshooting",
+      "parentPath": "guides/auth/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 243,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "no-frontmatter",
+        "strong"
+      ]
+    },
+    {
+      "path": "guides/billing/README.md",
+      "kind": "page",
+      "title": "Billing",
+      "parentPath": "guides/index.md",
+      "order": 30,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 233,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "readme-as-index",
+        "inline-code"
+      ]
+    },
+    {
+      "path": "guides/billing/invoices.md",
+      "kind": "page",
+      "title": "Invoices",
+      "parentPath": "guides/billing/README.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 220,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "code-json"
+      ]
+    },
+    {
+      "path": "guides/billing/refunds.md",
+      "kind": "page",
+      "title": "Refunds",
+      "parentPath": "guides/billing/README.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 169,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "no-frontmatter",
+        "no-h1",
+        "humanised-title"
+      ]
+    },
+    {
+      "path": "guides/api/index.md",
+      "kind": "page",
+      "title": "API",
+      "parentPath": "guides/index.md",
+      "order": 40,
+      "icon": {
+        "kind": "lucide",
+        "name": "plug"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 224,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "asset-sibling"
+      ]
+    },
+    {
+      "path": "guides/api/rest/index.md",
+      "kind": "page",
+      "title": "REST",
+      "parentPath": "guides/api/index.md",
+      "order": 10,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 158,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "percent-encoded-link"
+      ]
+    },
+    {
+      "path": "guides/api/rest/errors.md",
+      "kind": "page",
+      "title": "Error codes",
+      "parentPath": "guides/api/rest/index.md",
+      "order": 10,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 649,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "table",
+        "inline-code-in-table"
+      ]
+    },
+    {
+      "path": "guides/api/rest/pagination.md",
+      "kind": "page",
+      "title": "Pagination",
+      "parentPath": "guides/api/rest/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 358,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "code-ts",
+        "code-js"
+      ]
+    },
+    {
+      "path": "guides/api/rest/rate limits.md",
+      "kind": "page",
+      "title": "Rate limits",
+      "parentPath": "guides/api/rest/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 337,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "space-in-filename"
+      ]
+    },
+    {
+      "path": "guides/api/webhooks/index.md",
+      "kind": "page",
+      "title": "Webhooks",
+      "parentPath": "guides/api/index.md",
+      "order": 20,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 159,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": []
+    },
+    {
+      "path": "guides/api/webhooks/events.md",
+      "kind": "page",
+      "title": "Events",
+      "parentPath": "guides/api/webhooks/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 278,
+      "fidelity": {
+        "level": "reformat",
+        "reasons": [
+          "heading_level_clamped"
+        ]
+      },
+      "exactRoundTrip": false,
+      "covers": [
+        "h4-clamped"
+      ]
+    },
+    {
+      "path": "guides/api/webhooks/signatures.md",
+      "kind": "page",
+      "title": "Signatures",
+      "parentPath": "guides/api/webhooks/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 254,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "code-bash"
+      ]
+    },
+    {
+      "path": "specs/index.md",
+      "kind": "page",
+      "title": "Specs",
+      "parentPath": "index.md",
+      "order": 30,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 385,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "details-block"
+      ]
+    },
+    {
+      "path": "specs/search.md",
+      "kind": "page",
+      "title": "Search",
+      "parentPath": "specs/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 282,
+      "fidelity": {
+        "level": "lossy",
+        "reasons": [
+          "footnoteDefinition"
+        ]
+      },
+      "exactRoundTrip": false,
+      "covers": [
+        "footnote"
+      ]
+    },
+    {
+      "path": "specs/import-export.md",
+      "kind": "page",
+      "title": "Import and export",
+      "parentPath": "specs/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 260,
+      "fidelity": {
+        "level": "lossy",
+        "reasons": [
+          "html"
+        ]
+      },
+      "exactRoundTrip": false,
+      "covers": [
+        "html-comment"
+      ]
+    },
+    {
+      "path": "specs/legacy-notes.md",
+      "kind": "page",
+      "title": "Legacy notes",
+      "parentPath": "specs/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "crlf",
+      "bytes": 278,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "crlf"
+      ]
+    },
+    {
+      "path": "specs/large-page.md",
+      "kind": "page",
+      "title": "Large page",
+      "parentPath": "specs/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 62141,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "large-body"
+      ]
+    },
+    {
+      "path": "decisions/index.md",
+      "kind": "page",
+      "title": "Decisions",
+      "parentPath": "index.md",
+      "order": 40,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 195,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": []
+    },
+    {
+      "path": "decisions/0001-markdown-canonical.md",
+      "kind": "page",
+      "title": "ADR 0001: Markdown is canonical",
+      "parentPath": "decisions/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 385,
+      "fidelity": {
+        "level": "reformat",
+        "reasons": [
+          "definition"
+        ]
+      },
+      "exactRoundTrip": false,
+      "covers": [
+        "reference-links",
+        "quoted-yaml-title"
+      ]
+    },
+    {
+      "path": "decisions/0002-provider-seam.md",
+      "kind": "page",
+      "title": "ADR 0002: One provider seam",
+      "parentPath": "decisions/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 336,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "no-frontmatter",
+        "blockquote",
+        "colon-in-h1"
+      ]
+    },
+    {
+      "path": "meeting-notes/index.md",
+      "kind": "page",
+      "title": "Meeting notes",
+      "parentPath": "index.md",
+      "order": 50,
+      "icon": {
+        "kind": "emoji",
+        "value": "📝"
+      },
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 164,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "emoji-icon"
+      ]
+    },
+    {
+      "path": "meeting-notes/2026-01-14-kickoff.md",
+      "kind": "page",
+      "title": "Kickoff",
+      "parentPath": "meeting-notes/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": true,
+      "eol": "lf",
+      "bytes": 264,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "task-list",
+        "nested-task-list"
+      ]
+    },
+    {
+      "path": "meeting-notes/2026-02-03-review.md",
+      "kind": "page",
+      "title": "Design review",
+      "parentPath": "meeting-notes/index.md",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 232,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "no-frontmatter"
+      ]
+    },
+    {
+      "path": "archive/2024-notes.md",
+      "kind": "page",
+      "title": "Archived notes",
+      "parentPath": "archive",
+      "order": null,
+      "icon": null,
+      "hasFrontmatter": false,
+      "eol": "lf",
+      "bytes": 147,
+      "fidelity": {
+        "level": "exact",
+        "reasons": []
+      },
+      "exactRoundTrip": true,
+      "covers": [
+        "folder-node"
+      ]
+    }
+  ],
+  "folders": [
+    {
+      "path": "archive",
+      "kind": "folder",
+      "title": "Archive",
+      "parentPath": null
+    }
+  ],
+  "assets": [
+    "assets/diagram.png",
+    "assets/logo.svg",
+    "guides/api/openapi.yaml",
+    "guides/auth/assets/flow.png"
+  ],
+  "ignored": [
+    ".hidden/secret.md",
+    "node_modules/pkg/readme.md"
+  ],
+  "rules": [
+    "callout.md",
+    "image-caption.md",
+    "toggle.md"
+  ]
+}

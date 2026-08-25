@@ -20,7 +20,8 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
   - `fs/paths.ts`: `slugify` (NFKD fold, 64-char cap), `uniqueSlug`, `pagePathFor`/`dirPathFor`/`assetBaseFor`, `isIndex`/`isHidden`/`isMarkdown`, `normalizePath` (traversal above root → `null`), `humanize`/`titleFromPath`. `fs/ordering.ts`: digit-run `compareNatural`, `compareSiblings` (ordered first, then pages before folders), `nextOrder`, `midpointOrder` with precision-loss detection, `renumber`. 54 tests incl. unicode titles, collisions, `page-2` before `page-10`, repeated halving until renumber.
 - [x] **P0-T07** Link resolution
   - `links.ts`: `parseHref` (query/fragment split, per-segment percent-decode, scheme and protocol-relative detection), `normalizeRelative`, `resolvePageLink` trying path → `.md` → `index.md`/`README.md`. 39-row resolve table plus `parseHref`/`normalizeRelative` cases; 51 tests.
-- [ ] **P0-T08** Fixture corpus and perf generators
+- [x] **P0-T08** Fixture corpus and perf generators
+  - `fixtures/corpus/`: 33 pages over 5 levels (product, guides/{auth,billing,api/{rest,webhooks}}, specs, decisions, meeting-notes), one index-less folder, 4 assets, 2 ignored entries, 3 rule goldens. Covers frontmatter present/absent, `order`, emoji and Lucide icons, README-as-index, every link form, relative images, tables, task lists, nested/mixed lists, code in 6 languages, blockquotes, GFM alerts, `<details>`, HTML comment (lossy), reference links (reformat), footnote (lossy), CRLF, a 61 KB page. `manifest.json` declares kind/title/parent/order/icon/eol/bytes/fidelity per file. `fixtures/perf/gen.ts` writes a 5k-node tree and a 3k-block page to a temp dir; `loadCorpus()` in `@docs/core/testing`. 67 corpus tests + 3 generator tests.
 - [ ] **P0-T09** Walk and MemoryFileStore
 - [ ] **P0-T10** FileStore provider: read side
 - [ ] **P0-T11** FileStore provider: write side
@@ -95,5 +96,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T08
+- Current task: P0-T09
 - Last gate passed: (none)

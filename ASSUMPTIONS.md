@@ -5,6 +5,18 @@ Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user r
 Format:
 
 ```
+## ASM-006 · P0-T08 · 2026-08-25
+Question: `fixtures/perf/gen.ts` sits outside every package `rootDir`, so no existing Vitest project can run its check.
+Assumed: add a third Vitest project, `fixtures`, and include `fixtures/**/*.ts` in `tsconfig.tools.json`.
+Why: the generator is real code with a real invariant (deterministic output, exact file count); the alternative was importing across `rootDir`, which `tsc -b` rejects, or shipping it untested.
+Cheap to reverse: yes
+
+## ASM-005 · P0-T08 · 2026-08-25
+Question: `loadCorpus` must read the repo from disk, but `@docs/core/testing` also carries `runProviderConformance`, which docs/10 section 1 runs in jsdom.
+Assumed: `testing/fixtures.ts` imports `node:fs/promises` and `node:url` lazily inside the function, and is listed as an exception to the core node-built-in lint ban.
+Why: a static node import would make the whole `./testing` subpath unloadable in a browser test environment; the lazy import keeps the conformance suite platform-neutral and still fails loudly in a browser if `loadCorpus` is actually called there.
+Cheap to reverse: yes
+
 ## ASM-001 · <TASK-ID> · <date>
 Question: <the ambiguity, one line>
 Assumed: <the choice>
