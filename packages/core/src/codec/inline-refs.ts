@@ -40,7 +40,12 @@ function inline(node: MdNode, defs: Map<string, MdNode>): void {
     }
     kept.push(
       child.type === 'linkReference'
-        ? { children: child.children ?? [], title: target.title ?? null, type: 'link', url: target.url }
+        ? {
+            children: child.children ?? [],
+            title: target.title ?? null,
+            type: 'link',
+            url: target.url,
+          }
         : { alt: child.alt ?? null, title: target.title ?? null, type: 'image', url: target.url },
     );
   }

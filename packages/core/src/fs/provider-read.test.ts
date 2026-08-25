@@ -11,13 +11,18 @@ const corpus = await loadCorpus();
 
 const PNG = corpus.assets.get('assets/diagram.png') ?? new Uint8Array();
 
-function corpusProvider(overrides: Record<string, string | Uint8Array> = {}): ReturnType<typeof createFileStoreProvider> {
+function corpusProvider(
+  overrides: Record<string, string | Uint8Array> = {},
+): ReturnType<typeof createFileStoreProvider> {
   const store = new MemoryFileStore({
     ...Object.fromEntries(corpus.manifest.pages.map((page) => [page.path, corpus.read(page.path)])),
     ...Object.fromEntries(corpus.assets),
     ...overrides,
   });
-  return createFileStoreProvider(store, { title: 'Corpus', now: () => new Date('2026-01-01T00:00:00.000Z') });
+  return createFileStoreProvider(store, {
+    title: 'Corpus',
+    now: () => new Date('2026-01-01T00:00:00.000Z'),
+  });
 }
 
 const nodeAt = async (
@@ -153,13 +158,18 @@ describe('getPage', () => {
   });
 
   it('prefers a frontmatter updatedAt over the store mtime', async () => {
-    const provider = corpusProvider({ 'dated.md': '---\nupdatedAt: 2024-03-04T05:06:07Z\n---\n\n# D\n' });
+    const provider = corpusProvider({
+      'dated.md': '---\nupdatedAt: 2024-03-04T05:06:07Z\n---\n\n# D\n',
+    });
     const node = await nodeAt(provider, 'dated.md');
     expect((await provider.getPage(node.id)).updatedAt).toBe('2024-03-04T05:06:07.000Z');
   });
 
   it('falls back to the store mtime', async () => {
-    const store = new MemoryFileStore({ 'a.md': '# A\n' }, { now: () => Date.parse('2025-06-07T08:09:10Z') });
+    const store = new MemoryFileStore(
+      { 'a.md': '# A\n' },
+      { now: () => Date.parse('2025-06-07T08:09:10Z') },
+    );
     const provider = createFileStoreProvider(store);
     const snapshot = await provider.getTree();
     const id = snapshot.nodes[0]?.id ?? '';

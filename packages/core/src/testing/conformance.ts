@@ -122,7 +122,10 @@ export function runProviderConformance(
             expect(index.rootIds).toContain(node.id);
             continue;
           }
-          expect(index.byId[node.parentId], `${node.path} has a parent that is not in the tree`).toBeDefined();
+          expect(
+            index.byId[node.parentId],
+            `${node.path} has a parent that is not in the tree`,
+          ).toBeDefined();
           expect(index.byId[node.parentId]?.childIds).toContain(node.id);
         }
       });
@@ -142,7 +145,10 @@ export function runProviderConformance(
         const provider = await fresh();
         const snapshot = await provider.getTree();
         const parent = snapshot.nodes.find((node) => node.childIds.length > 0);
-        expect(parent, `the conformance seed needs a node with children; ${SEED_HELP}`).toBeDefined();
+        expect(
+          parent,
+          `the conformance seed needs a node with children; ${SEED_HELP}`,
+        ).toBeDefined();
         if (!parent) return;
 
         const scoped = await provider.getTree({ rootId: parent.id });
@@ -186,7 +192,9 @@ export function runProviderConformance(
         const provider = await fresh();
         const first = pagesOf(await provider.getTree())[0];
         if (!first) return;
-        expect((await provider.getPage(first.id)).version).toBe((await provider.getPage(first.id)).version);
+        expect((await provider.getPage(first.id)).version).toBe(
+          (await provider.getPage(first.id)).version,
+        );
       });
     });
 
@@ -223,10 +231,16 @@ export function runProviderConformance(
             break;
           }
         }
-        expect(target, `the conformance seed needs a page with an unknown frontmatter key; ${SEED_HELP}`).toBeDefined();
+        expect(
+          target,
+          `the conformance seed needs a page with an unknown frontmatter key; ${SEED_HELP}`,
+        ).toBeDefined();
         if (!target) return;
 
-        await provider.savePage(target.id, { body: `${target.body}\nEdited.\n`, baseVersion: target.version });
+        await provider.savePage(target.id, {
+          body: `${target.body}\nEdited.\n`,
+          baseVersion: target.version,
+        });
         const after = await provider.getPage(target.id);
 
         // Existing keys keep their order and their values; a first write may append an
@@ -244,10 +258,16 @@ export function runProviderConformance(
         if (!target) return;
 
         const page = await provider.getPage(target.id);
-        await provider.savePage(target.id, { body: 'First writer wins.\n', baseVersion: page.version });
+        await provider.savePage(target.id, {
+          body: 'First writer wins.\n',
+          baseVersion: page.version,
+        });
 
         await expect(
-          provider.savePage(target.id, { body: 'Second writer loses.\n', baseVersion: page.version }),
+          provider.savePage(target.id, {
+            body: 'Second writer loses.\n',
+            baseVersion: page.version,
+          }),
         ).rejects.toSatisfy((error: unknown) => {
           if (!isConflictError(error)) return false;
           expect(error.code).toBe('conflict');
@@ -263,10 +283,16 @@ export function runProviderConformance(
         const provider = await fresh();
         if (!provider.capabilities.write) return;
         const folder = folderOf(await provider.getTree());
-        expect(folder, `the conformance seed needs a directory without an index page; ${SEED_HELP}`).toBeDefined();
+        expect(
+          folder,
+          `the conformance seed needs a directory without an index page; ${SEED_HELP}`,
+        ).toBeDefined();
         if (!folder) return;
 
-        const result = await provider.savePage(folder.id, { body: '# Converted\n', baseVersion: null });
+        const result = await provider.savePage(folder.id, {
+          body: '# Converted\n',
+          baseVersion: null,
+        });
         expect(result.version).not.toBe('');
 
         const after = await provider.getTree();
@@ -284,7 +310,10 @@ export function runProviderConformance(
         if (!target) return;
 
         const before = await provider.getPage(target.id);
-        const node = await provider.updateMeta(target.id, { title: 'Conformance title', icon: 'lucide:book-open' });
+        const node = await provider.updateMeta(target.id, {
+          title: 'Conformance title',
+          icon: 'lucide:book-open',
+        });
 
         expect(node.id).toBe(target.id);
         expect(node.title).toBe('Conformance title');
@@ -300,7 +329,10 @@ export function runProviderConformance(
       it('creates at the root', async () => {
         const provider = await fresh();
         if (!provider.capabilities.write) return;
-        const created = await provider.createPage({ parentId: null, title: 'Conformance root page' });
+        const created = await provider.createPage({
+          parentId: null,
+          title: 'Conformance root page',
+        });
 
         expect(created.title).toBe('Conformance root page');
         expect(created.kind).toBe('page');
@@ -324,7 +356,10 @@ export function runProviderConformance(
           (node) => node.kind === 'page' && isIndexPath(node.path) && node.childIds.length > 0,
         );
         if (directoryPage) {
-          const child = await provider.createPage({ parentId: directoryPage.id, title: 'Under a directory page' });
+          const child = await provider.createPage({
+            parentId: directoryPage.id,
+            title: 'Under a directory page',
+          });
           expect(child.parentId).toBe(directoryPage.id);
         }
 
@@ -370,7 +405,9 @@ export function runProviderConformance(
         expect(moved.id).toBe(traveller.id);
         expect(moved.parentId).toBe(host.id);
         expect(moved.path).not.toBe(traveller.path);
-        expect(childrenOf(await provider.getTree(), host.id).map((node) => node.id)).toContain(traveller.id);
+        expect(childrenOf(await provider.getTree(), host.id).map((node) => node.id)).toContain(
+          traveller.id,
+        );
       });
 
       it('refuses a move into its own subtree', async () => {
@@ -381,7 +418,9 @@ export function runProviderConformance(
         const child = await provider.createPage({ parentId: parent.id, title: 'Cycle child' });
 
         for (const target of [parent.id, child.id]) {
-          await expect(provider.movePage(parent.id, { parentId: target, index: 0 })).rejects.toSatisfy(
+          await expect(
+            provider.movePage(parent.id, { parentId: target, index: 0 }),
+          ).rejects.toSatisfy(
             (error: unknown) => isProviderError(error) && error.code === 'validation',
           );
         }
@@ -414,7 +453,15 @@ export function runProviderConformance(
         // Each insert at index 1 halves the gap; 26 of them exhaust the 1e-6 floor.
         const wedges: NodeId[] = [];
         for (let i = 0; i < 26; i++) {
-          wedges.push((await provider.createPage({ parentId: host.id, title: `Wedge ${String(i)}`, index: 1 })).id);
+          wedges.push(
+            (
+              await provider.createPage({
+                parentId: host.id,
+                title: `Wedge ${String(i)}`,
+                index: 1,
+              })
+            ).id,
+          );
         }
 
         const last = wedges[wedges.length - 1];
@@ -441,13 +488,19 @@ export function runProviderConformance(
 
         const parent = await provider.createPage({ parentId: null, title: 'Doomed parent' });
         const child = await provider.createPage({ parentId: parent.id, title: 'Doomed child' });
-        const grandchild = await provider.createPage({ parentId: child.id, title: 'Doomed grandchild' });
+        const grandchild = await provider.createPage({
+          parentId: child.id,
+          title: 'Doomed grandchild',
+        });
 
         await provider.deletePage(parent.id);
 
         const after = await provider.getTree();
         for (const id of [parent.id, child.id, grandchild.id]) {
-          expect(after.nodes.some((node) => node.id === id), `${id} survived the delete`).toBe(false);
+          expect(
+            after.nodes.some((node) => node.id === id),
+            `${id} survived the delete`,
+          ).toBe(false);
         }
         await expect(provider.getPage(parent.id)).rejects.toSatisfy(
           (error: unknown) => isProviderError(error) && error.code === 'not_found',

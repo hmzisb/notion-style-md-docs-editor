@@ -26,7 +26,9 @@ function harness(seed: MemoryFileSeed, opts: FileStoreProviderOptions = {}): Har
       return node;
     },
     async paths() {
-      return (await store.list()).filter((entry) => entry.kind === 'file').map((entry) => entry.path);
+      return (await store.list())
+        .filter((entry) => entry.kind === 'file')
+        .map((entry) => entry.path);
     },
   };
 }
@@ -48,7 +50,10 @@ describe('savePage', () => {
     const node = await h.at('a.md');
     const before = await h.provider.getPage(node.id);
 
-    const result = await h.provider.savePage(node.id, { body: '\n# A\n\nRewritten.\n', baseVersion: before.version });
+    const result = await h.provider.savePage(node.id, {
+      body: '\n# A\n\nRewritten.\n',
+      baseVersion: before.version,
+    });
     expect(result.version).not.toBe(before.version);
     expect(result.updatedAt).toMatch(/^\d{4}-/);
 
@@ -111,9 +116,9 @@ describe('savePage', () => {
     const node = await h.at('a.md');
     const { version } = await h.provider.getPage(node.id);
     await h.store.remove('a.md');
-    await expect(h.provider.savePage(node.id, { body: 'x', baseVersion: version })).rejects.toSatisfy(
-      (error: unknown) => isProviderError(error) && error.code === 'not_found',
-    );
+    await expect(
+      h.provider.savePage(node.id, { body: 'x', baseVersion: version }),
+    ).rejects.toSatisfy((error: unknown) => isProviderError(error) && error.code === 'not_found');
   });
 });
 
@@ -123,13 +128,19 @@ describe('updateMeta', () => {
   it('writes title and icon without touching the body', async () => {
     const h = harness(seed);
     const node = await h.at('a.md');
-    const updated = await h.provider.updateMeta(node.id, { title: 'Renamed', icon: 'lucide:book-open' });
+    const updated = await h.provider.updateMeta(node.id, {
+      title: 'Renamed',
+      icon: 'lucide:book-open',
+    });
 
     expect(updated).toMatchObject({ id: node.id, title: 'Renamed', path: 'a.md' });
     expect(updated.icon).toEqual({ kind: 'lucide', name: 'book-open' });
     const raw = await h.store.readText('a.md');
     expect(raw).toContain('# Heading\n\nBody stays.\n');
-    expect(splitFrontmatter(raw).meta).toMatchObject({ title: 'Renamed', icon: 'lucide:book-open' });
+    expect(splitFrontmatter(raw).meta).toMatchObject({
+      title: 'Renamed',
+      icon: 'lucide:book-open',
+    });
   });
 
   it('clears an icon with an empty string', async () => {
@@ -151,15 +162,26 @@ describe('updateMeta', () => {
   it('renames a fresh page to its title when asked, keeping the id', async () => {
     const h = harness({ 'untitled.md': '---\nid: keep-me\ntitle: Untitled\n---\n\n' });
     const node = await h.at('untitled.md');
-    const renamed = await h.provider.updateMeta(node.id, { title: 'Auth flow' }, { renameFile: true });
+    const renamed = await h.provider.updateMeta(
+      node.id,
+      { title: 'Auth flow' },
+      { renameFile: true },
+    );
     expect(renamed).toMatchObject({ id: 'keep-me', path: 'auth-flow.md' });
     expect(await h.paths()).toEqual(['auth-flow.md']);
   });
 
   it('renames the directory of an index page, taking its children along', async () => {
-    const h = harness({ 'old/index.md': '---\nid: dir-page\n---\n\n# Old\n', 'old/child.md': '# Child\n' });
+    const h = harness({
+      'old/index.md': '---\nid: dir-page\n---\n\n# Old\n',
+      'old/child.md': '# Child\n',
+    });
     const node = await h.at('old/index.md');
-    const renamed = await h.provider.updateMeta(node.id, { title: 'New home' }, { renameFile: true });
+    const renamed = await h.provider.updateMeta(
+      node.id,
+      { title: 'New home' },
+      { renameFile: true },
+    );
     expect(renamed.path).toBe('new-home/index.md');
     expect(await h.paths()).toEqual(['new-home/child.md', 'new-home/index.md']);
   });
@@ -167,7 +189,11 @@ describe('updateMeta', () => {
   it('suffixes a rename that would collide', async () => {
     const h = harness({ 'untitled.md': '# U\n', 'auth-flow.md': '# Taken\n' });
     const node = await h.at('untitled.md');
-    const renamed = await h.provider.updateMeta(node.id, { title: 'Auth flow' }, { renameFile: true });
+    const renamed = await h.provider.updateMeta(
+      node.id,
+      { title: 'Auth flow' },
+      { renameFile: true },
+    );
     expect(renamed.path).toBe('auth-flow-2.md');
   });
 
@@ -228,10 +254,14 @@ describe('createPage', () => {
 
   it('suffixes a slug that is already taken by a page, a directory or an asset', async () => {
     const h = harness({ 'notes.md': '# Taken\n' });
-    expect((await h.provider.createPage({ parentId: null, title: 'Notes' })).path).toBe('notes-2.md');
+    expect((await h.provider.createPage({ parentId: null, title: 'Notes' })).path).toBe(
+      'notes-2.md',
+    );
 
     const dirs = harness({ 'notes/a.md': '# A\n' });
-    expect((await dirs.provider.createPage({ parentId: null, title: 'Notes' })).path).toBe('notes-2.md');
+    expect((await dirs.provider.createPage({ parentId: null, title: 'Notes' })).path).toBe(
+      'notes-2.md',
+    );
   });
 
   it('falls back to untitled for an empty title', async () => {
@@ -255,7 +285,12 @@ describe('createPage', () => {
 
     const root = await h.at('index.md');
     const children = (await h.provider.getTree()).nodes.filter((node) => node.parentId === root.id);
-    expect(children.map((node) => node.path)).toEqual(['a.md', 'between.md', 'b.md', 'appended.md']);
+    expect(children.map((node) => node.path)).toEqual([
+      'a.md',
+      'between.md',
+      'b.md',
+      'appended.md',
+    ]);
   });
 });
 
@@ -282,7 +317,11 @@ describe('movePage', () => {
   });
 
   it('moves a page with a directory and takes the subtree with it', async () => {
-    const h = harness({ ...seed, 'guides/auth/index.md': '# Auth\n', 'guides/auth/tokens.md': '# Tokens\n' });
+    const h = harness({
+      ...seed,
+      'guides/auth/index.md': '# Auth\n',
+      'guides/auth/tokens.md': '# Tokens\n',
+    });
     const auth = await h.at('guides/auth/index.md');
     const specs = await h.at('specs/index.md');
 
@@ -302,7 +341,10 @@ describe('movePage', () => {
     expect(moved.path).toBe('guides/b.md');
     expect(orderIn(await h.store.readText('guides/b.md'))).toBe(0);
     expect(guides.childIds.length).toBe(2);
-    expect((await h.at('guides/index.md')).childIds.map((id) => id)).toEqual([b.id, (await h.at('guides/a.md')).id]);
+    expect((await h.at('guides/index.md')).childIds.map((id) => id)).toEqual([
+      b.id,
+      (await h.at('guides/a.md')).id,
+    ]);
   });
 
   it('renumbers the sibling group when no midpoint is left', async () => {
@@ -332,7 +374,9 @@ describe('movePage', () => {
     const auth = await h.at('guides/auth/index.md');
 
     for (const target of [guides.id, auth.id]) {
-      await expect(h.provider.movePage(guides.id, { parentId: target, index: 0 })).rejects.toSatisfy(
+      await expect(
+        h.provider.movePage(guides.id, { parentId: target, index: 0 }),
+      ).rejects.toSatisfy(
         (error: unknown) => isProviderError(error) && error.code === 'validation',
       );
     }
@@ -350,7 +394,11 @@ describe('movePage', () => {
   });
 
   it('moves a folder without giving it an order', async () => {
-    const h = harness({ 'index.md': '# Home\n', 'archive/a.md': '# A\n', 'specs/index.md': '# Specs\n' });
+    const h = harness({
+      'index.md': '# Home\n',
+      'archive/a.md': '# A\n',
+      'specs/index.md': '# Specs\n',
+    });
     const folder = await h.at('archive');
     const specs = await h.at('specs/index.md');
 

@@ -19,7 +19,12 @@ import {
   subtreeIds,
 } from './tree.js';
 
-function page(id: string, path: string, parentId: string | null, childIds: string[] = []): TreeNode {
+function page(
+  id: string,
+  path: string,
+  parentId: string | null,
+  childIds: string[] = [],
+): TreeNode {
   return { id, kind: 'page', title: id.toUpperCase(), path, parentId, childIds };
 }
 
@@ -387,10 +392,7 @@ describe('path aliases', () => {
   it('lets index.md keep the directory when README.md is also present', () => {
     const index = buildIndex({
       version: 'v1',
-      nodes: [
-        page('p_index', 'guides/index.md', null),
-        page('p_readme', 'guides/README.md', null),
-      ],
+      nodes: [page('p_index', 'guides/index.md', null), page('p_readme', 'guides/README.md', null)],
     });
     expect(index.idByPath.guides).toBe('p_index');
     expect(index.idByPath['guides/']).toBe('p_index');

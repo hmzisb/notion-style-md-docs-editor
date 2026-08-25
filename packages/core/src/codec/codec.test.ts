@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
-import { createCodec, defaultCodec, markdownToValue, normalizeMarkdown, valueToMarkdown } from './codec.js';
+import {
+  createCodec,
+  defaultCodec,
+  markdownToValue,
+  normalizeMarkdown,
+  valueToMarkdown,
+} from './codec.js';
 import { DEFAULT_STRINGIFY_OPTIONS } from './base-kit.js';
 import { remarkInlineRefs } from './inline-refs.js';
 import { splitFrontmatter } from '../frontmatter.js';
@@ -35,7 +41,9 @@ describe('corpus goldens', () => {
   );
 
   it('has a golden for exactly the pages that do not round trip', async () => {
-    const declared = corpus.manifest.pages.filter((page) => !page.exactRoundTrip).map((p) => p.path);
+    const declared = corpus.manifest.pages
+      .filter((page) => !page.exactRoundTrip)
+      .map((p) => p.path);
     expect(declared).toEqual([
       'guides/api/webhooks/events.md',
       'specs/search.md',
@@ -99,7 +107,9 @@ describe('MDX off', () => {
 
 describe('marks this kit does not ship', () => {
   it('writes the words of an unshipped mark instead of throwing on save', () => {
-    const value = [{ children: [{ text: 'a' }, { text: 'b', underline: true }, { text: 'c' }], type: 'p' }];
+    const value = [
+      { children: [{ text: 'a' }, { text: 'b', underline: true }, { text: 'c' }], type: 'p' },
+    ];
     expect(valueToMarkdown(value)).toBe('abc\n');
   });
 
@@ -110,7 +120,9 @@ describe('marks this kit does not ship', () => {
 
 describe('headings', () => {
   it('clamps H4-H6 to H3 and never emits them again', () => {
-    expect(roundTrip('#### Four\n\n##### Five\n\n###### Six\n')).toBe('### Four\n\n### Five\n\n### Six\n');
+    expect(roundTrip('#### Four\n\n##### Five\n\n###### Six\n')).toBe(
+      '### Four\n\n### Five\n\n### Six\n',
+    );
   });
 
   it('leaves H1-H3 alone', () => {
@@ -120,7 +132,9 @@ describe('headings', () => {
 
 describe('line breaks', () => {
   it('keeps the author wrapping of a paragraph', () => {
-    expect(roundTrip('One line\nand its continuation.\n')).toBe('One line\nand its continuation.\n');
+    expect(roundTrip('One line\nand its continuation.\n')).toBe(
+      'One line\nand its continuation.\n',
+    );
   });
 
   it('keeps a mark that spans a wrapped line', () => {
@@ -143,16 +157,28 @@ describe('references and alerts', () => {
     const tree = {
       type: 'root',
       children: [
-        { type: 'paragraph', children: [{ type: 'linkReference', identifier: 'gone', children: [{ type: 'text', value: 'notes' }] }] },
+        {
+          type: 'paragraph',
+          children: [
+            {
+              type: 'linkReference',
+              identifier: 'gone',
+              children: [{ type: 'text', value: 'notes' }],
+            },
+          ],
+        },
       ],
     };
     remarkInlineRefs()(tree);
     expect(tree.children[0]?.children).toEqual([{ type: 'text', value: 'notes' }]);
   });
 
-  it.each(['NOTE', 'TIP', 'IMPORTANT', 'WARNING', 'CAUTION'])('keeps a [!%s] marker unescaped', (kind) => {
-    expect(roundTrip(`> [!${kind}]\n> Body.\n`)).toBe(`> [!${kind}]\n> Body.\n`);
-  });
+  it.each(['NOTE', 'TIP', 'IMPORTANT', 'WARNING', 'CAUTION'])(
+    'keeps a [!%s] marker unescaped',
+    (kind) => {
+      expect(roundTrip(`> [!${kind}]\n> Body.\n`)).toBe(`> [!${kind}]\n> Body.\n`);
+    },
+  );
 
   it('still escapes a bracket that is only prose', () => {
     expect(roundTrip('> [!MAYBE] not an alert\n')).toBe('> \\[!MAYBE] not an alert\n');

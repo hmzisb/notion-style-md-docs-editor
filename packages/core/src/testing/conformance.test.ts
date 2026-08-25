@@ -16,7 +16,9 @@ const seed: MemoryFileSeed = {
 };
 
 const memoryProvider = (readOnly: boolean) => (): Promise<DocumentProvider> =>
-  Promise.resolve(createFileStoreProvider(new MemoryFileStore(seed, { readOnly }), { title: 'Corpus' }));
+  Promise.resolve(
+    createFileStoreProvider(new MemoryFileStore(seed, { readOnly }), { title: 'Corpus' }),
+  );
 
 runProviderConformance(memoryProvider(false), {
   name: 'memory',

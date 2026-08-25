@@ -15,14 +15,16 @@ const seed = (): MemoryFileStore =>
 describe('list', () => {
   it('is recursive, synthesises directories and excludes hidden entries', async () => {
     const entries = await seed().list();
-    expect(entries.map((entry) => `${entry.kind}:${entry.path}`)).toEqual([
-      'file:guides/auth.md',
-      'dir:guides/assets',
-      'file:guides/assets/logo.svg',
-      'file:guides/index.md',
-      'dir:guides',
-      'file:index.md',
-    ].sort());
+    expect(entries.map((entry) => `${entry.kind}:${entry.path}`)).toEqual(
+      [
+        'file:guides/auth.md',
+        'dir:guides/assets',
+        'file:guides/assets/logo.svg',
+        'file:guides/index.md',
+        'dir:guides',
+        'file:index.md',
+      ].sort(),
+    );
   });
 
   it('reports size in bytes and a monotonic mtime', async () => {
@@ -135,7 +137,9 @@ describe('boundaries', () => {
 
   it('derives a stable key from the seed and accepts an override', () => {
     expect(new MemoryFileStore({ 'a.md': 'x' }).key).toBe(new MemoryFileStore({ 'a.md': 'y' }).key);
-    expect(new MemoryFileStore({ 'a.md': 'x' }).key).not.toBe(new MemoryFileStore({ 'b.md': 'x' }).key);
+    expect(new MemoryFileStore({ 'a.md': 'x' }).key).not.toBe(
+      new MemoryFileStore({ 'b.md': 'x' }).key,
+    );
     expect(new MemoryFileStore({}, { key: 'memory:demo' }).key).toBe('memory:demo');
   });
 });

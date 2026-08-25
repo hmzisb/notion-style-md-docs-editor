@@ -15,12 +15,18 @@ const ROUND_TRIP: [name: string, file: string][] = [
   ['minimal', '---\ntitle: Hello\n---\n\n# Hello\n'],
   ['no frontmatter', '# Hello\n\nBody.\n'],
   ['empty frontmatter', '---\n---\n\nBody.\n'],
-  ['all known keys', '---\nid: 01J0000000000000000000000\ntitle: Auth\nicon: "🧠"\norder: 3\n---\n\nBody.\n'],
+  [
+    'all known keys',
+    '---\nid: 01J0000000000000000000000\ntitle: Auth\nicon: "🧠"\norder: 3\n---\n\nBody.\n',
+  ],
   ['lucide icon', '---\ntitle: API\nicon: lucide:book-open\n---\n\nBody.\n'],
   ['unknown keys preserved', '---\ntitle: A\ntags:\n  - one\n  - two\ndraft: true\n---\n\nBody.\n'],
   ['key order preserved', '---\nzeta: 1\ntitle: A\nalpha: 2\n---\n\nBody.\n'],
   ['nested object', '---\ntitle: A\nseo:\n  description: Hi\n  noindex: false\n---\n\nBody.\n'],
-  ['array of objects', '---\ntitle: A\nauthors:\n  - name: Ada\n    email: ada@example.com\n---\n\nBody.\n'],
+  [
+    'array of objects',
+    '---\ntitle: A\nauthors:\n  - name: Ada\n    email: ada@example.com\n---\n\nBody.\n',
+  ],
   ['quoted string with colon', '---\ntitle: "A: B"\n---\n\nBody.\n'],
   ['date stays a string', '---\ntitle: A\nupdated: 2026-01-31\n---\n\nBody.\n'],
   ['number and boolean', '---\norder: 12\ndraft: false\n---\n\nBody.\n'],
@@ -156,7 +162,7 @@ describe('setMetaKey', () => {
     expect(Object.keys(setMetaKey(meta, 'title', 'B'))).toEqual(['zeta', 'title', 'alpha']);
   });
 
-  it('appends a new known key after the author\'s own keys', () => {
+  it("appends a new known key after the author's own keys", () => {
     expect(Object.keys(setMetaKey({ zeta: 1 }, 'id', 'x'))).toEqual(['zeta', 'id']);
   });
 

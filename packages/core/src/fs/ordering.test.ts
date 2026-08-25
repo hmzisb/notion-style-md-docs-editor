@@ -63,7 +63,10 @@ describe('compareSiblings', () => {
   });
 
   it('lets an ordered folder outrank an unordered page', () => {
-    expect(sortSiblings([page('a.md'), folder('zz', 1)]).map((n) => n.name)).toEqual(['zz', 'a.md']);
+    expect(sortSiblings([page('a.md'), folder('zz', 1)]).map((n) => n.name)).toEqual([
+      'zz',
+      'a.md',
+    ]);
   });
 
   it('ignores a non-finite order', () => {

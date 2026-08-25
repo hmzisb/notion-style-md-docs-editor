@@ -63,7 +63,11 @@ const FIDELITY_RULES: MdRules = {
   /** A GFM alert marker is syntax: escaped to `\[!NOTE]` it stops being an alert. */
   blockquote: {
     serialize: (node, options) => {
-      const children = convertNodesSerialize(node.children, options, true) as MdBlockquote['children'];
+      const children = convertNodesSerialize(
+        node.children,
+        options,
+        true,
+      ) as MdBlockquote['children'];
       keepAlertMarker(children[0]);
       return { children, type: 'blockquote' };
     },

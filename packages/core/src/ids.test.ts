@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { ID_LENGTH, folderHashId, generateId, isDerivedId, isGeneratedId, pathHashId } from './ids.js';
+import {
+  ID_LENGTH,
+  folderHashId,
+  generateId,
+  isDerivedId,
+  isGeneratedId,
+  pathHashId,
+} from './ids.js';
 
 describe('derived ids', () => {
   it('matches the documented prefix and hash', () => {

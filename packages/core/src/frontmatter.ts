@@ -131,7 +131,7 @@ export function splitFrontmatter(raw: string): SplitResult {
 }
 
 function describe(error: unknown): string {
-  return error instanceof Error ? error.message.split('\n')[0] ?? error.message : String(error);
+  return error instanceof Error ? (error.message.split('\n')[0] ?? error.message) : String(error);
 }
 
 /** Cheap structural comparison; only used to decide whether the YAML must be re-emitted. */
@@ -151,7 +151,10 @@ function renderYaml(meta: PageMeta, source: string | undefined): string {
   const doc = YAML.parseDocument(source, YAML_PARSE_OPTIONS);
   const current = (doc.toJS() ?? {}) as Record<string, unknown>;
   const keys = Object.keys(meta);
-  if (keys.length === Object.keys(current).length && keys.every((k) => sameValue(current[k], meta[k]))) {
+  if (
+    keys.length === Object.keys(current).length &&
+    keys.every((k) => sameValue(current[k], meta[k]))
+  ) {
     return source;
   }
 

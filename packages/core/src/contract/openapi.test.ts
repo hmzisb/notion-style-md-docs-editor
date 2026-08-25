@@ -8,7 +8,9 @@ const COMMITTED = new URL('../../../../contract/openapi.json', import.meta.url);
 describe('openapi generator', () => {
   it('emits every named schema under components', () => {
     const doc = buildOpenApiDocument() as { components: { schemas: Record<string, unknown> } };
-    expect(Object.keys(doc.components.schemas).sort()).toEqual(Object.keys(CONTRACT_SCHEMAS).sort());
+    expect(Object.keys(doc.components.schemas).sort()).toEqual(
+      Object.keys(CONTRACT_SCHEMAS).sort(),
+    );
   });
 
   it('cross-references schemas instead of inlining them', () => {

@@ -43,7 +43,10 @@ describe('corpus manifest', () => {
   });
 
   it('never lists a hidden or vendored entry as a node', () => {
-    const nodePaths = new Set([...manifest.pages.map((p) => p.path), ...manifest.folders.map((f) => f.path)]);
+    const nodePaths = new Set([
+      ...manifest.pages.map((p) => p.path),
+      ...manifest.folders.map((f) => f.path),
+    ]);
     for (const path of manifest.ignored) expect(nodePaths.has(path)).toBe(false);
     expect(manifest.ignored).toContain('.hidden/secret.md');
     expect(manifest.ignored).toContain('node_modules/pkg/readme.md');
@@ -164,4 +167,3 @@ describe('corpus coverage', () => {
     }
   });
 });
-

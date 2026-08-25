@@ -16,8 +16,13 @@ function readPageInfo(store: MemoryFileStore): (path: string) => Promise<PageInf
   };
 }
 
-async function walkStore(store: MemoryFileStore): Promise<{ index: TreeIndex; warnings: string[] }> {
-  const { snapshot, warnings } = await buildSnapshotFromEntries(await store.list(), readPageInfo(store));
+async function walkStore(
+  store: MemoryFileStore,
+): Promise<{ index: TreeIndex; warnings: string[] }> {
+  const { snapshot, warnings } = await buildSnapshotFromEntries(
+    await store.list(),
+    readPageInfo(store),
+  );
   return { index: buildIndex(snapshot), warnings: warnings.map((w) => `${w.code}:${w.path}`) };
 }
 
@@ -73,9 +78,10 @@ describe('walking the corpus', () => {
       expect(node?.kind).toBe('page');
       expect(node?.title).toBe(page.title);
       expect(node?.icon ?? null).toEqual(page.icon);
-      const parent = node?.parentId === null || node?.parentId === undefined
-        ? null
-        : (corpusIndex.byId[node.parentId]?.path ?? null);
+      const parent =
+        node?.parentId === null || node?.parentId === undefined
+          ? null
+          : (corpusIndex.byId[node.parentId]?.path ?? null);
       expect(parent).toBe(page.parentPath);
     });
   }
@@ -192,7 +198,8 @@ describe('mapping rules', () => {
       'meeting_notes-2.md': 'No heading here.\n',
       'dir/index.md': 'No heading here either.\n',
     });
-    const title = (path: string): string | undefined => index.byId[index.idByPath[path] ?? '']?.title;
+    const title = (path: string): string | undefined =>
+      index.byId[index.idByPath[path] ?? '']?.title;
     expect(title('a.md')).toBe('From frontmatter');
     expect(title('b.md')).toBe('From heading');
     expect(title('meeting_notes-2.md')).toBe('Meeting notes 2');

@@ -177,7 +177,12 @@ function replaceNode(
 }
 
 export function applyRename(index: TreeIndex, id: NodeId, title: string): TreeIndex {
-  return replaceNode(index, id, (node) => (node.title === title ? node : { ...node, title }), `rename:${id}`);
+  return replaceNode(
+    index,
+    id,
+    (node) => (node.title === title ? node : { ...node, title }),
+    `rename:${id}`,
+  );
 }
 
 /**

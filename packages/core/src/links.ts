@@ -64,12 +64,7 @@ export function normalizeRelative(currentPath: string, href: string): string | n
  */
 function candidatesFor(target: string): string[] {
   if (target === '') return ['', INDEX_FILE, README_FILE];
-  return [
-    target,
-    `${target}.md`,
-    joinPath(target, INDEX_FILE),
-    joinPath(target, README_FILE),
-  ];
+  return [target, `${target}.md`, joinPath(target, INDEX_FILE), joinPath(target, README_FILE)];
 }
 
 /**

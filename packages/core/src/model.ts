@@ -10,9 +10,7 @@ export type NodeKind = 'page' | 'folder';
 
 export type PageMode = 'read' | 'edit';
 
-export type PageIcon =
-  | { kind: 'emoji'; value: string }
-  | { kind: 'lucide'; name: string };
+export type PageIcon = { kind: 'emoji'; value: string } | { kind: 'lucide'; name: string };
 
 export interface TreeNode {
   id: NodeId;
@@ -84,8 +82,7 @@ export interface BackendMeta {
 }
 
 export type ChangeEvent =
-  | { type: 'tree'; version: string }
-  | { type: 'page'; id: NodeId; version: string };
+  { type: 'tree'; version: string } | { type: 'page'; id: NodeId; version: string };
 
 export interface SearchHit {
   id: NodeId;

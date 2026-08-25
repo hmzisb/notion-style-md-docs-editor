@@ -348,7 +348,8 @@ export function createFileStoreProvider(
     let prev: number | undefined;
     for (let i = at - 1; i >= 0 && prev === undefined; i--) prev = orderOf(siblings[i]?.path ?? '');
     let next: number | undefined;
-    for (let i = at; i < siblings.length && next === undefined; i++) next = orderOf(siblings[i]?.path ?? '');
+    for (let i = at; i < siblings.length && next === undefined; i++)
+      next = orderOf(siblings[i]?.path ?? '');
 
     return midpointOrder(prev, next);
   }
@@ -369,7 +370,9 @@ export function createFileStoreProvider(
     index: number,
   ): Promise<void> {
     const { index: tree } = await load();
-    const others = childIdsOf(tree, siblingParentOf(tree, parentId)).filter((sid) => sid !== movedId);
+    const others = childIdsOf(tree, siblingParentOf(tree, parentId)).filter(
+      (sid) => sid !== movedId,
+    );
     const at = Math.max(0, Math.min(index, others.length));
     const ordered = [...others.slice(0, at), movedId, ...others.slice(at)]
       .map((sid) => tree.byId[sid])
@@ -442,7 +445,10 @@ export function createFileStoreProvider(
      * and flips the node to a page, carrying the folder's id across. Everything else
      * about the file survives: unknown frontmatter keys, their order, and the EOL.
      */
-    async savePage(id: NodeId, input: { body: string; baseVersion: string | null }): Promise<SaveResult> {
+    async savePage(
+      id: NodeId,
+      input: { body: string; baseVersion: string | null },
+    ): Promise<SaveResult> {
       requireWrite('savePage');
       const node = await nodeById(id);
       const isConversion = node.kind === 'folder';
@@ -467,7 +473,11 @@ export function createFileStoreProvider(
     },
 
     /** docs/03 section 4.7: title and icon go into frontmatter; the body is not touched. */
-    async updateMeta(id: NodeId, patch: PageMetaPatch, metaOpts?: { renameFile?: boolean }): Promise<TreeNode> {
+    async updateMeta(
+      id: NodeId,
+      patch: PageMetaPatch,
+      metaOpts?: { renameFile?: boolean },
+    ): Promise<TreeNode> {
       requireWrite('updateMeta');
       if (opts.renameFilesOnTitleChange === true) {
         throw new ProviderError(
@@ -483,13 +493,17 @@ export function createFileStoreProvider(
         );
       }
       if (typeof patch.icon === 'string' && patch.icon !== '' && !parseIcon(patch.icon)) {
-        throw new ProviderError('validation', `"${patch.icon}" is not an emoji or a "lucide:<name>" icon.`);
+        throw new ProviderError(
+          'validation',
+          `"${patch.icon}" is not an emoji or a "lucide:<name>" icon.`,
+        );
       }
 
       const split = splitFrontmatter(await store.readText(node.path));
       let meta = split.meta.id === undefined ? setMetaKey(split.meta, 'id', id) : split.meta;
       if ('title' in patch) meta = setMetaKey(meta, 'title', patch.title);
-      if ('icon' in patch) meta = setMetaKey(meta, 'icon', patch.icon === '' ? undefined : patch.icon);
+      if ('icon' in patch)
+        meta = setMetaKey(meta, 'icon', patch.icon === '' ? undefined : patch.icon);
       await writeFile(node.path, joinFrontmatter(meta, split.body, split.eol, { source: split }));
 
       if (metaOpts?.renameFile === true && typeof patch.title === 'string') {
@@ -499,7 +513,11 @@ export function createFileStoreProvider(
     },
 
     /** docs/03 section 4.5. The four parent cases differ only in the directory they pick. */
-    async createPage(input: { parentId: NodeId | null; title: string; index?: number }): Promise<TreeNode> {
+    async createPage(input: {
+      parentId: NodeId | null;
+      title: string;
+      index?: number;
+    }): Promise<TreeNode> {
       requireWrite('createPage');
       const dir = await childDirFor(input.parentId);
       const { entries } = await load();
@@ -518,12 +536,18 @@ export function createFileStoreProvider(
     },
 
     /** docs/03 section 4.6. A move inside the current directory only rewrites `order`. */
-    async movePage(id: NodeId, input: { parentId: NodeId | null; index: number }): Promise<TreeNode> {
+    async movePage(
+      id: NodeId,
+      input: { parentId: NodeId | null; index: number },
+    ): Promise<TreeNode> {
       requireWrite('movePage');
       const { index: tree } = await load();
       const node = tree.byId[id];
       if (!node) throw new ProviderError('not_found', `No node with id ${id}`);
-      if (input.parentId === id || (input.parentId !== null && isDescendant(tree, input.parentId, id))) {
+      if (
+        input.parentId === id ||
+        (input.parentId !== null && isDescendant(tree, input.parentId, id))
+      ) {
         throw new ProviderError('validation', 'A page cannot be moved into its own subtree.');
       }
 
@@ -585,7 +609,9 @@ export function createFileStoreProvider(
       if (href.external) return relativePath;
 
       const rooted = href.path.startsWith('/');
-      const target = normalizePath(rooted ? href.path : joinPath(assetBaseFor(page.path), href.path));
+      const target = normalizePath(
+        rooted ? href.path : joinPath(assetBaseFor(page.path), href.path),
+      );
       if (target === null || target === '') {
         throw new ProviderError('validation', `Asset path escapes the root: ${relativePath}`);
       }
