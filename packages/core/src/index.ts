@@ -106,12 +106,7 @@ export {
   type Sortable,
 } from './fs/ordering.js';
 
-export {
-  normalizeRelative,
-  parseHref,
-  resolvePageLink,
-  type ParsedHref,
-} from './links.js';
+export { normalizeRelative, parseHref, resolvePageLink, type ParsedHref } from './links.js';
 
 export { formatIcon, parseIcon } from './icon.js';
 
@@ -153,3 +148,10 @@ export {
   type Codec,
   type CodecOptions,
 } from './codec/codec.js';
+
+export {
+  MAX_HEADING_DEPTH,
+  classifyFidelity,
+  type Fidelity,
+  type FidelityLevel,
+} from './codec/fidelity.js';

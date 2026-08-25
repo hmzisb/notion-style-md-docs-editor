@@ -31,7 +31,9 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P0-T12** Conformance suite
   - `testing/conformance.ts` exports `runProviderConformance(makeProvider, opts)`: every case in docs/03 section 10 driven through the `DocumentProvider` interface alone, so the same suite serves memory, the filesystem adapter and http. Cases discover what they need from the tree and fail with a seed hint when it is missing. Runs twice over the corpus (writable and read-only): 52 cases. Fixed along the way: `pnpm build` had never worked (tsup's dts worker cannot build a composite program, TS6307) and `size-limit` was measuring `yaml` against a budget that excludes it; `scripts/verify.sh` now runs `pnpm build` too.
 - [x] **P0-T13** Markdown codec
-- [ ] **P0-T14** Fidelity classifier and doctor
+  - `codec/base-kit.ts` (headless v1 plugin list, pinned `remark-stringify` options, four fidelity rules) and `codec/codec.ts` (`createCodec`, `defaultCodec`, `markdownToValue`, `valueToMarkdown`, `normalizeMarkdown`). `remarkInlineRefs` rewrites reference links inline. 30 of the 33 corpus pages round trip byte for byte; the other three have goldens in `fixtures/expected/`. 68 codec tests.
+- [x] **P0-T14** Fidelity classifier and doctor
+  - `codec/fidelity.ts` (`classifyFidelity`): normalize-compare for `exact`, then one census of both mdast trees for the reasons, then a tree comparison with the known reformats applied. `scripts/doctor.ts` prints the table and exits 1 on a lossy page unless `--allow-lossy`. 45 tests, including all 33 corpus pages against the manifest.
 - [ ] **Gate 0** green, `docs/execution/PHASE-0-REPORT.md` written
 
 ## Phase 1: Read path, shell, adapters, playground
@@ -100,5 +102,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P0-T14
+- Current task: Gate 0
 - Last gate passed: (none)

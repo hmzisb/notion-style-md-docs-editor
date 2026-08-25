@@ -16,7 +16,7 @@
     "build": "pnpm -r --filter './packages/*' build && pnpm -r --filter './packages/*' exec publint && pnpm -r --filter './packages/*' exec attw --pack --profile esm-only && size-limit",
     "contract:gen": "tsx packages/core/src/contract/openapi.ts",
     "perf:gen": "tsx fixtures/perf/gen.ts",
-    "doctor": "tsx scripts/doctor.ts",
+    "doctor": "tsx --tsconfig tsconfig.tools.json scripts/doctor.ts",
     "smoke": "pnpm -r --filter './smoke/*' build && pnpm -r --filter './smoke/*' test",
     "gate": "tsx scripts/gate.ts",
     "changeset": "changeset",

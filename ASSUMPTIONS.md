@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-015 · P0-T14 · 2026-08-25
+Question: docs/05 section 4 step 3 makes `reformat` conditional on `deepEqual(mdastA, mdastB)`, but the two reformats the same section names (`heading_level_clamped`, `definition`) both change the tree by definition, so no page with a reason could ever be a reformat.
+Assumed: the known reformats are applied to the source tree before the comparison - headings clamped to H3, references inlined by the same `remarkInlineRefs` pass the codec parses with - and the trees must match after that. An unexplained difference is still `lossy`, with the reason `content_changed`.
+Why: keeps step 3 as the honest safety net it was meant to be (a silent content change is never a reformat) while letting the two documented reformats classify as documented.
+Cheap to reverse: yes
+
+## ASM-014 · P0-T14 · 2026-08-25
+Question: docs/05 section 4 step 2 lists the lossy reasons but not their exact strings, and two of them cannot occur in v1.
+Assumed: reason strings are the manifest's (`definition`, `footnoteDefinition`, `heading_level_clamped`, `html`, `math`), plus `unknown_node:<mdast type>` for any other node type the round trip drops and `content_changed` for an unexplained difference. `html` is judged on survival, not on rule introspection: a codec that keeps raw HTML byte for byte (DEV-003) is not lossy, one whose rules drop it is. `table_cell_span` is not implemented - a GFM table cannot span cells, and an HTML table arrives as an `html` node - and `math` stays in the table but is unreachable while `remark-math` is uninstalled.
+Why: the classifier has to name a cause a host can act on, and survival is the only definition of "not handled by a custom rule" that works for a codec the module did not configure.
+Cheap to reverse: yes
+
 ## ASM-013 · P0-T13 · 2026-08-25
 Question: docs/05 section 3 keeps `math` in `CodecOptions`, but section 2 lists math among the plugins v1 does not install, so `remark-math` is not a dependency.
 Assumed: `createCodec({ math: true })` throws with a message naming the missing dependency.

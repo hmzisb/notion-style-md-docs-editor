@@ -7,5 +7,10 @@
     "tsBuildInfoFile": ".tsbuild/tools.tsbuildinfo",
     "rootDir": "."
   },
-  "include": ["scripts/**/*.ts", "fixtures/**/*.ts"]
+  "include": ["scripts/**/*.ts", "fixtures/**/*.ts"],
+  "references": [
+    {
+      "path": "./packages/core"
+    }
+  ]
 }

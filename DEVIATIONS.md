@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-005 · P0-T14 · 2026-08-25
+Spec said: docs/09 P0-T14 verifies with `pnpm doctor fixtures/corpus --allow-lossy`.
+Reality: pnpm 10 parses unknown `--flags` itself in the `pnpm <script>` shorthand, so that exact line fails with `ERROR  Unknown option: 'allow-lossy'` before the script runs; `pnpm doctor fixtures/corpus -- --allow-lossy` runs nothing at all.
+Decision: the script and its flag are exactly as specified; the verify command is `pnpm run doctor fixtures/corpus --allow-lossy`, which pnpm forwards verbatim. Exit code is 1 with a lossy page and no flag, 0 with the flag.
+Impact: `scripts/doctor.ts`, root `doctor` script (now `tsx --tsconfig tsconfig.tools.json scripts/doctor.ts`, so the script resolves `@docs/core` to source without a build); `docs/execution/PHASE-0-REPORT.md` records the working command.
+Reverse when: pnpm forwards unknown options to scripts in the shorthand form.
+
 ## DEV-004 · P0-T13 · 2026-08-25
 Spec said: docs/05 section 2 - "Keep underline only if the installed plugin round-trips `<u>` in non-MDX mode; otherwise remove the button and the `Cmd+U` shortcut and log the deviation."
 Reality: it does not. `<u>text</u>` parses to inline HTML, never to the mark, and the mark's stock rule serializes to `mdxJsxTextElement`, which non-MDX stringify rejects outright: `Cannot handle unknown node 'mdxJsxTextElement'`. The same is true of `highlight`, `kbd`, `subscript`, `superscript`, `comment` and `suggestion`.

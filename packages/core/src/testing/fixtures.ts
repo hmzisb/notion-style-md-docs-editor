@@ -8,7 +8,8 @@ import type { PageIcon } from '../model.js';
  * browser test environment, where the conformance suite runs and this loader does not.
  */
 
-export type FidelityLevel = 'exact' | 'reformat' | 'lossy';
+export type { FidelityLevel } from '../codec/fidelity.js';
+import type { FidelityLevel } from '../codec/fidelity.js';
 
 export interface CorpusFidelity {
   level: FidelityLevel;
@@ -77,18 +78,22 @@ export async function loadCorpus(opts: LoadCorpusOptions = {}): Promise<Corpus> 
   const { readFile } = await import('node:fs/promises');
   const root = opts.root ?? (await defaultRoot());
 
-  const readText = async (rel: string): Promise<string> =>
-    readFile(`${root}/${rel}`, 'utf8');
+  const readText = async (rel: string): Promise<string> => readFile(`${root}/${rel}`, 'utf8');
 
   const manifest = JSON.parse(await readText('manifest.json')) as CorpusManifest;
 
-  const textPaths = [...manifest.pages.map((page) => page.path), ...manifest.rules.map((r) => `rules/${r}`)];
+  const textPaths = [
+    ...manifest.pages.map((page) => page.path),
+    ...manifest.rules.map((r) => `rules/${r}`),
+  ];
   const files = new Map<string, string>(
     await Promise.all(textPaths.map(async (rel) => [rel, await readText(rel)] as const)),
   );
   const assets = new Map<string, Uint8Array>(
     await Promise.all(
-      manifest.assets.map(async (rel) => [rel, new Uint8Array(await readFile(`${root}/${rel}`))] as const),
+      manifest.assets.map(
+        async (rel) => [rel, new Uint8Array(await readFile(`${root}/${rel}`))] as const,
+      ),
     ),
   );
 

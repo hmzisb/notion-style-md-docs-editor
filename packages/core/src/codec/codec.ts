@@ -1,15 +1,13 @@
-import { deserializeMd, serializeMd } from '@platejs/markdown';
+import { deserializeMd, markdownToAstProcessor, serializeMd, type MdRoot } from '@platejs/markdown';
 import { createSlateEditor, type SlateEditor, type Value } from 'platejs';
-import { createBaseKit, type StringifyOptions } from './base-kit.js';
+import { createBaseKit, type BaseKitOptions } from './base-kit.js';
 
 /**
  * Markdown <-> Plate value (docs/05 section 3). Markdown is canonical (D-02): the value is
  * transient, so every option that decides how bytes come back out is pinned in one place.
  */
 
-export interface CodecOptions {
-  /** Merged over the pinned defaults, for a host with its own markdownlint config. */
-  remarkStringifyOptions?: Partial<StringifyOptions>;
+export interface CodecOptions extends BaseKitOptions {
   /** Reserved. `remark-math` and the equation blocks are not part of v1 (docs/05 section 2). */
   math?: boolean;
 }
@@ -18,6 +16,13 @@ export interface Codec {
   /** Parse a page body. `onError` receives a per-node failure; the rest of the page survives. */
   toValue: (body: string, onError?: (error: Error) => void) => Value;
   toMarkdown: (value: Value) => string;
+  /**
+   * `body` as mdast, under the same remark stack the codec parses with. Parse only:
+   * the transformers (`remarkInlineRefs`) do not run, so the tree still holds the
+   * reference links and definitions the deserializer rewrites. The fidelity
+   * classifier needs that untouched view (docs/05 section 4).
+   */
+  toAst: (body: string) => MdRoot;
 }
 
 export function createCodec(opts: CodecOptions = {}): Codec {
@@ -34,6 +39,7 @@ export function createCodec(opts: CodecOptions = {}): Codec {
     toValue: (body, onError) =>
       deserializeMd(ready(), body, { onError, preserveEmptyParagraphs: true, withoutMdx: true }),
     toMarkdown: (value) => serializeMd(ready(), { preserveEmptyParagraphs: true, value }),
+    toAst: (body) => markdownToAstProcessor(ready(), body, { withoutMdx: true }),
   };
 }
 
@@ -43,7 +49,10 @@ export function createCodec(opts: CodecOptions = {}): Codec {
  */
 export function normalizeMarkdown(markdown: string): string {
   const lines = markdown.replace(/\r\n?/g, '\n').split('\n');
-  return `${lines.map((line) => line.replace(/[ \t]+$/, '')).join('\n').replace(/^\n+|\n+$/g, '')}\n`;
+  return `${lines
+    .map((line) => line.replace(/[ \t]+$/, ''))
+    .join('\n')
+    .replace(/^\n+|\n+$/g, '')}\n`;
 }
 
 export const defaultCodec: Codec = createCodec();
