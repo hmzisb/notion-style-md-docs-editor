@@ -25,8 +25,9 @@ if (folder === undefined) {
 }
 
 const root = resolve(folder);
-const entries = await readdir(root, { recursive: true }).catch((error: NodeJS.ErrnoException) => {
-  console.error(`doctor: cannot read ${folder}: ${error.code ?? error.message}`);
+const entries = await readdir(root, { recursive: true }).catch((error: unknown) => {
+  const { code, message } = error as NodeJS.ErrnoException;
+  console.error(`doctor: cannot read ${folder}: ${code ?? message}`);
   process.exit(2);
 });
 
