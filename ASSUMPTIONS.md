@@ -14,6 +14,18 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-063 · P2-T02 · 2026-08-26
+Question: docs/02 line 168 requires `./shell` to be measured without the editor chunk, and offers the Tailwind host's Vite report as the fallback "if the tool counts dynamic chunks" - which `size-limit` does.
+Assumed: the entry keeps `size-limit` and lists the dynamic specifier `./editor/index.js` in `ignore`, which esbuild takes as `external` and so leaves out of the bundle it weighs; the Vite fallback is not needed.
+Why: `ignore` is the same mechanism docs/02 section 7 already prescribes for third-party packages and DEV-010 uses for `lucide-react/dynamic`, it keeps one tool and one number for every entry, and the editor chunk stays budgeted on its own at `./editor`. The root entry `.` gets the same line, for the same import.
+Cheap to reverse: yes
+
+## ASM-062 · P2-T02 · 2026-08-26
+Question: docs/09 P2-T02 names the end-to-end spec `mode.spec.ts`, but `apps/playground/e2e/modes.spec.ts` already exists for the workspace modes (OPFS, file-system access, demo).
+Assumed: the file is `edit-mode.spec.ts`.
+Why: two specs one letter apart, about unrelated meanings of "mode", is a trap for every later reader and for `-g` filters; the name says which mode it covers.
+Cheap to reverse: yes
+
 ## ASM-061 · P2-T01 · 2026-08-26
 Question: the copied `media-image-node` renders a caption textarea, but the read view (docs/06 section 7) draws no caption at all.
 Assumed: the editor's image node drops the caption UI for now; `CaptionPlugin` stays in the kit so the data survives a round-trip, and the caption is designed in P2-T12.

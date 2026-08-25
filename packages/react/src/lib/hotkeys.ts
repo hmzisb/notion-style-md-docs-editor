@@ -90,7 +90,10 @@ const isTextEntry = (element: Element): boolean => {
 /** The scope a key event belongs to, read from where it came from (docs/07 section 1). */
 export function scopeOf(target: EventTarget | null): HotkeyScope {
   if (!(target instanceof Element)) return 'global';
-  if (target.closest('[data-slate-editor]') !== null) return 'editor';
+  // The read view and a read-only editor both render a Slate surface, and neither of them
+  // takes a keystroke: only an editable one is the editor scope.
+  const slate = target.closest('[data-slate-editor]');
+  if (slate !== null && slate.getAttribute('contenteditable') === 'true') return 'editor';
   if (isTextEntry(target)) return 'input';
   if (target.closest('[role="tree"]') !== null) return 'tree';
   if (target.closest('[data-docs-content]') !== null) return 'content';

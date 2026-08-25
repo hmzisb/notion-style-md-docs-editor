@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId, PageMode } from '@docs/core';
 import { Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
 import { Breadcrumbs } from './Breadcrumbs.js';
+import { ModeToggle } from './ModeToggle.js';
 
 export interface PageHeaderProps {
   pageId: NodeId | null;
@@ -18,6 +19,11 @@ export interface PageHeaderProps {
   leading?: ReactNode;
   /** Right of the reserved status area (docs/06 §6: the host `headerActions` slot). */
   actions?: ReactNode;
+  /** With `onModeChange`, renders the `ModeToggle` between the status area and the actions. */
+  mode?: PageMode;
+  onModeChange?: (mode: PageMode) => void;
+  /** The editor chunk is still loading, so the toggle spins (docs/05 section 8). */
+  editorLoading?: boolean;
   /** Below 768 px the sidebar is a sheet, so the palette needs a way in from here (docs/07 §4). */
   onSearch?: () => void;
   /** The content region has been scrolled past 0, which fades the bottom border in. */
@@ -36,10 +42,13 @@ export function PageHeader({
   leading,
   actions,
   onSearch,
+  mode = 'read',
+  onModeChange,
+  editorLoading = false,
   scrolled = false,
   className,
 }: PageHeaderProps): React.JSX.Element {
-  const { strings } = useDocs();
+  const { strings, capabilities } = useDocs();
   const isMobile = useIsMobile();
   const { data: index, isPending } = useTreeIndex(rootId);
 
@@ -69,6 +78,9 @@ export function PageHeader({
           aria-label={strings['status.label']}
           className="hidden min-w-[96px] justify-end text-end md:flex"
         />
+        {pageId !== null && onModeChange !== undefined && capabilities.write && (
+          <ModeToggle mode={mode} onChange={onModeChange} loading={editorLoading} />
+        )}
         {isMobile && onSearch !== undefined && (
           <Button
             variant="ghost"

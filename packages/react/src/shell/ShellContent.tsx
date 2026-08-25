@@ -2,7 +2,7 @@ import {
   CONTRACT_VERSION,
   isProviderError,
   type NodeId,
-  type PageDocument,
+  type PageMode,
   type TreeIndex,
   type TreeNode,
 } from '@docs/core';
@@ -13,12 +13,17 @@ import { usePage, useTreeIndex } from '@/data/queries.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
-import { DocumentView } from '@/view/DocumentView.js';
 import { EmptyState } from './EmptyState.js';
+import { PageCanvas } from './PageCanvas.js';
 
 export interface ShellContentProps {
   pageId: NodeId | null;
   rootId?: NodeId;
+  mode: PageMode;
+  /** The content region: the canvas restores its scroll offset on the mode swap. */
+  regionRef: React.RefObject<HTMLElement | null>;
+  toolbar?: 'floating' | 'fixed' | 'none';
+  onModeChange: (mode: PageMode) => void;
   /** Replaces the "Select a page" card only: every other card reports a real failure. */
   emptyState?: ReactNode;
   onOpen: (id: NodeId) => void;
@@ -27,11 +32,15 @@ export interface ShellContentProps {
 
 /**
  * The content region's states, in the order docs/06 section 11 and docs/07 section 8 list them.
- * Read mode renders `DocumentView`; the editor chunk swaps in over it in P2 (docs/05 section 8).
+ * The page itself is `PageCanvas`, which owns the read/edit swap (docs/05 section 8).
  */
 export function ShellContent({
   pageId,
   rootId,
+  mode,
+  regionRef,
+  toolbar,
+  onModeChange,
   emptyState,
   onOpen,
   onHome,
@@ -124,35 +133,18 @@ export function ShellContent({
     );
   }
 
-  return <PageCanvas page={page.data} node={node} rootId={rootId} />;
-}
-
-/** docs/06 sections 4 and 7: the title block, then the page itself. */
-function PageCanvas({
-  page,
-  node,
-  rootId,
-}: {
-  page: PageDocument;
-  node: TreeNode;
-  rootId?: NodeId;
-}): React.JSX.Element {
   return (
-    <article className="mx-auto w-full max-w-[calc(var(--docs-content-width)+8rem)] px-4 pt-20 pb-[40vh] md:px-16 md:pt-[88px]">
-      {node.icon !== undefined && (
-        <div className="pb-2">
-          <IconGlyph
-            icon={node.icon}
-            kind={node.kind}
-            className="size-9 text-[36px] leading-none"
-          />
-        </div>
-      )}
-      <h1 className="text-[32px] leading-tight font-bold md:text-[40px]">
-        {page.meta.title ?? node.title}
-      </h1>
-      <DocumentView page={page} node={node} rootId={rootId} className="pt-4" />
-    </article>
+    // The page id is the session (docs/05 section 8): a new page opens in read mode again.
+    <PageCanvas
+      key={node.id}
+      page={page.data}
+      node={node}
+      rootId={rootId}
+      mode={mode}
+      regionRef={regionRef}
+      toolbar={toolbar}
+      onModeChange={onModeChange}
+    />
   );
 }
 

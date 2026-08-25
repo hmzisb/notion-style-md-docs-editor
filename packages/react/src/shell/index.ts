@@ -8,4 +8,5 @@ export {
   type DocsShellSlots,
 } from './DocsShell.js';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState.js';
+export { ModeToggle, type ModeToggleProps } from './ModeToggle.js';
 export { PageHeader, type PageHeaderProps } from './PageHeader.js';

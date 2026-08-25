@@ -142,7 +142,7 @@ describe('CommandPalette (docs/06 section 8, docs/07 section 4)', () => {
     await user.type(await openPalette(user), 'auth');
     await screen.findByRole('option', { name: /Authentication/ });
     await user.keyboard('{Enter}');
-    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_auth' });
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_auth', mode: 'read' });
 
     await user.type(await openPalette(user), 'auth');
     await screen.findByRole('option', { name: /Authentication/ });
@@ -255,7 +255,7 @@ describe('global shortcuts (docs/07 sections 1-2)', () => {
     await ready();
 
     await user.keyboard('{Meta>}{Shift>}u{/Shift}{/Meta}');
-    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_guides' });
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_guides', mode: 'read' });
   });
 
   it('toggles edit mode with Cmd+Shift+E in both directions', async () => {
@@ -263,13 +263,19 @@ describe('global shortcuts (docs/07 sections 1-2)', () => {
     const read = mount({ pageId: 'p_auth' });
     await ready();
     await user.keyboard('{Meta>}{Shift>}e{/Shift}{/Meta}');
-    expect(read.navigate).toHaveBeenCalledWith({ pageId: 'p_auth', mode: 'edit' });
+    expect(read.navigate).toHaveBeenCalledWith(
+      { pageId: 'p_auth', mode: 'edit' },
+      { replace: true },
+    );
 
     // Two shells in one test would both answer the keyboard; the first one leaves first.
     cleanup();
     const edit = mount({ pageId: 'p_auth', mode: 'edit' });
     await ready();
     await user.keyboard('{Meta>}{Shift>}e{/Shift}{/Meta}');
-    expect(edit.navigate).toHaveBeenCalledWith({ pageId: 'p_auth', mode: 'read' });
+    expect(edit.navigate).toHaveBeenCalledWith(
+      { pageId: 'p_auth', mode: 'read' },
+      { replace: true },
+    );
   });
 });

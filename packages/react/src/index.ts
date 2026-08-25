@@ -1,5 +1,6 @@
 /** Root entry (docs/08 section 2). Data layer only; UI lives in the subpath entries. */
 export { DocsProvider, useDocs } from './data/DocsProvider.js';
+export { preloadEditor } from './editor-chunk.js';
 export { createKeys, createNamespace, type DocsKeys } from './data/keys.js';
 export {
   GC,

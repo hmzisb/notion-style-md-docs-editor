@@ -1,3 +1,5 @@
+import type { Value } from 'platejs';
+
 /**
  * L3 (docs/04 section 1): parsed values keyed by `ns:id:version`. Same version means the same
  * bytes, so the same object comes back and the editor never re-parses a page it already has.
@@ -60,3 +62,10 @@ export function createLru<T>(max: number = VALUE_CACHE_SIZE): Lru<T> {
     },
   };
 }
+
+/**
+ * The one L3 instance. The read view parses a page into it and the editor reads the same
+ * entry back, so swapping modes (docs/05 section 8) costs no second parse. The `Value` import
+ * is type-only: `platejs` itself belongs to the editor and view chunks.
+ */
+export const valueCache: Lru<Value> = createLru<Value>();

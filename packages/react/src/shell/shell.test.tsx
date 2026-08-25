@@ -1,6 +1,6 @@
 import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
 import { QueryClient } from '@tanstack/react-query';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
@@ -29,8 +29,12 @@ interface Mounted {
 
 let instance = 0;
 
-function mount(props: Partial<DocsShellProps> = {}, files: Record<string, string> = seed): Mounted {
-  const provider: DocumentProvider = createFileStoreProvider(new MemoryFileStore(files));
+function mount(
+  props: Partial<DocsShellProps> = {},
+  files: Record<string, string> = seed,
+  custom?: DocumentProvider,
+): Mounted {
+  const provider: DocumentProvider = custom ?? createFileStoreProvider(new MemoryFileStore(files));
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const navigate = vi.fn();
   instance += 1;
@@ -52,6 +56,17 @@ function mount(props: Partial<DocsShellProps> = {}, files: Record<string, string
     </DocsProvider>,
   );
   return { navigate };
+}
+
+/** A host whose provider cannot write: no Edit control, no editor chunk (docs/07 section 8). */
+function mountReadOnly(): Mounted {
+  const base = createFileStoreProvider(new MemoryFileStore(seed));
+  const capabilities = { ...base.capabilities, write: false };
+  return mount({ pageId: 'p_c' }, seed, {
+    ...base,
+    capabilities,
+    getMeta: async () => ({ ...(await base.getMeta()), capabilities }),
+  });
 }
 
 /** The shell's own root: `portalRoot()` adds a second `.docs-root` to the body for portals. */
@@ -205,7 +220,7 @@ describe('DocsShell', () => {
       expect(menu.closest('.docs-root')).not.toBeNull();
 
       await user.click(within(menu).getByRole('menuitem', { name: 'Charlie' }));
-      expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c' });
+      expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'read' });
     });
   });
 
@@ -250,7 +265,7 @@ describe('DocsShell', () => {
 
       expect(await screen.findByText('This folder has no page yet')).toBeInTheDocument();
       await user.click(screen.getByRole('button', { name: 'Notes 2024' }));
-      expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_2024' });
+      expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_2024', mode: 'read' });
     });
   });
 });
@@ -263,4 +278,114 @@ function sidebarKey(): string {
 
 function liveRegion(): HTMLElement {
   return document.querySelector<HTMLElement>('[aria-live="polite"].sr-only')!;
+}
+
+describe('mode transitions (docs/07 section 7)', () => {
+  /** The canvas renders the page title, and this corpus page repeats it as its first block. */
+  const openPage = async (): Promise<HTMLElement> => {
+    await ready();
+    const headings = await screen.findAllByRole('heading', { level: 1, name: 'Charlie' });
+    return headings[1] ?? headings[0]!;
+  };
+
+  it('offers Edit to a write host and Done while editing', async () => {
+    mount({ pageId: 'p_c' });
+    await openPage();
+    expect(screen.getByRole('button', { name: 'Edit' })).toBeInTheDocument();
+
+    cleanup();
+    mount({ pageId: 'p_c', mode: 'edit' });
+    await openPage();
+    expect(screen.getByRole('button', { name: 'Done' })).toBeInTheDocument();
+  });
+
+  it('hides the control for a read-only host', async () => {
+    mountReadOnly();
+    await openPage();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+  });
+
+  it('swaps the read view for the editor when the host is in edit mode', async () => {
+    mount({ pageId: 'p_c', mode: 'edit' });
+    await openPage();
+
+    await waitFor(() => {
+      expect(document.querySelector('[data-slate-editor]')).not.toBeNull();
+    });
+    expect(document.querySelector('[data-slate-editor]')).toHaveAttribute(
+      'contenteditable',
+      'true',
+    );
+  });
+
+  it('keeps the mode out of the history (replace) when the control is used', async () => {
+    const user = userEvent.setup();
+    const view = mount({ pageId: 'p_c' });
+    await openPage();
+
+    await user.click(screen.getByRole('button', { name: 'Edit' }));
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'edit' }, { replace: true });
+  });
+
+  it('asks for edit mode when a reader clicks the text', async () => {
+    const view = mount({ pageId: 'p_c' });
+    const text = await openPage();
+
+    click(text, { x: 40, y: 40 }, { x: 41, y: 40 });
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'edit' }, { replace: true });
+  });
+
+  it('leaves a text selection alone', async () => {
+    const view = mount({ pageId: 'p_c' });
+    const heading = await openPage();
+
+    // A drag across the words is a copy, not a request to edit (docs/07 section 7).
+    click(heading, { x: 40, y: 40 }, { x: 140, y: 40 });
+    expect(view.navigate).not.toHaveBeenCalled();
+  });
+
+  it('does not start editing from a control inside the page', async () => {
+    const view = mount({ pageId: 'p_c' });
+    await openPage();
+    const button = screen.getByRole('button', { name: 'Edit' });
+
+    click(button, { x: 10, y: 10 }, { x: 10, y: 10 });
+    expect(view.navigate).not.toHaveBeenCalledWith(
+      { pageId: 'p_c', mode: 'edit' },
+      { replace: true },
+    );
+  });
+
+  it('enters edit mode with E from inside the content region', async () => {
+    const view = mount({ pageId: 'p_c' });
+    const heading = await openPage();
+
+    fireEvent.keyDown(heading, { key: 'e', code: 'KeyE' });
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'edit' }, { replace: true });
+  });
+
+  it('leaves edit mode with Escape and puts focus back on the region', async () => {
+    const view = mount({ pageId: 'p_c', mode: 'edit' });
+    await openPage();
+    const region = screen.getByRole('region', { name: 'Document' });
+
+    fireEvent.keyDown(region, { key: 'Escape', code: 'Escape' });
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'read' }, { replace: true });
+    expect(region).toHaveFocus();
+  });
+
+  it('opens the next page in read mode (docs/07 section 7)', async () => {
+    const user = userEvent.setup();
+    const view = mount({ pageId: 'p_c', mode: 'edit' });
+    await openPage();
+
+    await user.click(screen.getByRole('treeitem', { name: 'Alpha' }));
+    expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_a', mode: 'read' });
+  });
+});
+
+/** A pointer press and release at explicit coordinates: the 4 px rule reads both. */
+function click(target: Element, from: { x: number; y: number }, to: { x: number; y: number }): void {
+  fireEvent.pointerDown(target, { clientX: from.x, clientY: from.y });
+  fireEvent.pointerUp(target, { clientX: to.x, clientY: to.y });
 }

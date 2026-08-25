@@ -102,8 +102,10 @@ export function DocumentEditor({
                 : undefined
             }
           >
-            {/* The canvas column and its padding belong to the host page (docs/06 section 4). */}
-            <Editor variant="none" className="px-0 pb-0" />
+            {/* The canvas column and its padding belong to the host page (docs/06 section 4);
+                the body type is docs/06 section 3, set here as `DocumentView` sets it, so the
+                swap between the two does not reflow a line (docs/05 section 8). */}
+            <Editor variant="none" className="px-0 pb-0 text-base leading-[1.65]" />
           </EditorContainer>
         </Plate>
       </TooltipProvider>

@@ -21,6 +21,7 @@ import {
 import { useEffect, useState, type ReactNode } from 'react';
 import { blockStyles } from '@/lib/block-styles.js';
 import { useDocs } from '@/data/context.js';
+import { codeLanguageLabel } from '@/lib/code-languages';
 import { cn } from '@/lib/utils';
 import { AssetImage } from './AssetImage.js';
 import { useView } from './context.js';
@@ -153,11 +154,15 @@ function CodeBlockStatic(props: SlateElementProps<TCodeBlockElement>): React.JSX
       <div className="group/code relative rounded-md bg-muted">
         <div className="absolute top-1 right-1 flex items-center gap-1">
           {lang !== undefined && lang !== '' && (
-            <span className="px-1 text-xs text-muted-foreground select-none">{lang}</span>
+            <span className="px-1 text-xs text-muted-foreground select-none">
+              {codeLanguageLabel(lang)}
+            </span>
           )}
           <CopyButton text={code} />
         </div>
-        <pre className="overflow-x-auto px-4 py-3 font-mono text-sm leading-6">
+        {/* `pr-10`: the same room the editor keeps for the language label, so a long first
+            line wraps identically in both modes and never runs under it. */}
+        <pre className="overflow-x-auto px-4 py-3 pr-10 font-mono text-sm leading-6">
           <code>{props.children}</code>
         </pre>
       </div>

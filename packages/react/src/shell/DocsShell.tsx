@@ -5,6 +5,7 @@ import { toast } from 'sonner';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
+import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import { seedSidebar, useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
 import { ALL_SCOPES, useHotkeys, type Hotkey } from '@/lib/hotkeys';
@@ -61,6 +62,7 @@ export function DocsShell({
   rootId,
   slots,
   sidebar,
+  editor,
   onThemeChange,
   className,
 }: DocsShellProps): React.JSX.Element {
@@ -107,6 +109,7 @@ export function DocsShell({
         mode={mode}
         rootId={rootId}
         slots={slots}
+        editor={editor}
         collapsible={collapsible}
         minWidth={minWidth}
         maxWidth={maxWidth}
@@ -123,6 +126,7 @@ interface ShellBodyProps {
   mode: PageMode;
   rootId?: NodeId;
   slots?: DocsShellSlots;
+  editor?: DocsShellProps['editor'];
   collapsible: boolean;
   minWidth: number;
   maxWidth: number;
@@ -139,6 +143,7 @@ function ShellBody({
   mode,
   rootId,
   slots,
+  editor,
   collapsible,
   minWidth,
   maxWidth,
@@ -151,13 +156,43 @@ function ShellBody({
   const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  // The scroll container, the `E`/`Enter` scope, and where focus lands on the way out of edit.
+  const regionRef = useRef<HTMLElement>(null);
+  const chunk = useEditorChunk();
 
   const openPage = useCallback(
     (id: NodeId, opts?: { mode?: PageMode }) => {
-      navigation.navigate({ pageId: id, ...(opts?.mode === undefined ? {} : { mode: opts.mode }) });
+      // docs/07 section 7: navigating away from an edit opens the next page in read mode.
+      navigation.navigate({ pageId: id, mode: opts?.mode ?? 'read' });
     },
     [navigation],
   );
+
+  /** docs/07 section 7: the mode is part of the URL, but not part of its history. */
+  const setMode = useCallback(
+    (next: PageMode) => {
+      if (pageId === null) return;
+      navigation.navigate({ pageId, mode: next }, { replace: true });
+      if (next === 'read') regionRef.current?.focus();
+    },
+    [navigation, pageId],
+  );
+
+  // docs/05 section 8: idle after first paint, so the first Edit click has nothing to wait for.
+  const preload = editor?.preload ?? 'idle';
+  useEffect(() => {
+    if (!capabilities.write || preload !== 'idle') return;
+    const idle = requestIdle(() => {
+      void preloadEditor();
+    });
+    return () => {
+      cancelIdle(idle);
+    };
+  }, [capabilities.write, preload]);
+
+  const warm = useCallback(() => {
+    if (capabilities.write && preload !== 'never') void preloadEditor();
+  }, [capabilities.write, preload]);
   const goHome = useCallback(() => {
     navigation.navigate({ pageId: null });
   }, [navigation]);
@@ -189,9 +224,7 @@ function ShellBody({
               keys: 'Mod+Shift+E',
               scopes: ALL_SCOPES,
               run: () => {
-                if (pageId !== null) {
-                  navigation.navigate({ pageId, mode: mode === 'edit' ? 'read' : 'edit' });
-                }
+                setMode(mode === 'edit' ? 'read' : 'edit');
               },
             },
           ] satisfies Hotkey[])
@@ -201,8 +234,9 @@ function ShellBody({
         ? ([
             {
               keys: 'Escape',
+              scopes: ALL_SCOPES,
               run: () => {
-                navigation.navigate({ pageId, mode: 'read' });
+                setMode('read');
               },
             },
           ] satisfies Hotkey[])
@@ -244,13 +278,18 @@ function ShellBody({
         slots={{ header: slots?.sidebarHeader, footer: slots?.sidebarFooter }}
       />
       <section
+        ref={regionRef}
         role="region"
         aria-label={strings['header.document']}
         data-docs-content=""
-        className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain"
+        // Focusable only as a target: `Esc` and Done put focus back here (docs/07 section 7).
+        tabIndex={-1}
+        className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain outline-none"
         onScroll={(event) => {
           setScrolled(event.currentTarget.scrollTop > 0);
         }}
+        onPointerEnter={warm}
+        onFocus={warm}
       >
         <PageHeader
           pageId={pageId}
@@ -259,11 +298,18 @@ function ShellBody({
           leading={leading}
           actions={slots?.headerActions}
           onSearch={openPalette}
+          mode={mode}
+          onModeChange={setMode}
+          editorLoading={mode === 'edit' && chunk === null}
           scrolled={scrolled}
         />
         <ShellContent
           pageId={pageId}
           rootId={rootId}
+          mode={mode}
+          regionRef={regionRef}
+          toolbar={editor?.toolbar}
+          onModeChange={setMode}
           emptyState={slots?.emptyState}
           onOpen={openPage}
           onHome={goHome}
@@ -333,4 +379,15 @@ function useOnce(effect: () => void): void {
     done.current = true;
     effect();
   }
+}
+
+/** `requestIdleCallback` where it exists; a macrotask everywhere else. */
+function requestIdle(run: () => void): number {
+  if (typeof requestIdleCallback === 'function') return requestIdleCallback(run);
+  return window.setTimeout(run, 200);
+}
+
+function cancelIdle(handle: number): void {
+  if (typeof cancelIdleCallback === 'function') cancelIdleCallback(handle);
+  else clearTimeout(handle);
 }
