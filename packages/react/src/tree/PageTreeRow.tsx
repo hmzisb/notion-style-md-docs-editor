@@ -1,8 +1,10 @@
 import type { NodeId, NodeKind, PageIcon } from '@docs/core';
 import { ChevronRight, Plus } from 'lucide-react';
-import { memo } from 'react';
+import { memo, useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Input } from '@/ui/input';
 import { IconGlyph } from './IconGlyph.js';
+import { PageTreeRowMenu, type PageTreeRowMenuProps } from './PageTreeRowMenu.js';
 
 /**
  * Every prop is a primitive or an object that only changes when the snapshot does, so a row
@@ -29,6 +31,12 @@ export interface PageTreeRowProps {
   expandLabel: string;
   /** `Add a page inside {title}`, already formatted: the row keeps every string it renders. */
   addLabel: string;
+  renameLabel: string;
+  menu: Omit<PageTreeRowMenuProps, 'id' | 'icon'>;
+  /** docs/07 section 5: the title is an input while this row is the one being renamed. */
+  renaming: boolean;
+  onRenameStart?: (id: NodeId) => void;
+  onRenameEnd?: (id: NodeId, title: string | null) => void;
   register: (element: HTMLDivElement | null) => void;
   onActivate: (id: NodeId) => void;
   onToggle: (id: NodeId) => void;
@@ -54,12 +62,37 @@ function Row({
   height,
   expandLabel,
   addLabel,
+  renameLabel,
+  menu,
+  renaming,
+  onRenameStart,
+  onRenameEnd,
   register,
   onActivate,
   onToggle,
   onFocus,
   onCreate,
 }: PageTreeRowProps): React.JSX.Element {
+  /**
+   * A React event crosses a portal: the row menu and the picker it opens are this row's
+   * children in the React tree, so their clicks and keys arrive here as though the row itself
+   * had been used - and the row would open the page on the `Enter` that chose an emoji. Only
+   * what happens inside the row's own DOM belongs to the row (docs/07 section 9).
+   */
+  const own = (event: React.SyntheticEvent): boolean =>
+    event.currentTarget.contains(event.target as Node);
+
+  // docs/07 section 5: a double click on the title renames, which the row's own click handler
+  // must not read as two attempts to open the page.
+  const startRename =
+    onRenameStart === undefined
+      ? undefined
+      : (event: React.MouseEvent): void => {
+          event.preventDefault();
+          event.stopPropagation();
+          onRenameStart(id);
+        };
+
   return (
     <div
       ref={register}
@@ -84,6 +117,7 @@ function Row({
         paddingInlineStart: `calc(var(--docs-indent) * ${String(depth)} + 4px)`,
       }}
       onClick={(event) => {
+        if (!own(event)) return;
         onFocus(id);
         // A modified click is the browser's: open in a new tab, keep the selection.
         if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
@@ -91,12 +125,14 @@ function Row({
         onActivate(id);
       }}
       onKeyDown={(event) => {
+        if (!own(event)) return;
         if (event.key !== 'Enter' && event.key !== ' ') return;
         // Also stops the anchor's synthetic click, so a link row activates once.
         event.preventDefault();
         onActivate(id);
       }}
-      onFocus={() => {
+      onFocus={(event) => {
+        if (!own(event)) return;
         onFocus(id);
       }}
     >
@@ -127,11 +163,21 @@ function Row({
         <IconGlyph icon={icon} kind={kind} />
       </span>
 
-      {href === undefined ? (
-        <span className="flex-1 truncate">{title}</span>
+      {renaming && onRenameEnd !== undefined ? (
+        <RenameField
+          title={title}
+          label={renameLabel}
+          onEnd={(next) => {
+            onRenameEnd(id, next);
+          }}
+        />
+      ) : href === undefined ? (
+        <span className="flex-1 truncate" onDoubleClick={startRename}>
+          {title}
+        </span>
       ) : (
         // Not a tab stop: the row owns the roving tabindex (docs/07 section 9).
-        <a href={href} tabIndex={-1} className="flex-1 truncate">
+        <a href={href} tabIndex={-1} className="flex-1 truncate" onDoubleClick={startRename}>
           {title}
         </a>
       )}
@@ -142,6 +188,9 @@ function Row({
         data-slot="tree-row-actions"
         className={cn(
           'flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100',
+          // The menu's own focus is in a portal, so the row is neither hovered nor focused
+          // while it is open - and the `...` it came out of would be the thing that vanished.
+          'has-data-[state=open]:opacity-100',
           'max-md:group-data-[active]:opacity-100',
         )}
       >
@@ -152,7 +201,9 @@ function Row({
             // keyboard's way in (docs/07 sections 2 and 9).
             tabIndex={-1}
             aria-label={addLabel}
-            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent max-md:size-11"
+            // D-05: creating a page needs the provider, and offline it is the same button, off.
+            disabled={menu.offline !== null}
+            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent disabled:opacity-50 max-md:size-11"
             onClick={(event) => {
               event.stopPropagation();
               onCreate(id);
@@ -161,9 +212,113 @@ function Row({
             <Plus aria-hidden="true" className="size-4" />
           </button>
         )}
+        <PageTreeRowMenu {...menu} id={id} icon={icon} />
       </span>
     </div>
   );
 }
 
 export const PageTreeRow = memo(Row);
+
+/**
+ * docs/06 section 5 and docs/07 section 5. `Enter` and blur commit, `Esc` cancels, and an empty
+ * title is not a title: the field shakes, says so to a screen reader, and stays open.
+ */
+function RenameField({
+  title,
+  label,
+  onEnd,
+}: {
+  title: string;
+  label: string;
+  /** The new title, or `null` for "leave it as it was". */
+  onEnd: (title: string | null) => void;
+}): React.JSX.Element {
+  const [value, setValue] = useState(title);
+  const [rejected, setRejected] = useState(false);
+  /** Set by whichever of `Enter`, `Esc` and blur got there first, so the others do nothing. */
+  const ended = useRef(false);
+  const field = useRef<HTMLInputElement | null>(null);
+
+  // Not `autoFocus`: the row is a roving tabindex and headless-tree focuses it as it renders,
+  // so the field asks for the focus after that rather than during it (docs/07 section 9).
+  useLayoutEffect(() => {
+    field.current?.focus();
+    field.current?.select();
+  }, []);
+
+  const end = (next: string | null): void => {
+    if (ended.current) return;
+    ended.current = true;
+    onEnd(next);
+  };
+
+  const commit = (): void => {
+    const next = value.trim();
+    if (next === '') {
+      setRejected(true);
+      shake(field.current);
+      return;
+    }
+    end(next === title ? null : next);
+  };
+
+  return (
+    <Input
+      ref={field}
+      value={value}
+      aria-label={label}
+      aria-invalid={rejected}
+      className="h-6 flex-1 px-1 text-sm"
+      onFocus={(event) => {
+        event.currentTarget.select();
+      }}
+      onChange={(event) => {
+        setRejected(false);
+        setValue(event.target.value);
+      }}
+      // The row is a treeitem: without this every keystroke is type-ahead and `Enter` opens
+      // the page under the field (docs/07 sections 2 and 9).
+      onKeyDown={(event) => {
+        event.stopPropagation();
+        if (event.key === 'Enter') {
+          event.preventDefault();
+          commit();
+        } else if (event.key === 'Escape') {
+          event.preventDefault();
+          end(null);
+        }
+      }}
+      onBlur={() => {
+        // A field left empty is abandoned rather than rejected: there is nowhere left to shake.
+        if (value.trim() === '') end(null);
+        else commit();
+      }}
+      onClick={(event) => {
+        event.stopPropagation();
+      }}
+      onDoubleClick={(event) => {
+        event.stopPropagation();
+      }}
+    />
+  );
+}
+
+/**
+ * 150 ms, in the browser rather than in the sheet: a host that compiles its own Tailwind from
+ * `@source` never loads `styles.css`, so a keyframe written there would reach half the hosts
+ * (docs/11 section 4). `aria-invalid` is what carries the same news to a screen reader.
+ */
+function shake(element: HTMLInputElement | null): void {
+  if (element === null || typeof element.animate !== 'function') return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  element.animate(
+    [
+      { transform: 'translateX(0)' },
+      { transform: 'translateX(-3px)' },
+      { transform: 'translateX(3px)' },
+      { transform: 'translateX(0)' },
+    ],
+    { duration: 150, easing: 'ease-in-out' },
+  );
+}

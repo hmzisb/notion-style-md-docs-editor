@@ -8,7 +8,7 @@ import { DocsProvider } from '@/data/DocsProvider.js';
 import { useTreeIndex } from '@/data/queries.js';
 import type { DocsEvent } from '@/data/events.js';
 import type { DocsNavigation } from '@/data/types.js';
-import { IconPickerGrid } from './icon-picker-grid.js';
+import { IconPickerGrid } from '@/tree/icon-picker-grid.js';
 import { PageTitle } from './PageTitle.js';
 
 /**

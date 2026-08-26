@@ -10,7 +10,9 @@ export default defineConfig({
     'shell/index': 'src/shell/index.ts',
     // An entry of its own so the dynamic import from `IconPicker` resolves to a stable path
     // rather than a hashed chunk: docs/02 section 7 measures `./shell` without it.
-    'shell/icon-picker-grid': 'src/shell/icon-picker-grid.tsx',
+    'tree/icon-picker-grid': 'src/tree/icon-picker-grid.tsx',
+    // Same reason, for the menu and picker a row only builds when its `⋯` is pressed.
+    'tree/row-menu-surface': 'src/tree/row-menu-surface.tsx',
     // Same reason, for the palette cmdk lives in (DEV-012).
     'shell/command-palette': 'src/shell/command-palette.tsx',
     'adapters/http': 'src/adapters/http.ts',

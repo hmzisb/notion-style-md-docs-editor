@@ -25,6 +25,7 @@ import { blockStyles } from '@/lib/block-styles.js';
 import { CALLOUT_VARIANTS, calloutVariantOf } from '@/lib/callout.js';
 import { useDocs } from '@/data/context.js';
 import { codeLanguageLabel } from '@/lib/code-languages';
+import { copyText } from '@/lib/clipboard.js';
 import { cn } from '@/lib/utils';
 import { AssetImage } from './AssetImage.js';
 import { useView } from './context.js';
@@ -332,7 +333,7 @@ function CopyButton({ text }: { text: string }): React.JSX.Element {
       aria-label={copied ? strings['editor.copiedCode'] : strings['editor.copyCode']}
       className="flex size-6 items-center justify-center rounded-sm text-muted-foreground opacity-0 transition-opacity hover:bg-accent focus-visible:opacity-100 group-hover/code:opacity-100"
       onClick={() => {
-        void copy(text).then(setCopied);
+        void copyText(text).then(setCopied);
       }}
     >
       {copied ? (
@@ -342,19 +343,6 @@ function CopyButton({ text }: { text: string }): React.JSX.Element {
       )}
     </button>
   );
-}
-
-/**
- * The DOM types promise a clipboard on every navigator, but an insecure context has none and
- * the user can refuse the write. Both end here, and the button simply stays on `Copy`.
- */
-async function copy(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
 }
 
 function TableStatic(props: SlateElementProps): React.JSX.Element {

@@ -163,7 +163,9 @@ describe('CommandPalette (docs/06 section 8, docs/07 section 4)', () => {
     const first = view.navigate.mock.calls[0]?.[0] as { mode: string; pageId: string } | undefined;
     expect(first?.mode).toBe('edit');
     expect(first?.pageId).toMatch(/^tmp_/);
-    expect(await screen.findByRole('treeitem', { name: 'Release notes' })).toBeInTheDocument();
+    // Awaited, not held: this row is drawn under the temporary id and drawn again under the
+    // provider's, so the node found here is a node React may already have replaced.
+    await screen.findByRole('treeitem', { name: 'Release notes' });
 
     // docs/04 section 4: it carries on under the id the provider gave it, in the same entry of
     // the host's history rather than a second one.

@@ -2,12 +2,16 @@ import type { NodeId, PageMode, TreeIndex, TreeNode } from '@docs/core';
 import { hotkeysCoreFeature, searchFeature, syncDataLoaderFeature } from '@headless-tree/core';
 import { AssistiveTreeDescription, useTree } from '@headless-tree/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
+import { useUpdateMeta } from '@/data/mutations.js';
+import { useStructuralGate } from '@/data/online.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { copyText } from '@/lib/clipboard.js';
 import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
@@ -87,6 +91,7 @@ export function PageTree({
       activeId={activeId}
       onOpen={onOpen}
       onCreate={onCreate}
+      rootId={rootId}
       className={className}
     />
   );
@@ -97,9 +102,15 @@ function TreeBody({
   activeId,
   onOpen,
   onCreate,
+  rootId,
   className,
-}: Omit<PageTreeProps, 'rootId'> & { index: TreeIndex }): React.JSX.Element {
+}: PageTreeProps & { index: TreeIndex }): React.JSX.Element {
   const { navigation, strings } = useDocs();
+  const update = useUpdateMeta(rootId);
+  // D-05: a rename, an icon and a new page all need the provider, and offline they are the
+  // same controls with the reason on them.
+  const { offline, reason } = useStructuralGate();
+  const [renaming, setRenaming] = useState<NodeId | null>(null);
   const expanded = useSidebarStore((state) => state.expanded);
   const setExpandedIds = useSidebarStore((state) => state.setExpandedIds);
   /**
@@ -147,7 +158,7 @@ function TreeBody({
     features: [syncDataLoaderFeature, hotkeysCoreFeature, searchFeature],
   });
 
-  const create = onCreate;
+  const create = offline ? undefined : onCreate;
 
   const toggle = useCallback(
     (id: NodeId) => {
@@ -176,6 +187,81 @@ function TreeBody({
     [tree],
   );
 
+  /** `setFocused` moves the roving tabindex; the DOM focus has to be asked for separately. */
+  const focusRow = useCallback(
+    (id: NodeId) => {
+      const item = tree.getItemInstance(id);
+      item.setFocused();
+      item.getElement()?.focus();
+    },
+    [tree],
+  );
+
+  /**
+   * docs/07 section 5: the field closes on `Enter`, `Esc` or blur, and the row it was over
+   * takes the focus back - the keyboard came from there and has nowhere else to be.
+   */
+  const endRename = useCallback(
+    (id: NodeId, title: string | null) => {
+      setRenaming(null);
+      focusRow(id);
+      if (title === null) return;
+      const before = latest.current.index.byId[id]?.title ?? '';
+      update.mutate(
+        { id, patch: { title } },
+        {
+          onError: () => {
+            toast(format(strings['error.rename'], { title: before }));
+          },
+        },
+      );
+    },
+    [focusRow, strings, update],
+  );
+
+  const changeIcon = useCallback(
+    (id: NodeId, icon: string) => {
+      update.mutate(
+        { id, patch: { icon } },
+        {
+          onError: () => {
+            toast(strings['error.generic']);
+          },
+        },
+      );
+    },
+    [strings, update],
+  );
+
+  /** docs/06 section 8: the host's own URL when it has one, and the id it would be built from. */
+  const copyLink = useCallback(
+    (id: NodeId) => {
+      const href = navigation.href?.({ pageId: id });
+      void copyText(href ?? id).then((ok) => {
+        toast(ok ? strings['menu.copiedLink'] : strings['error.generic']);
+      });
+    },
+    [navigation, strings],
+  );
+
+  /** Every row's menu is the same object, so a row still re-renders only when its data does. */
+  const menu = useMemo(
+    () => ({
+      labels: {
+        addInside: strings['menu.addInside'],
+        rename: strings['menu.rename'],
+        changeIcon: strings['menu.changeIcon'],
+        copyLink: strings['menu.copyLink'],
+      },
+      offline: offline ? reason : null,
+      onCreate,
+      onRename: onCreate === undefined ? undefined : setRenaming,
+      onIcon: onCreate === undefined ? undefined : changeIcon,
+      onCopyLink: copyLink,
+    }),
+    [changeIcon, copyLink, offline, onCreate, reason, strings],
+  );
+
   /** One stable ref callback per id, or every row would re-render on every scroll. */
   const registrars = useRef(new Map<NodeId, (element: HTMLDivElement | null) => void>());
   const registerFor = useCallback(
@@ -199,9 +285,9 @@ function TreeBody({
   // docs/07 section 2: the pointer has the `+` on the row; this is the same thing from the
   // keyboard, on whichever row the roving tabindex is on.
   useHotkeys(
-    create === undefined
+    (create === undefined
       ? []
-      : ([
+      : [
           {
             keys: 'Mod+Shift+ArrowRight',
             scopes: ['tree'],
@@ -210,7 +296,16 @@ function TreeBody({
               if (latest.current.index.byId[id] !== undefined) create(id);
             },
           },
-        ] satisfies Hotkey[]),
+          {
+            // docs/07 section 5: the keyboard's way into the rename the pointer double-clicks.
+            keys: 'F2',
+            scopes: ['tree'],
+            run: () => {
+              const id = tree.getFocusedItem().getId();
+              if (latest.current.index.byId[id] !== undefined) setRenaming(id);
+            },
+          },
+        ]) satisfies Hotkey[],
     scrollRef,
   );
 
@@ -274,11 +369,16 @@ function TreeBody({
                 title: node.title,
               })}
               addLabel={format(strings['tree.addInside'], { title: node.title })}
+              renameLabel={format(strings['tree.renameLabel'], { title: node.title })}
+              menu={{ ...menu, label: format(strings['tree.rowMenu'], { title: node.title }) }}
+              renaming={node.id === renaming}
               register={registerFor(node.id)}
               onActivate={activate}
               onToggle={toggle}
               onFocus={focusItem}
               onCreate={create}
+              onRenameStart={menu.onRename}
+              onRenameEnd={endRename}
             />
           );
         })}

@@ -10,7 +10,7 @@ import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/tooltip';
-import { IconPicker } from './IconPicker.js';
+import { IconPicker } from '@/tree/IconPicker.js';
 
 export interface PageIconProps {
   pageId: NodeId;

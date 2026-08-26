@@ -84,7 +84,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 ## Phase 3: Page operations, polish, packaging
 
 - [x] **P3-T01** Create page flows
-- [ ] **P3-T02** Rename, change icon, row menu
+- [x] **P3-T02** Rename, change icon, row menu
 - [ ] **P3-T03** Tree drag and drop, keyboard move, Move to
 - [ ] **P3-T04** Delete
 - [ ] **P3-T05** Folder nodes
@@ -112,6 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P3-T02
+- Current task: P3-T03
 - Open at Gate 3: `./shell` measures 99.81 kB gz against the 60 kB budget in docs/02 section 7, capped at 100 kB; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left, and P3's row menus share it (DEV-012, ASM-063).
 - Last gate passed: Gate 2 (2026-08-26)

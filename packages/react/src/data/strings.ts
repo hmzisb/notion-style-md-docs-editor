@@ -15,6 +15,7 @@ export const defaultStrings = {
   'tree.newPage': 'New page',
   'tree.newPageTooltip': 'New page',
   'tree.addInside': 'Add a page inside {title}',
+  'tree.renameLabel': 'Rename {title}',
   'tree.rowMenu': 'More options for {title}',
   'tree.expandRow': 'Expand {title}',
   'tree.collapseRow': 'Collapse {title}',
@@ -118,6 +119,7 @@ export const defaultStrings = {
   'dialog.rename.confirm': 'Rename',
 
   // Menus (docs/06 section 8).
+  'menu.addInside': 'Add a page inside',
   'menu.copyLink': 'Copy link',
   'menu.copyMarkdown': 'Copy as Markdown',
   'menu.download': 'Download .md',

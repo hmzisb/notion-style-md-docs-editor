@@ -2,6 +2,42 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-129 · P3-T02 · 2026-08-26
+Question: docs/06 section 5 gives every row a `⋯`, and docs/10 section 5 gives 45 mounted rows a 20 ms frame. A Radix dropdown and a popover per row cost more than that: the tree scroll test measured 22.9-23.2 ms with them mounted, 20.0 ms with the popover taken out.
+Assumed: the row renders a plain button, and the first `pointerdown` on it mounts `tree/row-menu-surface` - the menu, the popover and the picker trigger - in its place, already open. The surface is a tsup entry of its own, dynamically imported, and `ignore`d in both the `./shell` and the `./tree + ./view` size-limit entries, the ASM-063 shape.
+Why: nothing a row has not been asked for should be on the screen or on the wire; the press that opens the menu is early enough to build it, and the same deferral is what keeps the frame inside docs/10 section 5.
+Cheap to reverse: yes
+
+## ASM-128 · P3-T02 · 2026-08-26
+Question: the icon picker was `shell/IconPicker` because `PageTitle` was the only thing that opened one. The row menu opens the same picker, and `./tree` may not import from `./shell` (docs/02 section 2).
+Assumed: `IconPicker` and its lazy `icon-picker-grid` chunk move to `tree/`, and the shell imports them from there.
+Why: the boundary rule allows shell to import tree and not the other way round, so the shared surface belongs on the lower layer; the alternative was a second copy of frimousse behind a second chunk.
+Cheap to reverse: yes
+
+## ASM-127 · P3-T02 · 2026-08-26
+Question: docs/07 section 5 rejects an empty title by shaking the field. docs/06 section 14 turns animation off under `prefers-reduced-motion`.
+Assumed: the shake is `element.animate()` rather than a class and a keyframe - one call, guarded on `matchMedia('(prefers-reduced-motion: reduce)')` and on `animate` existing at all, with `aria-invalid` carrying the same news to a screen reader either way.
+Why: a CSS class has to be added, removed on `animationend` and re-added for a second attempt; the Web Animations call is the whole feature and cannot be left stuck on.
+Cheap to reverse: yes
+
+## ASM-126 · P3-T02 · 2026-08-26
+Question: docs/06 section 5 lists the row menu's items; D-05 says structural writes are unavailable while the provider is unreachable. Which items does that take?
+Assumed: Add inside, Rename and Change icon are disabled with the offline reason above them; Copy link stays live, because a link is the host's own URL and needs no provider. The row's `+` and `Cmd+Shift+Right` are gated the same way.
+Why: D-05 is about writes reaching a provider that is not there; a link is computed locally, and disabling it would be an outage the reader did not have.
+Cheap to reverse: yes
+
+## ASM-125 · P3-T02 · 2026-08-26
+Question: docs/06 section 5's row menu has Move to and Delete, and P3-T03 and P3-T04 are what build them.
+Assumed: the two items are absent until their tasks land, not present and disabled.
+Why: a disabled item with no reason attached reads as a broken feature; an item that appears with its task reads as a feature arriving. The menu's shape is asserted by `rename.spec.ts` per item, so nothing silently stays missing.
+Cheap to reverse: yes
+
+## ASM-124 · P3-T02 · 2026-08-26
+Question: docs/07 section 5 says an empty title is refused and the field stays open. What happens when the field is empty and the user clicks away instead of pressing Enter?
+Assumed: the rename is abandoned and the row keeps the title it had; only Enter on an empty field shakes.
+Why: refusing a blur has nowhere to put the focus back except the field the user just left, which traps them in a row they were leaving; the title is unchanged either way.
+Cheap to reverse: yes
+
 ## ASM-123 · P3-T01 · 2026-08-26
 Question: a page created here opens on a temporary id, and the file the provider writes carries `title: Untitled`. Should the title field open on that word?
 Assumed: no. The optimistic row and the created file both say "Untitled", but the title field opens empty, on its placeholder.
