@@ -2,6 +2,20 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-025 · P3-T07 · 2026-08-26
+Spec said: docs/05 section 2 - the emoji inline picker (`:`) through `@platejs/emoji` (`EmojiKit`), with shortcodes when Plate's Markdown kit registers `remark-emoji`. Marked "P3 optional".
+Reality: neither `@platejs/emoji` nor an emoji dataset is installed, and the registry's `emoji-kit` pulls `@emoji-mart/data` - a single JSON of every emoji, ~120 kB gz - into the editor chunk, which measures 213.65 kB against a 260 kB budget. `remark-emoji` is not installed either, so the codec would carry the shortcodes through as literal text.
+Decision: skipped. The `:` combobox is not built and no dependency is added. Emoji reach a page two other ways already: the icon picker's `frimousse` grid for page icons (docs/06 section 12), and the operating system's own picker in any text field.
+Impact: no emoji autocomplete inside the editor. The Markdown is unaffected - an emoji typed by any other means is a character like another and round trips.
+Reverse when: the editor budget has ~120 kB of room, or Plate ships an emoji plugin that loads its dataset on the first `:`.
+
+## DEV-024 · P3-T07 · 2026-08-26
+Spec said: docs/05 section 2 - the block menu comes from `@platejs/selection`'s `BlockMenuKit`, which is `BlockMenuPlugin` rendering Plate's `BlockContextMenu` as `render.aboveEditable`.
+Reality: `BlockMenuPlugin` is declared `editOnly` (v53.1.6), so it leaves the plugin list the moment the page flips to read mode. Its `aboveEditable` wrapper leaves the tree with it, React unmounts the subtree below, and the editable is rebuilt - which docs/05 section 8 forbids and `editor.test.tsx` catches ("flips read mode on the editor already mounted"). Its option store also only holds the open state and the pointer position, both of which Radix's own `ContextMenu` already owns.
+Decision: `BlockMenuKit` is our own `createPlatePlugin({ key: 'docsBlockMenu' })` with the same `render.aboveEditable`, registered in both modes; the menu turns itself off through the trigger (`disabled` on read-only and on a coarse pointer) instead of by leaving the tree. The selection half is unchanged - `BlockSelectionKit` with `enableContextMenu`, Plate's own - and it is what selects the blocks the menu acts on. The four items run Plate's transforms: `setBlockType`, `blockSelection.duplicate()`, `copySelectedBlocks`, `blockSelection.removeNodes()`.
+Impact: `editor/kits/block-menu-kit.tsx`, `editor/ui/block-context-menu.tsx`, `ui/context-menu.tsx` (shadcn, trimmed to the seven parts used). `editor.blockMenu.*` strings. No `blockMenu` plugin key, so a host that wanted to open the menu programmatically through `editor.getApi(BlockMenuPlugin)` cannot; nothing in the module does.
+Reverse when: Plate drops `editOnly` from `BlockMenuPlugin`, or exposes the menu as a component that does not gate on it.
+
 ## DEV-023 · P3-T02 · 2026-08-26
 Spec said: docs/02 section 7 budgets `./tree + ./view` at 80 kB gz and `./shell` at 60 kB, and docs/10 section 4 makes `size-limit` the gate that holds them.
 Reality: `size-limit`'s `ignore` list is esbuild's `external`, matched against the specifier text the bundle emits, and an entry that matches nothing is not an error. Two of them had stopped matching: the shell ignored `./icon-picker-grid.js`, but the picker moved to `tree/` in this task (ASM-128) and the emitted specifier is now `./tree/icon-picker-grid.js`. The `./tree + ./view` entry never ignored the picker at all, because until this task nothing in the tree reached it - with the row menu it does, and the entry measured 81.88 kB gz, 1.88 over budget, most of it code no row downloads unless its `⋯` is pressed.

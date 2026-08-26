@@ -55,3 +55,13 @@ Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
   configurable: true,
   value: () => false,
 });
+
+/** jsdom gives a `Range` no box, which is what a floating toolbar positions itself against. */
+Object.defineProperty(Range.prototype, 'getBoundingClientRect', {
+  configurable: true,
+  value: () => new DOMRect(),
+});
+Object.defineProperty(Range.prototype, 'getClientRects', {
+  configurable: true,
+  value: () => [],
+});

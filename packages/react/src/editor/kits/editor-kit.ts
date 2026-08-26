@@ -6,6 +6,7 @@ import { AutoformatKit } from './autoformat-kit.js';
 import { BasicBlocksKit } from './basic-blocks-kit.js';
 import { BasicMarksKit } from './basic-marks-kit.js';
 import { createBlockPlaceholderKit } from './block-placeholder-kit.js';
+import { BlockMenuKit } from './block-menu-kit.js';
 import { BlockSelectionKit } from './block-selection-kit.js';
 import { CalloutKit } from './callout-kit.js';
 import { CodeBlockKit } from './code-block-kit.js';
@@ -62,6 +63,7 @@ const EDITOR_ONLY: EditorPlugin[] = [
   ...ShortcutsKit,
   ...ExitBreakKit,
   ...BlockSelectionKit,
+  ...BlockMenuKit,
   ...DndKit,
   // Paste and drop of image files; inert until `DocumentEditor` hands it the page's upload.
   UploadPlugin,

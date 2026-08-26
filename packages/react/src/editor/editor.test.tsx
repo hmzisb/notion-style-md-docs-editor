@@ -316,3 +316,73 @@ describe('DocumentEditor (docs/05 section 6)', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 });
+
+describe('the block context menu (docs/05 section 2)', () => {
+  const value: Value = [
+    { children: [{ text: 'First block' }], type: 'p' },
+    { children: [{ text: 'Second block' }], type: 'p' },
+  ];
+
+  /** Right-click the block the text sits in, which is what carries Plate's own handlers. */
+  async function rightClick(text: string): Promise<void> {
+    const user = userEvent.setup();
+    const block = (await screen.findByText(text)).closest('[data-slate-node="element"]');
+    if (block === null) throw new Error(`${text} is not inside a block`);
+    await user.pointer({ keys: '[MouseRight]', target: block });
+  }
+
+  it('offers the four things it can do to the blocks under the pointer', async () => {
+    const opened = await open('index.md');
+    mount(opened, { value });
+    await rightClick('First block');
+
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
+      'Turn into',
+      'Duplicate',
+      'Copy',
+      'Delete',
+    ]);
+  });
+
+  it('deletes the blocks it was opened on', async () => {
+    const user = userEvent.setup();
+    const opened = await open('index.md');
+    const onChange = vi.fn<(next: Value) => void>();
+    mount(opened, { value, onChange });
+    await rightClick('First block');
+
+    await user.click(await screen.findByRole('menuitem', { name: 'Delete' }));
+    await waitFor(() => {
+      expect(screen.queryByText('First block')).not.toBeInTheDocument();
+    });
+    expect(screen.getByText('Second block')).toBeInTheDocument();
+  });
+
+  it('turns them into another block instead', async () => {
+    const user = userEvent.setup();
+    const opened = await open('index.md');
+    mount(opened, { value });
+    await rightClick('First block');
+
+    // Keyboard, because the submenu is the one place a pointer cannot reach in jsdom.
+    await user.keyboard('{ArrowDown}{ArrowRight}');
+    const submenu = await screen.findByRole('menuitem', { name: 'Heading 2' });
+    // `ArrowRight` already focused the first item, so two more reach Heading 2.
+    await user.keyboard('{ArrowDown}{ArrowDown}');
+    expect(submenu).toHaveFocus();
+    await user.keyboard('{Enter}');
+
+    await waitFor(() => {
+      expect(screen.getByText('First block').closest('h2')).not.toBeNull();
+    });
+  });
+
+  it('leaves the browser its own menu in read mode', async () => {
+    const opened = await open('index.md');
+    mount(opened, { value, readOnly: true });
+    await rightClick('First block');
+
+    expect(screen.queryByRole('menu')).not.toBeInTheDocument();
+  });
+});
