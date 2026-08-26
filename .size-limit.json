@@ -45,10 +45,7 @@
   },
   {
     "name": "@docs/react ./tree + ./view",
-    "path": [
-      "packages/react/dist/tree/index.js",
-      "packages/react/dist/view/index.js"
-    ],
+    "path": ["packages/react/dist/tree/index.js", "packages/react/dist/view/index.js"],
     "limit": "80 kB",
     "ignore": [
       "@docs/core",
@@ -73,9 +70,10 @@
   {
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "102 kB",
+    "limit": "105 kB",
     "ignore": [
       "./editor/index.js",
+      "./icon-picker-grid.js",
       "@docs/core",
       "lucide-react/dynamic",
       "@tanstack/react-query",

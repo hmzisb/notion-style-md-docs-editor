@@ -15,6 +15,9 @@ export {
   type DocsShellSlots,
 } from './DocsShell.js';
 export { EmptyState, type EmptyStateAction, type EmptyStateProps } from './EmptyState.js';
+export { IconPicker, type IconPickerProps } from './IconPicker.js';
 export { ModeToggle, type ModeToggleProps } from './ModeToggle.js';
 export { PageHeader, type PageHeaderProps } from './PageHeader.js';
+export { PageIcon, type PageIconProps } from './PageIcon.js';
+export { PageTitle, type PageTitleProps } from './PageTitle.js';
 export { SaveStatus, type SaveStatusProps } from './SaveStatus.js';

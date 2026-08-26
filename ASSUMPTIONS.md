@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-085 · P2-T07 · 2026-08-26
+Question: docs/06 section 7 wants the title saved "as you type" without naming an interval, and docs/03 gives `updateMeta` a `renameFile` flag.
+Assumed: commit 600 ms after the last keystroke, and flush immediately on blur, on Enter and on unmount; `renameFile` is left off for now.
+Why: 600 ms is the same debounce the draft store already uses, so a title and its body settle together; flushing on the three ways out of the field means no keystroke is lost to a navigation. `renameFile: true` on a page's first title belongs with `useCreatePage` (P3-T02) - turning it on now would rename every file on every keystroke pause.
+Cheap to reverse: yes
+
+## ASM-084 · P2-T07 · 2026-08-26
+Question: the title field and the picker need strings docs/08 section 6 does not list.
+Assumed: added `editor.title` ("Page title", the textarea's label) and `editor.iconLoading` ("Loading emoji…"), and changed the default of `editor.iconSearch` from "Search icons…" to "Search…".
+Why: both tabs share one search box and one of them searches emoji, so "Search icons…" was wrong in half the picker; the keys follow the existing `editor.*` naming and a host overriding them needs no code change.
+Cheap to reverse: yes
+
+## ASM-083 · P2-T07 · 2026-08-26
+Question: docs/07 section 9 asks for `role="gridcell"` cells in a `role="grid"`, and the icons tab has ~1600 of them.
+Assumed: the grid is driven from the search box - it keeps focus, owns the arrows and Enter, and points at the highlighted cell with `aria-activedescendant`; the cells are `tabIndex={-1}` and carry `aria-selected`.
+Why: a roving tabindex over 1600 cells still needs the search box for anything but scrolling, and virtualization means the focused cell can be unmounted out from under the user. This is also how frimousse drives the emoji tab, so both tabs answer the same keys.
+Cheap to reverse: yes
+
+## ASM-082 · P2-T07 · 2026-08-26
+Question: the picker pulls frimousse and `lucide-react/dynamic`, and docs/02 section 7 budgets `./shell` without them.
+Assumed: the heavy half lives in `src/shell/icon-picker-grid.tsx`, which is a tsup entry, dynamically imported by the thin `IconPicker` export and added to the `./shell` `ignore` list in `.size-limit.json`.
+Why: same mechanism as `./editor` (ASM-063) - only a tsup entry keeps a stable relative specifier after the build, and `size-limit`'s `ignore` is esbuild's `external`, which matches on that specifier. A non-entry module would be emitted as a hashed chunk that no `ignore` entry can name.
+Cheap to reverse: yes
+
+## ASM-081 · P2-T07 · 2026-08-26
+Question: frimousse fetches its emoji data from jsdelivr at mount, and D-05 says the module works offline.
+Assumed: keep the default CDN and ship no emoji data; offline, the emoji tab shows its loading state and the icons tab (bundled) still works.
+Why: emojibase is ~1 MB per locale - bundling it to make one tab work offline costs every host the download. D-05 covers reading and editing pages, which no fetch here touches. The e2e stubs the route with a trimmed fixture so the suite neither hits the network nor trips `quietConsole` on frimousse's `console.error`.
+Cheap to reverse: no
+
 ## ASM-080 · P2-T06 · 2026-08-26
 Question: docs/07 section 7 gives the editor's first `Escape` to the block selection and the second to leaving edit mode, but the shell's `Escape` hotkey ran in every scope and took the first one.
 Assumed: the shell's edit-mode `Escape` keeps the default scopes (global, tree, content), so inside the editable and inside a text input it does not fire; `PageCanvas` still takes the press that has a block selection up.

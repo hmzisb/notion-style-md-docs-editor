@@ -153,6 +153,7 @@ export const defaultStrings = {
   'palette.footerClose': 'esc to close',
 
   // Canvas and editor (docs/06 sections 7-8).
+  'editor.title': 'Page title',
   'editor.titlePlaceholder': 'Untitled',
   'editor.bodyPlaceholder': "Write something, or press '/' for commands",
   'editor.heading1Placeholder': 'Heading 1',
@@ -162,8 +163,9 @@ export const defaultStrings = {
   'editor.removeIcon': 'Remove',
   'editor.iconEmoji': 'Emoji',
   'editor.iconIcons': 'Icons',
-  'editor.iconSearch': 'Search icons…',
+  'editor.iconSearch': 'Search…',
   'editor.iconRandom': 'Random',
+  'editor.iconLoading': 'Loading emoji…',
   'editor.emptyToggle': 'Empty toggle. Click or drop blocks inside.',
   'editor.copyCode': 'Copy',
   'editor.copiedCode': 'Copied',

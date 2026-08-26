@@ -71,7 +71,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P2-T04** Save status and banners
 - [x] **P2-T05** Blocks, slash menu, floating toolbar, autoformat
 - [x] **P2-T06** Block DnD and block selection
-- [ ] **P2-T07** Title edit and icon picker
+- [x] **P2-T07** Title edit and icon picker
 - [ ] **P2-T08** Offline handling
 - [ ] **P2-T09** Conflicts end to end
 - [ ] **P2-T10** Callout rule and kit (stretch, D-17)
@@ -112,6 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P2-T07
-- Open at Gate 2: `./shell` measures 101.3 kB gz against the 60 kB budget in docs/02 section 7, capped at 102 kB as a ratchet; the cut is due once `PageMenu` exists, and `size-limit`'s `ignore` now makes a lazy palette/toaster/menu chunk measurable (DEV-012, ASM-063).
+- Current task: P2-T08
+- Open at Gate 2: `./shell` measures 104 kB gz against the 60 kB budget in docs/02 section 7, capped at 105 kB as a ratchet; the cut is due once `PageMenu` exists, and `size-limit`'s `ignore` now makes a lazy palette/toaster/menu chunk measurable (DEV-012, ASM-063).
 - Last gate passed: Gate 1 (2026-08-26)

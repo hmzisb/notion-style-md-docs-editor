@@ -65,7 +65,9 @@ const isBlankParagraph = (node: Descendant): boolean => {
  * touched (D-02).
  */
 const marked = (value: Value): Value =>
-  value.map((node) => (isBlankParagraph(node) ? { ...node, children: [{ text: '\u200b' }] } : node));
+  value.map((node) =>
+    isBlankParagraph(node) ? { ...node, children: [{ text: '\u200b' }] } : node,
+  );
 
 /**
  * docs/05 section 6 keeps an empty paragraph after the last block so the user can click below

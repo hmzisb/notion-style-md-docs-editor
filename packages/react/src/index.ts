@@ -12,6 +12,7 @@ export {
   usePage,
   useTreeIndex,
 } from './data/queries.js';
+export { useUpdateMeta, type UpdateMetaVariables } from './data/mutations.js';
 export { useDocumentSession, type DocumentSession, type SessionEditor } from './data/session.js';
 export type { SessionState, SessionStatus } from './data/session-store.js';
 export { MAX_RECENTS, useRecents, type Recent, type RecentsState } from './data/cache/recents.js';

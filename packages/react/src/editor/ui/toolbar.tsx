@@ -257,7 +257,11 @@ export function ToolbarToggleItem({
 export function ToolbarGroup({ children, className }: React.ComponentProps<'div'>) {
   return (
     <div
-      className={cn('group/toolbar-group', 'relative hidden items-center has-[button]:flex', className)}
+      className={cn(
+        'group/toolbar-group',
+        'relative hidden items-center has-[button]:flex',
+        className,
+      )}
     >
       <div className="flex items-center gap-0.5">{children}</div>
 
@@ -292,7 +296,8 @@ function withTooltip<T extends React.ElementType>(Component: T) {
     // label a sighted user reads: it is the accessible one too, unless the caller passed a
     // better one (docs/06 section 13).
     const labelled =
-      typeof tooltip === 'string' && (props as { 'aria-label'?: string })['aria-label'] === undefined
+      typeof tooltip === 'string' &&
+      (props as { 'aria-label'?: string })['aria-label'] === undefined
         ? { ...props, 'aria-label': tooltip }
         : props;
 

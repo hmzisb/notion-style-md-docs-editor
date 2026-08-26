@@ -6,13 +6,17 @@ import { useDocumentSession } from '@/data/session.js';
 import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import type { PlateEditor } from '@/editor/index.js';
 import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
-import { IconGlyph } from '@/tree/IconGlyph.js';
 import { DocumentView } from '@/view/DocumentView.js';
 import { PageBanners } from './Banners.js';
 import { EmptyState } from './EmptyState.js';
+import { PageIcon } from './PageIcon.js';
+import { PageTitle } from './PageTitle.js';
 
-/** Where a click must not start editing (docs/07 section 7): links and every control. */
-const NOT_TEXT = 'a, button, summary, input, [role="button"], [role="checkbox"]';
+/**
+ * Where a click must not start editing (docs/07 section 7): links, every control, and the
+ * title block, which answers for its own clicks by putting the caret in the title instead.
+ */
+const NOT_TEXT = 'a, button, summary, input, [role="button"], [role="checkbox"], [data-docs-title]';
 
 /**
  * docs/05 section 6: past this many top-level blocks the page opens read-only behind the large
@@ -119,6 +123,11 @@ export function PageCanvas({
     [applyFocus, mode, onModeChange, regionRef],
   );
 
+  /** docs/06 section 7: `Enter` in the title hands the caret to the body, editor or not yet. */
+  const goToContent = useCallback(() => {
+    requestEdit({ type: 'start' });
+  }, [requestEdit]);
+
   const bind = session.bind;
   const onReady = useCallback(
     (editor: PlateEditor) => {
@@ -200,18 +209,19 @@ export function PageCanvas({
         largePage={large}
         onEdit={editAnyway}
       />
-      {node.icon !== undefined && (
-        <div className="pb-2">
-          <IconGlyph
-            icon={node.icon}
-            kind={node.kind}
-            className="size-9 text-[36px] leading-none"
-          />
-        </div>
-      )}
-      <h1 className="text-[32px] leading-tight font-bold md:text-[40px]">
-        {page.meta.title ?? node.title}
-      </h1>
+      {/* docs/06 section 7: the icon's own button is only there on hover of this block. */}
+      <div data-docs-title className="group/title">
+        <PageIcon pageId={page.id} node={node} rootId={rootId} mode={mode} editable={editable} />
+        <PageTitle
+          pageId={page.id}
+          title={page.meta.title ?? node.title}
+          rootId={rootId}
+          mode={mode}
+          editable={editable}
+          onModeChange={onModeChange}
+          onGoToContent={goToContent}
+        />
+      </div>
       {showEditor ? (
         <chunk.EditorErrorBoundary
           resetKey={page.id}

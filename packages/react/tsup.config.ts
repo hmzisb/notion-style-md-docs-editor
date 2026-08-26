@@ -8,6 +8,9 @@ export default defineConfig({
     'editor/index': 'src/editor/index.ts',
     'view/index': 'src/view/index.ts',
     'shell/index': 'src/shell/index.ts',
+    // An entry of its own so the dynamic import from `IconPicker` resolves to a stable path
+    // rather than a hashed chunk: docs/02 section 7 measures `./shell` without it.
+    'shell/icon-picker-grid': 'src/shell/icon-picker-grid.tsx',
     'adapters/http': 'src/adapters/http.ts',
     'adapters/filesystem': 'src/adapters/filesystem.ts',
     'adapters/memory': 'src/adapters/memory.ts',

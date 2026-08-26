@@ -385,7 +385,11 @@ describe('mode transitions (docs/07 section 7)', () => {
 });
 
 /** A pointer press and release at explicit coordinates: the 4 px rule reads both. */
-function click(target: Element, from: { x: number; y: number }, to: { x: number; y: number }): void {
+function click(
+  target: Element,
+  from: { x: number; y: number },
+  to: { x: number; y: number },
+): void {
   fireEvent.pointerDown(target, { clientX: from.x, clientY: from.y });
   fireEvent.pointerUp(target, { clientX: to.x, clientY: to.y });
 }
