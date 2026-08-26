@@ -84,7 +84,7 @@ describe('file store subscribe (docs/04 section 5)', () => {
 
   it('reports a rename as a tree event, once', async () => {
     const { store, provider, events, settled } = harness();
-    await provider.getTree();
+    await provider.getPage(await idOf(provider, 'guides/writing.md'));
 
     await store.writeText('guides/writing.md', '---\ntitle: Renamed\n---\n\nFirst.\n');
     await settled();
@@ -92,6 +92,17 @@ describe('file store subscribe (docs/04 section 5)', () => {
     expect(events.filter((event) => event.type === 'tree')).toHaveLength(1);
     // The bytes changed as well, so the open page hears about it too.
     expect(events.filter((event) => event.type === 'page')).toHaveLength(1);
+  });
+
+  it('says nothing about a page it has never read', async () => {
+    const { store, provider, events, settled } = harness();
+    await provider.getTree();
+
+    await store.writeText('guides/writing.md', '---\ntitle: Writing\n---\n\nElsewhere.\n');
+    await settled();
+
+    // Nothing holds a version of that page, so there is nothing to invalidate.
+    expect(events).toEqual([]);
   });
 
   it('reports a new file as a tree event and an unsubscribed listener hears nothing', async () => {

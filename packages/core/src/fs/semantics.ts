@@ -438,7 +438,9 @@ export function createFileStoreProvider(
     const byPath = new Map(Object.values(index.byId).map((node) => [node.path, node]));
     for (const path of changed) {
       const node = byPath.get(path);
-      if (node?.kind !== 'page') continue;
+      // A page this provider never read is not in anyone's cache: its arrival is the tree
+      // event above, and nothing is holding a version of it to invalidate.
+      if (node?.kind !== 'page' || !seenVersions.has(path)) continue;
       const version = await pageVersion(await store.readText(path));
       if (seenVersions.get(path) === version) continue;
       seenVersions.set(path, version);

@@ -3,6 +3,7 @@ import {
   createFileStoreProvider,
   isConflictError,
   isProviderError,
+  type ChangeEvent,
   type DocumentProvider,
 } from '@docs/core';
 import { HttpResponse, http } from 'msw';
@@ -69,13 +70,14 @@ describe('createHttpProvider', () => {
       });
     });
 
-    it('fills them from the backend, and keeps subscribe off until P4-T02', async () => {
+    it('fills them from the backend, and leaves subscribe to the host', async () => {
       const provider = client();
       const meta = await provider.getMeta();
 
       expect(meta.capabilities.write).toBe(true);
       expect(provider.capabilities.write).toBe(true);
-      // The memory store watches, so the backend advertises it; nothing here listens yet.
+      // The memory store watches, so the backend advertises events - but this host asked for
+      // none, and a capability is what the module may call (docs/03 section 9).
       expect(meta.capabilities.subscribe).toBe(false);
       expect(typeof provider.subscribe).toBe('undefined');
       expect(meta.title).toBe('Docs');
@@ -343,5 +345,159 @@ describe('createHttpProvider', () => {
     const provider = client({ baseUrl: `${BASE}/` });
     expect(provider.key).toBe(`http:${BASE}`);
     await expect(provider.getTree()).resolves.toBeDefined();
+  });
+});
+
+/**
+ * docs/03 section 9 and docs/04 section 5, P4-T02. `sse` reads the event stream; `poll` asks
+ * the two conditional questions the module acts on. Both reconnect with backoff, and neither
+ * reports our own save back to us.
+ */
+describe('change events', () => {
+  const events = (provider: DocumentProvider): ChangeEvent[] => {
+    const seen: ChangeEvent[] = [];
+    provider.subscribe?.((event) => seen.push(event));
+    return seen;
+  };
+
+  const idOf = async (provider: DocumentProvider, title: string): Promise<string> => {
+    const node = (await provider.getTree()).nodes.find((candidate) => candidate.title === title);
+    if (!node) throw new Error(`no node titled ${title}`);
+    return node.id;
+  };
+
+  it('is off unless the host asked for it', async () => {
+    const provider = client({ events: 'none' });
+    await provider.getMeta();
+    expect(provider.capabilities.subscribe).toBe(false);
+    expect(typeof provider.subscribe).toBe('undefined');
+  });
+
+  it('streams what the backend pushes, over sse', async () => {
+    const provider = client({ events: 'sse' });
+    await provider.getMeta();
+    expect(provider.capabilities.subscribe).toBe(true);
+    const seen = events(provider);
+
+    const id = await idOf(provider, 'Auth');
+    await provider.getPage(id);
+    // Straight through the store, which is what an edit by anything but this client looks like.
+    await backend.store?.writeText('guides/auth.md', '---\nid: p_auth\ntitle: Auth\n---\n\nNew.\n');
+
+    await vi.waitFor(() => {
+      expect(seen).toContainEqual(expect.objectContaining({ type: 'page', id }));
+    });
+    provider.dispose?.();
+  });
+
+  it('reconnects after the stream fails, backing off between attempts', async () => {
+    const attempts: number[] = [];
+    server.use(
+      http.get(`${BASE}/events`, () => {
+        attempts.push(performance.now());
+        // Two refusals, then the handler below it (the real stream) takes over.
+        return attempts.length <= 2 ? new HttpResponse(null, { status: 503 }) : undefined;
+      }),
+    );
+
+    const step = 40;
+    const provider = client({ events: 'sse', pollIntervalMs: step });
+    await provider.getMeta();
+    const seen = events(provider);
+
+    const id = await idOf(provider, 'Auth');
+    await provider.getPage(id);
+    await vi.waitFor(
+      () => {
+        expect(attempts.length).toBeGreaterThanOrEqual(3);
+      },
+      { timeout: 2000 },
+    );
+    // One period, then two: the wait doubles for as long as the backend refuses.
+    expect((attempts[1] ?? 0) - (attempts[0] ?? 0)).toBeGreaterThanOrEqual(step * 0.9);
+    expect((attempts[2] ?? 0) - (attempts[1] ?? 0)).toBeGreaterThanOrEqual(step * 1.9);
+
+    await backend.store?.writeText('guides/auth.md', '---\nid: p_auth\ntitle: Auth\n---\n\nBack.\n');
+    await vi.waitFor(() => {
+      expect(seen).toContainEqual(expect.objectContaining({ type: 'page', id }));
+    });
+    provider.dispose?.();
+  });
+
+  it('polls the tree and the open page conditionally', async () => {
+    const seenRequests: string[] = [];
+    server.events.on('request:start', ({ request }) => {
+      if (request.headers.get('if-none-match') !== null) seenRequests.push(request.url);
+    });
+
+    const provider = client({ events: 'poll', pollIntervalMs: 10 });
+    await provider.getMeta();
+    const id = await idOf(provider, 'Auth');
+    await provider.getPage(id);
+    const seen = events(provider);
+
+    await vi.waitFor(() => {
+      expect(seenRequests.filter((url) => url.endsWith('/tree')).length).toBeGreaterThan(0);
+      expect(seenRequests.filter((url) => url.includes('/pages/')).length).toBeGreaterThan(0);
+    });
+    // Nothing changed, so every one of those answered 304 and nobody heard about it.
+    expect(seen).toEqual([]);
+
+    await backend.store?.writeText('guides/auth.md', '---\nid: p_auth\ntitle: Auth\n---\n\nEdit.\n');
+    await vi.waitFor(() => {
+      expect(seen).toContainEqual(expect.objectContaining({ type: 'page', id }));
+    });
+    provider.dispose?.();
+    server.events.removeAllListeners();
+  });
+
+  it('reports a page added elsewhere as a tree event', async () => {
+    const provider = client({ events: 'poll', pollIntervalMs: 10 });
+    await provider.getMeta();
+    await provider.getTree();
+    const seen = events(provider);
+
+    await backend.store?.writeText('guides/new.md', '---\ntitle: Newcomer\n---\n\nHi.\n');
+
+    await vi.waitFor(() => {
+      expect(seen).toContainEqual(expect.objectContaining({ type: 'tree' }));
+    });
+    provider.dispose?.();
+  });
+
+  it('does not report our own save back to us', async () => {
+    const provider = client({ events: 'poll', pollIntervalMs: 10 });
+    await provider.getMeta();
+    const id = await idOf(provider, 'Auth');
+    const page = await provider.getPage(id);
+    const seen = events(provider);
+
+    await provider.savePage(id, { body: 'Mine.\n', baseVersion: page.version });
+    // Several poll periods: the version the backend reports is the one we wrote.
+    await new Promise((resolve) => setTimeout(resolve, 60));
+
+    expect(seen.filter((event) => event.type === 'page')).toEqual([]);
+    provider.dispose?.();
+  });
+
+  it('stops the connection when the last listener leaves', async () => {
+    let open = 0;
+    server.use(
+      http.get(`${BASE}/tree`, () => {
+        open += 1;
+        return undefined;
+      }),
+    );
+    const provider = client({ events: 'poll', pollIntervalMs: 10 });
+    await provider.getMeta();
+    const off = provider.subscribe?.(() => undefined);
+    await vi.waitFor(() => {
+      expect(open).toBeGreaterThan(0);
+    });
+
+    off?.();
+    const after = open;
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(open).toBe(after);
   });
 });

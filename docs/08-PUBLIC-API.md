@@ -162,7 +162,9 @@ interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeI
 
 ```ts
 createHttpProvider({ baseUrl, fetch?, headers?, credentials?, rootId?, events?: 'sse' | 'poll' | 'none', pollIntervalMs? }): DocumentProvider
-createFileSystemProvider(handle: FileSystemDirectoryHandle, opts?: { key?: string; title?: string; indexCache?: boolean; watch?: boolean; readOnly?: boolean; onProgress?: (p: { done: number; total: number }) => void }): DocumentProvider
+// events: 'sse' reads GET /events; 'poll' re-reads the tree and the open page with If-None-Match every pollIntervalMs (5 s); both reconnect with backoff. Default 'none', which keeps capabilities.subscribe off whatever the backend advertises.
+createFileSystemProvider(handle: FileSystemDirectoryHandle, opts?: { key?: string; title?: string; indexCache?: boolean; watch?: boolean; readOnly?: boolean; pollIntervalMs?: number; onProgress?: (p: { done: number; total: number }) => void }): DocumentProvider
+// watch: polls the listing every pollIntervalMs (5 s) and turns what changed into page and tree events.
 // onProgress fires during the first (uncached) index build so the shell can show "Indexing 1,240 / 5,000 pages" under the tree skeleton.
 createMemoryProvider(seed: { files: Record<string, string | Uint8Array> } | { tree: TreeSnapshot; pages: Record<NodeId, PageDocument> }, opts?: { capabilities?: Partial<ProviderCapabilities>; latencyMs?: number; failNext?: ProviderErrorCode; key?: string }): DocumentProvider
 

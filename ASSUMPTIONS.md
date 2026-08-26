@@ -2,6 +2,18 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-156 · P4-T02 · 2026-08-27
+Question: docs/03 section 9 gives the adapter `events: 'sse' | 'poll'`, but the contract has no "what changed since" endpoint for the poll to ask.
+Assumed: the poll asks the two questions the module acts on, both conditionally - `GET /tree` and `GET /pages/:id` for the page last read, each with `If-None-Match`, so an unchanged backend answers `304` and nothing else. `sse` carries whatever the backend pushes.
+Why: a poll that re-reads the whole tree unconditionally is a payload every period for a workspace that changes twice a day; conditional requests make the steady state two empty responses. The page last read is the open page in this module, which is the one docs/04 section 5 names.
+Cheap to reverse: yes
+
+## ASM-157 · P4-T02 · 2026-08-27
+Question: should `events` default to `'sse'` when the backend advertises `capabilities.subscribe`?
+Assumed: no - the default is `'none'`, and `capabilities.subscribe` is forced off unless the host asked for events.
+Why: a host that mounts the module gets no background connection it did not ask for, and a capability is what the module may call rather than what the backend can do. A host that wants live updates writes one option.
+Cheap to reverse: yes
+
 ## ASM-154 · P4-T01 · 2026-08-27
 Question: docs/04 section 5 suppresses a save echo by comparing the event version with `session.lastSavedVersion`, which is a React-side check - but a store that reports its writes synchronously (the memory store, and any future one) calls the watcher from inside `writeText`, before the save has resolved and before the session knows the version.
 Assumed: the provider suppresses its own echo as well, by remembering the version of every page it has read or written (`seenVersions`) and emitting a `page` event only for a version it has not seen. The session-level check stays exactly as the spec has it.

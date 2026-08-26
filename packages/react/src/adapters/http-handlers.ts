@@ -55,6 +55,13 @@ function envelope(error: unknown): Response {
   );
 }
 
+/** docs/03 section 9: both reads carry an ETag, so both answer a conditional request. */
+function notModified(request: Request, version: string): Response | null {
+  return unquote(request.headers.get('if-none-match')) === version
+    ? new HttpResponse(null, { status: 304, headers: { ETag: quote(version) } })
+    : null;
+}
+
 /** Every handler runs inside this, so a provider rejection is always a contract response. */
 const guard =
   (handler: (args: { request: Request; params: Record<string, string> }) => Promise<Response>) =>
@@ -86,15 +93,21 @@ export function docsHandlers(baseUrl: string, backend: () => DocsBackend): Reque
       guard(async ({ request }) => {
         const root = new URL(request.url).searchParams.get('root');
         const snapshot = await provider().getTree(root === null ? {} : { rootId: root });
-        return HttpResponse.json(snapshot, { headers: { ETag: quote(snapshot.version) } });
+        return (
+          notModified(request, snapshot.version) ??
+          HttpResponse.json(snapshot, { headers: { ETag: quote(snapshot.version) } })
+        );
       }),
     ),
 
     http.get(
       at('/pages/:id'),
-      guard(async ({ params }) => {
+      guard(async ({ params, request }) => {
         const page = await provider().getPage(idOf(params));
-        return HttpResponse.json(page, { headers: { ETag: quote(page.version) } });
+        return (
+          notModified(request, page.version) ??
+          HttpResponse.json(page, { headers: { ETag: quote(page.version) } })
+        );
       }),
     ),
 
@@ -215,11 +228,34 @@ export function docsHandlers(baseUrl: string, backend: () => DocsBackend): Reque
       }),
     ),
 
+    /** `text/event-stream` of `ChangeEvent`, straight off the backing provider's own watcher. */
     http.get(
       at('/events'),
-      guard(() =>
-        Promise.resolve(envelope(new ProviderError('unsupported', 'This backend has no events.'))),
-      ),
+      guard(({ request }) => {
+        const subscribe = provider().subscribe?.bind(provider());
+        if (subscribe === undefined) {
+          return Promise.resolve(
+            envelope(new ProviderError('unsupported', 'This backend has no events.')),
+          );
+        }
+        const encoder = new TextEncoder();
+        const stream = new ReadableStream<Uint8Array>({
+          start(controller) {
+            const off = subscribe((event) => {
+              controller.enqueue(encoder.encode(`data: ${JSON.stringify(event)}\n\n`));
+            });
+            request.signal.addEventListener('abort', () => {
+              off();
+              controller.close();
+            });
+          },
+        });
+        return Promise.resolve(
+          new HttpResponse(stream, {
+            headers: { 'cache-control': 'no-cache', 'content-type': 'text/event-stream' },
+          }),
+        );
+      }),
     ),
   ];
 }
