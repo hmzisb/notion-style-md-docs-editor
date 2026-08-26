@@ -2,6 +2,12 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-160 · P4-T04 · 2026-08-27
+Question: docs/09 asks that `Edit anyway` on a page past the 5,000-block threshold work "within budget", and docs/10 section 5 has no budget for that path.
+Assumed: measure it rather than invent a budget. On the reference machine, opting past the guard on a 5,200-block page takes 16.2 s against a real build; `perf.spec.ts` asserts a 25 s tripwire, so a change that makes it worse is not silent, and the number is recorded on every run.
+Why: the threshold exists because editing a page this size is slow; a budget written after the fact would either be the measurement (and fail on a slower machine) or a number nothing enforces. The behaviour - read-only, the banner, the opt-in - is asserted separately in `large.spec.ts`, which runs on every e2e.
+Cheap to reverse: yes
+
 ## ASM-158 · P4-T03 · 2026-08-27
 Question: docs/04 section 3.3 lists `Compare (text diff dialog)` as optional and does not say what the diff shows or whether it can resolve the mismatch.
 Assumed: a read-only side-by-side line diff of the file against the waiting draft, opened from a third ghost action on the mismatch banner. The two banner buttons stay the only way to answer; the dialog has no Apply of its own.

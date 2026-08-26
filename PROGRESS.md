@@ -104,7 +104,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P4-T01** Filesystem watch and subscribe; page and tree events out of the poll, echo suppressed in the provider as well as the session (ASM-154), OPFS workspace watches (ASM-155)
 - [x] **P4-T02** HTTP events; `sse` over `GET /events`, `poll` over two conditional reads, exponential backoff, echo suppression, msw tests for both
 - [x] **P4-T03** Draft compare dialog; `Compare` on the mismatch banner opens a side-by-side line diff of the file against the waiting draft, read-only (ASM-158), on an internal LCS diff and a lazy chunk of its own (ASM-159)
-- [ ] **P4-T04** Large page path
+- [x] **P4-T04** Large page path; `large.spec.ts` proves a 5,200-block page opens read-only behind the banner and that `Edit anyway` is what gets past it, `perf.spec.ts` records what opting in costs (16.2 s, 25 s tripwire, ASM-160)
 - [ ] **P4-T05** Doctor polish and `ids` migration
 - [ ] **P4-T07** Local content search (optional)
 - [ ] **P4-T08** Scroll restoration (optional)
@@ -112,7 +112,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P4-T04
+- Current task: P4-T05
 - Open at Gate 3: keystroke to paint is 34.1 ms p95 on the 3,000-block fixture against a 16 ms budget; 10.1 ms at 500 blocks and 16.3 at 1,000 (DEV-031).
 - Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
 - Last gate passed: Gate 3 (2026-08-27) — 19 pass, 0 skip, 0 fail

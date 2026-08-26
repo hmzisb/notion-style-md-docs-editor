@@ -561,4 +561,41 @@ test.describe('budgets (docs/10 section 5)', () => {
     record(testInfo, `playground TTI (warm): ${ms.toFixed(0)} ms`);
     expect(ms, 'playground TTI (budget 1.5 s + 20%)').toBeLessThan(1800);
   });
+
+  /**
+   * docs/05 section 6: past 5,000 blocks the page opens read-only, and `Edit anyway` is the
+   * opt-in. What that opt-in costs is what the guard is there for, so it is measured rather
+   * than budgeted; `large.spec.ts` is what says the guard and the button behave.
+   */
+  test('a page past the block threshold takes Edit anyway inside 25 s', async ({
+    mode,
+    page,
+  }, testInfo) => {
+    test.skip(mode !== 'opfs', 'seeded into the filesystem, like the other big fixtures');
+    test.setTimeout(300_000);
+    await freshVisit(page);
+    await seedFile(page, 'large-page.md', largePage(5200));
+    await openWorkspace(page, 'opfs');
+    await expect(tree(page)).toBeVisible();
+
+    await page.getByRole('treeitem', { name: 'Large page' }).click();
+    await expect(page.getByText('Large page: opened in read mode for performance.')).toBeVisible({
+      timeout: 60_000,
+    });
+
+    // The editor chunk is preloaded on idle (docs/05 section 8), so what is measured here is
+    // the mount and not the download.
+    await page.waitForTimeout(2000);
+    const started = Date.now();
+    await page.getByRole('button', { name: 'Edit anyway' }).click();
+    await expect(page.locator('[data-slate-editor]')).toHaveAttribute('contenteditable', 'true', {
+      timeout: 120_000,
+    });
+    const ms = Date.now() - started;
+
+    // 16.4 s measured on the reference machine. Not a budget docs/10 sets - a tripwire at
+    // roughly 1.5x, so that a change which makes the opt-in worse is not silent (ASM-160).
+    record(testInfo, `edit anyway on a 5,200-block page: ${String(ms)} ms`);
+    expect(ms, 'edit anyway on a 5,200-block page (tripwire 25 s)').toBeLessThan(25_000);
+  });
 });
