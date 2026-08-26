@@ -63,6 +63,14 @@ const GATE_1: Step[] = [
 
 const GATE_2: Step[] = [];
 const GATE_3: Step[] = [
+  // Both of these are stopwatches, so neither shares a machine with the rest of the suite:
+  // the codec budget runs alone, and the browser ones run one worker against a real build.
+  { name: 'perf budgets (node)', run: 'pnpm test:perf', needs: ['fixtures/perf/serialize.test.ts'] },
+  {
+    name: 'perf budgets (browser)',
+    run: 'pnpm test:e2e:perf',
+    needs: ['apps/playground/playwright.perf.config.ts'],
+  },
   { name: 'smoke hosts', run: 'pnpm smoke', needs: ['smoke/tailwind-host', 'smoke/plain-host'] },
   { name: 'changeset status', run: 'pnpm changeset status', needs: ['.changeset/config.json'] },
 ];

@@ -24,7 +24,9 @@ const row = (page: Page, title: string): Locator => page.getByRole('treeitem', {
 
 /** The titles the tree is showing, top to bottom. */
 const order = async (page: Page): Promise<string[]> =>
-  (await page.getByRole('treeitem').allInnerTexts()).map((text) => text.split('\n')[0]?.trim() ?? '');
+  (await page.getByRole('treeitem').allInnerTexts()).map(
+    (text) => text.split('\n')[0]?.trim() ?? '',
+  );
 
 /** A drop in the top quarter of a row inserts above it; the middle half drops inside it. */
 async function drag(page: Page, from: string, to: string, y: number): Promise<void> {

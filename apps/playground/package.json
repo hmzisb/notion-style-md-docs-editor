@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "typecheck": "tsc -b",
     "test": "vitest run --passWithNoTests",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:e2e:perf": "playwright test --config playwright.perf.config.ts"
   },
   "dependencies": {
     "@docs/core": "workspace:*",

@@ -1,5 +1,13 @@
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P2-T08, D-05: with the radio off the workspace still reads and still takes body
@@ -31,7 +39,7 @@ test('the page still reads and still takes body edits offline', async ({ page, c
   await context.setOffline(true);
   await expect(page.getByText('Body text')).toBeVisible();
 
-  await page.locator(EDITOR).getByText('Body text').click();
+  await clickCaret(page.locator(EDITOR).getByText('Body text'));
   await page.keyboard.type('plus more ');
   await page.getByRole('button', { name: 'Done' }).click();
 

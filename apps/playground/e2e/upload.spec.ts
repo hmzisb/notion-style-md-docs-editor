@@ -1,5 +1,13 @@
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P2-T13, docs/05 section 6: an image can arrive as a file - picked from the block
@@ -25,7 +33,7 @@ test.beforeEach(async ({ page, mode }) => {
   await page.getByRole('link', { name: 'Upload' }).click();
   await page.getByRole('button', { name: 'Edit' }).click();
   await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
-  await page.locator(EDITOR).getByRole('heading', { name: 'Upload' }).click();
+  await clickCaret(page.locator(EDITOR).getByRole('heading', { name: 'Upload' }));
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
 });

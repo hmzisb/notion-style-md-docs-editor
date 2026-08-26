@@ -83,6 +83,12 @@ export function DocumentEditor({
   const editor = usePlateEditor(
     {
       autoSelect: autoFocus === true ? 'start' : false,
+      // A chunk is what re-renders when a block inside it changes, and what the browser skips
+      // painting while it is off screen. Smaller chunks type faster on a long page - 28.8 ms
+      // p95 a keystroke at 100 against 34.1 at 1,000, on 3,000 blocks - and they cost the
+      // scroll offset: Plate's chunk carries no `contain-intrinsic-size`, so a chunk below the
+      // fold is zero high until it is painted, the document is shorter than it will be, and a
+      // reader who clicks into the text 400 px down lands somewhere else (DEV-031).
       chunking: { chunkSize: 1000, contentVisibilityAuto: true },
       plugins,
       value: () => initial.current,

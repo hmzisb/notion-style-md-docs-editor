@@ -62,9 +62,9 @@ async function arrowTo(page: Page, title: string): Promise<void> {
 
 /** The titles the tree is showing, top to bottom. */
 const order = (page: Page): Promise<string[]> =>
-  page.getByRole('treeitem').evaluateAll((rows) =>
-    rows.map((row) => row.getAttribute('aria-label') ?? ''),
-  );
+  page
+    .getByRole('treeitem')
+    .evaluateAll((rows) => rows.map((row) => row.getAttribute('aria-label') ?? ''));
 
 const row = (page: Page, title: string): Locator => page.getByRole('treeitem', { name: title });
 

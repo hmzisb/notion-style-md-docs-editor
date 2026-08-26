@@ -1,5 +1,13 @@
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P2-T09 and docs/04 section 3.5. The file moves under the editor - written straight
@@ -24,7 +32,7 @@ test.beforeEach(async ({ page, mode }) => {
 
 /** Types into the page, then rewrites the file behind the app and asks for a save. */
 async function collide(page: Page): Promise<void> {
-  await page.locator(EDITOR).getByText('Original').click();
+  await clickCaret(page.locator(EDITOR).getByText('Original'));
   await page.keyboard.type('plus mine ');
 
   await seedFile(page, FILE, `${HEAD}From disk\n`);

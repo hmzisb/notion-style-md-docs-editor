@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import type { Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, test } from './fixtures.js';
+import { clickCaret, expect, freshVisit, openWorkspace, test } from './fixtures.js';
 
 /**
  * docs/09 P2-T14, docs/01 section 7: the promise the whole module rests on. Every page of the
@@ -310,7 +310,7 @@ test.describe('the corpus round trip (docs/01 section 7)', () => {
     await openPage(typer, 'Sessions');
     await typer.getByRole('button', { name: 'Edit' }).click();
     await expect(typer.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
-    await typer.locator(EDITOR).getByText(anchor, { exact: false }).last().click();
+    await clickCaret(typer.locator(EDITOR).getByText(anchor, { exact: false }).last());
     await typeWord(typer);
 
     const url = typer.url();

@@ -1,5 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P2-T05: the block set, driven the way a user drives it - slash menu, floating
@@ -25,7 +33,7 @@ test.beforeEach(async ({ page, mode }) => {
   await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
   // A slash command starts in an empty block, which is what `Enter` at the end of the heading
   // the page opens with leaves the caret in.
-  await page.locator(EDITOR).getByRole('heading', { name: 'Blocks' }).click();
+  await clickCaret(page.locator(EDITOR).getByRole('heading', { name: 'Blocks' }));
   await page.keyboard.press('End');
   await page.keyboard.press('Enter');
 });

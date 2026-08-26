@@ -247,18 +247,18 @@ describe('useDocumentSession: the clean path (docs/04 section 3.2)', () => {
     expect(h.status()).toBe('clean');
   });
 
-  it('runs dirty -> draft at 500 ms -> saving -> saved -> clean', async () => {
+  it('runs dirty -> draft at 1 s -> saving -> saved -> clean', async () => {
     const h = await setup();
     type(h);
     expect(h.status()).toBe('dirty');
     expect(h.state().pending).toBe(true);
 
-    // The draft is serialized on the idle callback the 500 ms timer schedules (docs/04 3.1).
-    await tick(501);
+    // The draft is serialized on the idle callback the 1 s timer schedules (docs/04 3.1).
+    await tick(1001);
     expect(await h.draft()).toMatchObject({ baseVersion: V1, body: 'Edited.\n' });
     expect(h.savePage).not.toHaveBeenCalled();
 
-    await tick(999);
+    await tick(499);
     expect(h.savePage).toHaveBeenCalledWith(page.id, { body: 'Edited.\n', baseVersion: V1 });
     expect(h.status()).toBe('saved');
 
@@ -678,7 +678,7 @@ describe('useDocumentSession: discard', () => {
   it('drops the local changes, the draft and the status', async () => {
     const h = await setup();
     type(h);
-    await tick(600);
+    await tick(1100);
     expect(await h.draft()).not.toBeNull();
 
     act(() => {
@@ -696,7 +696,7 @@ describe('forgetPage (docs/04 section 4)', () => {
   it('takes the draft, the status and the parsed value of a page that was deleted', async () => {
     const h = await setup();
     type(h);
-    await tick(600);
+    await tick(1100);
     expect(await h.draft()).not.toBeNull();
     expect(h.status()).not.toBe('clean');
     expect(valueCache.get(valueCacheKey(h.ns, page.id, page.version))).toBeDefined();
@@ -708,5 +708,40 @@ describe('forgetPage (docs/04 section 4)', () => {
     expect(await h.draft()).toBeNull();
     expect(h.status()).toBe('clean');
     expect(valueCache.get(valueCacheKey(h.ns, page.id, page.version))).toBeUndefined();
+  });
+});
+
+describe('the work a keystroke costs (docs/10 section 5)', () => {
+  it('serializes on the draft and on the save, never on a change', async () => {
+    const h = await setup();
+    const toMarkdown = vi.spyOn(defaultCodec, 'toMarkdown');
+
+    for (let i = 0; i < 10; i += 1) {
+      type(h, [{ type: 'p', children: [{ text: `Edit ${String(i)}` }] }]);
+    }
+    // docs/04 section 3.1: a change moves a ref and arms two timers. Nothing is serialized
+    // until one of them fires, so the cost of typing does not scale with the page.
+    expect(toMarkdown).not.toHaveBeenCalled();
+
+    await tick(1100);
+    expect(toMarkdown, 'the draft, on an idle callback 1 s in').toHaveBeenCalledTimes(1);
+    await tick(500);
+    expect(toMarkdown, 'the save, 1.5 s in').toHaveBeenCalledTimes(2);
+  });
+
+  it('parses a version once, however many page objects carry it', async () => {
+    const toValue = vi.spyOn(defaultCodec, 'toValue');
+    const h = await setup();
+    expect(toValue).toHaveBeenCalledTimes(1);
+
+    // A refetch hands the same bytes back in a new object; L3 is keyed by `ns:id:version`,
+    // so the editor keeps the value it already holds (docs/04 section 1).
+    for (let i = 0; i < 5; i += 1) {
+      act(() => {
+        h.view.rerender({ page: { ...page } });
+      });
+    }
+    await tick(0);
+    expect(toValue).toHaveBeenCalledTimes(1);
   });
 });

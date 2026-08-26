@@ -4,6 +4,8 @@ import type { Options } from './e2e/fixtures.js';
 /** docs/11 section 9 and docs/10 section 4. */
 export default defineConfig<Options>({
   testDir: './e2e',
+  // The budgets run against the production build, from `playwright.perf.config.ts`.
+  testIgnore: /perf\.spec\.ts/,
   fullyParallel: true,
   forbidOnly: true,
   retries: process.env.CI === undefined ? 0 : 2,

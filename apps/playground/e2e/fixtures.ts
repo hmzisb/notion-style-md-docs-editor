@@ -72,6 +72,17 @@ export async function openWorkspace(page: Page, mode: Mode): Promise<void> {
 export const tree = (page: Page): Locator => page.getByRole('tree');
 
 /**
+ * A click that leaves the caret where the next keystroke can land.
+ *
+ * Slate takes the caret from the browser's own `selectionchange`, which is dispatched a task
+ * after the click that moved it. A key pressed before then goes in where the browser's caret
+ * is and every key after it where the model still thinks it is: `Body text` clicked in the
+ * middle and typed into comes out as `lus more Bodyp text`. Nobody types two milliseconds
+ * after a click; Playwright does, so the wait is held inside the click.
+ */
+export const clickCaret = (target: Locator): Promise<void> => target.click({ delay: 60 });
+
+/**
  * Runs a palette action by name, the way the keyboard runs it: the row is filtered down to
  * itself and taken with `Enter`. Clicking it instead waits for a row that is still moving -
  * the list re-orders as the recents land, and under load that wait outlives the test.

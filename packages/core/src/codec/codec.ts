@@ -8,7 +8,7 @@ import {
   type SlateEditor,
   type Value,
 } from 'platejs';
-import { createBaseKit, type BaseKitOptions } from './base-kit.js';
+import { createBaseKit, withRuleKeyPlaceholders, type BaseKitOptions } from './base-kit.js';
 import { unfoldCaptions } from './rules/caption.js';
 import { foldToggles } from './rules/toggle.js';
 
@@ -43,7 +43,8 @@ export function createCodec(opts: CodecOptions = {}): Codec {
   // Building the editor costs more than most pages, and a read-only host may never
   // deserialize at all, so the first call pays for it (docs/05 section 3).
   let editor: SlateEditor | undefined;
-  const ready = (): SlateEditor => (editor ??= createSlateEditor({ plugins: createBaseKit(opts) }));
+  const ready = (): SlateEditor =>
+    (editor ??= createSlateEditor({ plugins: withRuleKeyPlaceholders(createBaseKit(opts)) }));
 
   const codec: Codec = {
     toValue: (body, onError) =>

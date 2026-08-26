@@ -2,6 +2,24 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-152 · P3-T11 · 2026-08-26
+Question: two e2e specs that click into the body and type straight away wrote their text in two places - the first key where the click left the caret, the rest where the caret had been before it - and did it about two runs in three.
+Assumed: a `clickCaret` fixture that holds the wait inside the click (`click({ delay: 60 })`), used everywhere a test types straight after clicking into the editor.
+Why: Slate takes the caret from the browser's `selectionchange`, which Chromium dispatches a task after the click; a key pressed before that arrives is applied to the selection the model still holds, and `beforeinput`'s flush has nothing pending to flush. Nobody types two milliseconds after a click, so the module is not what needs the fix - the driver is. `block-dnd.spec.ts` had already worked around it locally with a sleep; that is now the same helper.
+Cheap to reverse: yes
+
+## ASM-151 · P3-T11 · 2026-08-26
+Question: docs/10 section 5 budgets "cold page open from IndexedDB", and a reload lands back on the page that was open - which is painted before the clock starts, so the first measurement of it came out negative.
+Assumed: the measurement navigates to another page first, reloads there, and then opens the page under test from the tree, with the persisted cache warm and the network provider still resolving.
+Why: what the budget is about is the first paint of a page the app has never rendered in this session but has in its cache; a reload onto the same page measures nothing.
+Cheap to reverse: yes
+
+## ASM-150 · P3-T11 · 2026-08-26
+Question: docs/04 section 3.1 sets the draft debounce at 500 ms, "if serialize exceeds 30 ms on the 3k fixture, switch draft to 1 s". Which page that is decides the number: the fixture file `pnpm perf:gen` writes is 3,000 Markdown blocks, and it parses to 4,503 blocks of the value, because a list item and a table row are blocks too. The first 3,000 of them - the "3k-block page" docs/10 section 5 budgets - serialize in 26 ms; the whole file costs 38 ms.
+Assumed: read the clause against the file, so `DRAFT_MS` is 1 s, and `fixtures/perf/serialize.test.ts` is the measurement that decides it: it asserts the 30 ms budget on 3,000 value blocks with the 20% tolerance and reports the whole fixture next to it.
+Why: the debounce protects the largest page a user actually has open, which is the file, not a prefix of it; and a draft one second behind the last keystroke is still well inside the 1.5 s autosave it precedes. The docs/10 row stays green either way, so nothing is being papered over.
+Cheap to reverse: yes
+
 ## ASM-149 · P3-T10 · 2026-08-26
 Question: inside a `page.evaluate` callback the linter reads a DOM where `Element.textContent` is never null, so `?? ''` on it is reported as an unnecessary condition - while `tsc`, which the same files pass through, types it `string | null` and requires the fallback.
 Assumed: keep the fallback, which is what the browser needs, and carry one `eslint-disable-next-line @typescript-eslint/no-unnecessary-condition` per site with the reason next to it.

@@ -37,12 +37,7 @@ async function done(page: Page): Promise<void> {
 test('offers the four things it can do to the block under the pointer', async ({ page }) => {
   await openOn(page, 'First block');
 
-  await expect(page.getByRole('menuitem')).toHaveText([
-    'Turn into',
-    'Duplicate',
-    'Copy',
-    'Delete',
-  ]);
+  await expect(page.getByRole('menuitem')).toHaveText(['Turn into', 'Duplicate', 'Copy', 'Delete']);
 });
 
 test('turns the block into another one, and the file says so', async ({ page }) => {

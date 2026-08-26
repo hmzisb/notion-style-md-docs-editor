@@ -30,7 +30,11 @@ import {
 } from './session-store.js';
 
 /** docs/04 section 3.1. Both timers restart on every change. */
-const DRAFT_MS = 500;
+/**
+ * docs/04 section 3.1: 500 ms after the last change, unless serializing the 3k-block fixture
+ * costs more than 30 ms. It costs 38 (ASM-150), so this is the 1 s that clause names instead.
+ */
+const DRAFT_MS = 1000;
 const SAVE_MS = 1500;
 /** How long the transient "Saved" state stays up before the header goes quiet again (D-24). */
 const SAVED_MS = 1500;
@@ -382,9 +386,11 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
 
     const { codec, id, provider } = now.current;
     const sent = live.current.value;
+    // docs/10 section 5 budgets the round trip as serialize plus write, so the clock the
+    // `page:saved` event reports starts here rather than after the Markdown is in hand.
+    const started = Date.now();
     const body = codec.toMarkdown(sent);
     const base = live.current.base;
-    const started = Date.now();
     patch({ status: 'saving', pending: false });
 
     const run = provider

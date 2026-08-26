@@ -1,5 +1,13 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P2-T06: the gutter and block selection, both of which only exist in a browser - the
@@ -39,12 +47,10 @@ const selected = (page: Page): Locator => page.locator('[data-slot="block-select
 
 /**
  * Puts the caret in a block's text. On the text, not the block: a click on the wrapper's
- * padding leaves the caret nowhere. The wait is Slate reading the caret back off the document,
- * a tick after the browser moves it - every shortcut below acts on what it read.
+ * padding leaves the caret nowhere - and every shortcut below acts on what Slate read back.
  */
 async function caretIn(page: Page, text: string): Promise<void> {
-  await page.locator(EDITOR).getByText(text).click();
-  await page.waitForTimeout(100);
+  await clickCaret(page.locator(EDITOR).getByText(text));
 }
 
 test('the gutter handle drags a block to a new place', async ({ page }) => {

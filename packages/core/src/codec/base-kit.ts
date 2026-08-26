@@ -18,6 +18,7 @@ import {
   MarkdownPlugin,
   convertChildrenDeserialize,
   convertNodesSerialize,
+  defaultRules,
   type DeserializeMdOptions,
   type MdHtml,
   type MdParagraph,
@@ -27,7 +28,7 @@ import {
 import { BaseImagePlugin } from '@platejs/media';
 import { BaseTablePlugin } from '@platejs/table';
 import { BaseTogglePlugin } from '@platejs/toggle';
-import { getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
+import { createSlatePlugin, getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
 import { calloutRules } from './rules/callout.js';
@@ -128,12 +129,41 @@ const UNSHIPPED_MARKS = [
   'underline',
 ];
 
+/** Every key in a plugin list, nested plugins included. */
+function pluginKeys(plugins: AnySlatePlugin[], into = new Set<string>()): Set<string> {
+  for (const plugin of plugins) {
+    into.add(String(plugin.key));
+    if (plugin.plugins.length > 0) pluginKeys(plugin.plugins as AnySlatePlugin[], into);
+  }
+  return into;
+}
+
+/**
+ * Plate's stock rules ask the editor for the plugin behind every key they know about - once
+ * per node on the way out, once per node on the way in. A key with no plugin behind it is
+ * resolved from scratch each time, which is a lodash deep merge per node per key: at 3k blocks
+ * that is most of a second of serializing (DEV-029). These placeholders carry no node config,
+ * so they add nothing to what the kit parses or writes and every byte is unchanged; they only
+ * give those lookups something to find, which is what the plugin cache is for.
+ *
+ * They belong to the codec's own editor, not to the kit: a placeholder is still a registered
+ * plugin, and the React kit builds on `BaseKit`, where an empty `comment` or `suggestion`
+ * would shadow the real one a host adds.
+ */
+export function withRuleKeyPlaceholders(kit: AnySlatePlugin[]): AnySlatePlugin[] {
+  const defined = pluginKeys(kit);
+  const placeholders = Object.keys(defaultRules)
+    .filter((key) => !defined.has(key))
+    .map((key) => createSlatePlugin({ key }));
+  return [...kit, ...placeholders];
+}
+
 /**
  * Underline is not in the kit: `<u>` deserializes to raw HTML rather than to the mark, and
  * the mark serializes to an MDX JSX element that non-MDX stringify cannot handle (DEV-004).
  */
 export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
-  return [
+  const kit: AnySlatePlugin[] = [
     BaseH1Plugin,
     BaseH2Plugin,
     BaseH3Plugin,
@@ -166,6 +196,7 @@ export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
       },
     }),
   ];
+  return kit;
 }
 
 /** The kit as the module configures it: what static rendering and `defaultCodec` use. */

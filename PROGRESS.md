@@ -93,7 +93,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P3-T08** Expand/collapse all, palette actions, theme; one header control for both (DEV-026)
 - [x] **P3-T09** Capability, strings, events audit; six missing emitters, `takeRenumbered`
 - [x] **P3-T10** Accessibility pass; axe clean on every surface, keyboard-only e2e, 44 px targets, reduced motion
-- [ ] **P3-T11** Performance pass
+- [x] **P3-T11** Performance pass; every docs/10 budget measured on a production build, two real fixes (DEV-029, DEV-030), keystroke misses at 3k blocks (DEV-031)
 - [ ] **P3-T12** Built-package smoke hosts
 - [ ] **P3-T13** Docs and versioning
 - [ ] **P3-T14** Visual QA and polish
@@ -112,6 +112,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P3-T11
+- Current task: P3-T12
+- Open at Gate 3: keystroke to paint is 34.1 ms p95 on the 3,000-block fixture against a 16 ms budget; 10.1 ms at 500 blocks and 16.3 at 1,000 (DEV-031).
 - Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
 - Last gate passed: Gate 2 (2026-08-26)

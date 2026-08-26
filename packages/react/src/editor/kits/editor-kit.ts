@@ -16,6 +16,7 @@ import { FloatingToolbarKit } from './floating-toolbar-kit.js';
 import { IndentKit } from './indent-kit.js';
 import { LinkKit } from './link-kit.js';
 import { ListKit } from './list-kit.js';
+import { NodeGuardPlugin } from './node-guard-kit.js';
 import { MediaKit } from './media-kit.js';
 import { ShortcutsKit } from './shortcuts-kit.js';
 import { SlashKit } from './slash-kit.js';
@@ -56,6 +57,8 @@ const REACT_KITS: EditorPlugin[] = [
 
 /** Behavior with no headless twin: none of it changes what a page serializes to. */
 const EDITOR_ONLY: EditorPlugin[] = [
+  // Before anything that reads a node by path: a miss must not serialize the page (DEV-030).
+  NodeGuardPlugin,
   // Block selection and DnD both address a block by its `id`, and a page parsed from Markdown
   // has none - the ids live in the editor's value only, and Markdown never sees them (D-02).
   NodeIdPlugin.configure({ options: { initialValueIds: 'always' } }),
