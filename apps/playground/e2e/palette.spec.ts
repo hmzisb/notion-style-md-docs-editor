@@ -41,6 +41,24 @@ test('finds a page by title and opens it @smoke', async ({ page }) => {
   expect(page.url()).toContain('/p/');
 });
 
+test('finds a page by what is written in it @smoke', async ({ page }) => {
+  await page.keyboard.press('ControlOrMeta+p');
+  const dialog = page.getByRole('dialog', palette());
+  // The word is in one page's body and in no page's title (docs/09 P4-T07).
+  await dialog.getByPlaceholder('Search pages…').fill('idempotent');
+
+  // docs/07 section 2: content hits land under Results, after the 250 ms debounce.
+  await expect(dialog.getByText('Results')).toBeVisible();
+  const hit = dialog.locator('[data-page-id]');
+  await expect(hit).toHaveCount(1);
+  await expect(hit).toContainText('Webhooks');
+  await expect(hit).toContainText('handler must be idempotent');
+
+  await hit.click();
+  await expect(dialog).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Webhooks', level: 1 }).first()).toBeVisible();
+});
+
 test('shows the pages opened last when nothing is typed', async ({ page }) => {
   await page.keyboard.press('ControlOrMeta+p');
   let dialog = page.getByRole('dialog', palette());

@@ -7,6 +7,7 @@ import type {
   PageMetaPatch,
   ProviderCapabilities,
   SaveResult,
+  SearchHit,
   TreeIndex,
   TreeNode,
   TreeSnapshot,
@@ -36,6 +37,7 @@ import {
   stem,
   uniqueSlug,
 } from './paths.js';
+import { SEARCH_BYTE_CAP, searchPages } from './search.js';
 import { buildSnapshotFromEntries, firstH1, type PageInfo, type WalkWarning } from './walk.js';
 
 /**
@@ -146,9 +148,7 @@ export function createFileStoreProvider(
     move: writable,
     delete: writable,
     upload: writable,
-    // `search` arrives in a later phase; advertising a capability with no method behind it
-    // is what breaks the callers that trust the flag.
-    search: false,
+    search: true,
     subscribe: typeof store.watch === 'function',
     ...opts.capabilities,
   };
@@ -177,6 +177,32 @@ export function createFileStoreProvider(
    */
   const infoCache = opts.infoCache ?? new Map<string, PageInfo>();
 
+  /**
+   * Page bodies a content search has read, next to the frontmatter the same read produced
+   * (docs/03 section 4.11). Bounded by what one query is allowed to scan, so a corpus larger
+   * than that is re-read rather than held; dropped path by path with the info it belongs to.
+   */
+  const bodyCache = new Map<string, string>();
+  let bodyBytes = 0;
+
+  const forgetBody = (path: string): void => {
+    const body = bodyCache.get(path);
+    if (body === undefined) return;
+    bodyBytes -= body.length;
+    bodyCache.delete(path);
+  };
+
+  const readBody = async (node: TreeNode): Promise<string> => {
+    const hit = bodyCache.get(node.path);
+    if (hit !== undefined) return hit;
+    const { body } = splitFrontmatter(await store.readText(node.path));
+    if (bodyBytes + body.length <= SEARCH_BYTE_CAP) {
+      bodyCache.set(node.path, body);
+      bodyBytes += body.length;
+    }
+    return body;
+  };
+
   const readPageInfo = async (path: string): Promise<PageInfo> => {
     const hit = infoCache.get(path);
     if (hit) return hit;
@@ -190,9 +216,13 @@ export function createFileStoreProvider(
   function touch(...paths: readonly string[]): void {
     for (const path of paths) {
       infoCache.delete(path);
+      forgetBody(path);
       const prefix = `${path}/`;
       for (const key of infoCache.keys()) {
         if (key.startsWith(prefix)) infoCache.delete(key);
+      }
+      for (const key of [...bodyCache.keys()]) {
+        if (key.startsWith(prefix)) forgetBody(key);
       }
     }
     invalidate();
@@ -484,6 +514,19 @@ export function createFileStoreProvider(
 
     getTree(treeOpts?: { rootId?: NodeId }): Promise<TreeSnapshot> {
       return snapshotFor(treeOpts?.rootId);
+    },
+
+    /** docs/01 section 6: titles first, then page bodies, inside the caps of `search.js`. */
+    async search(
+      query: string,
+      searchOpts?: { rootId?: NodeId; limit?: number },
+    ): Promise<SearchHit[]> {
+      // A host can turn the capability off; the method stays, and says so (docs/03 section 3).
+      if (!capabilities.search) {
+        throw new ProviderError('unsupported', 'This provider does not search page content.');
+      }
+      const { nodes } = await snapshotFor(searchOpts?.rootId);
+      return searchPages({ nodes, readBody, query, limit: searchOpts?.limit ?? 20 });
     },
 
     async getPage(id: NodeId): Promise<PageDocument> {

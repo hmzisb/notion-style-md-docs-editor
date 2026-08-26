@@ -39,7 +39,8 @@ capability honesty, and the error codes each failure has to use.
 prefix, a local directory - implement `FileStore` (`list`, `readText`, `readBinary`, `writeText`, `writeBinary`, `remove`,
 `move`, `exists`) and
 `createFileStoreProvider` gives you the whole contract: index building, ordering, id derivation,
-frontmatter, conflicts.
+frontmatter, conflicts, and content search (titles first, then page bodies, capped at 2,000 files
+and 4 MB per query).
 
 ```ts
 import { createFileStoreProvider, MemoryFileStore } from '@docs/core';

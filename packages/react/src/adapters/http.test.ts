@@ -113,9 +113,24 @@ describe('createHttpProvider', () => {
       expect(await provider.search?.('auth')).toHaveLength(1);
 
       // A backend that later withdraws a capability withdraws the method with it.
-      server.resetHandlers();
+      server.use(
+        http.get(`${BASE}/meta`, () =>
+          HttpResponse.json({
+            contractVersion: 1,
+            capabilities: {
+              write: true,
+              move: true,
+              delete: true,
+              upload: false,
+              search: false,
+              subscribe: true,
+            },
+          }),
+        ),
+      );
       await provider.getMeta();
       expect(typeof provider.search).toBe('undefined');
+      expect(typeof provider.uploadAsset).toBe('undefined');
     });
   });
 

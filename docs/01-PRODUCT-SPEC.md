@@ -64,7 +64,7 @@ Providers declare capabilities; the UI hides or disables what is not available.
 | move | true | true | from `/meta` | No DnD, no Move to, no `Cmd+↑/↓` |
 | delete | true | true | from `/meta` | No Delete in menus |
 | upload | false | true | from `/meta` | Image insert accepts URL or relative path only |
-| search | title only (content search optional, P4-T07) | title only (content search optional, P4-T07) | from `/meta` | Palette searches titles client-side |
+| search | true: titles, then page bodies (P4-T07) | true: titles, then page bodies (P4-T07) | from `/meta` | Palette searches titles client-side |
 | subscribe | false | optional (poll) | from `/meta` | External changes seen on refocus only |
 
 ## 7. Success criteria for the build

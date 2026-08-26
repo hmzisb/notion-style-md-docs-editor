@@ -49,16 +49,16 @@ describe('identity and capabilities', () => {
       move: true,
       delete: true,
       upload: true,
-      search: false,
+      search: true,
       subscribe: true,
     });
 
     const ro = createFileStoreProvider(new MemoryFileStore({ 'a.md': 'x' }, { readOnly: true }), {
-      capabilities: { search: true },
+      capabilities: { search: false },
     });
     expect(ro.capabilities.write).toBe(false);
     expect(ro.capabilities.delete).toBe(false);
-    expect(ro.capabilities.search).toBe(true);
+    expect(ro.capabilities.search).toBe(false);
 
     const meta = await ro.getMeta();
     expect(meta.contractVersion).toBe(CONTRACT_VERSION);
