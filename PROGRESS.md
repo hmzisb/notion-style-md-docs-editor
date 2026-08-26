@@ -92,7 +92,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P3-T07** Block menu; emoji combobox skipped (DEV-025)
 - [x] **P3-T08** Expand/collapse all, palette actions, theme; one header control for both (DEV-026)
 - [x] **P3-T09** Capability, strings, events audit; six missing emitters, `takeRenumbered`
-- [ ] **P3-T10** Accessibility pass
+- [x] **P3-T10** Accessibility pass; axe clean on every surface, keyboard-only e2e, 44 px targets, reduced motion
 - [ ] **P3-T11** Performance pass
 - [ ] **P3-T12** Built-package smoke hosts
 - [ ] **P3-T13** Docs and versioning
@@ -112,7 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P3-T10
-- Open at Gate 3: `./shell` measures 96.33 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
-- Open at Gate 3: menu items are `h-8` at every width, so the 44 px touch target of docs/06 section 15 is missing on the row menu, the page menu and the palette rows - one class on the vendored `ui/dropdown-menu`, owned by P3-T10's touch layout check.
+- Current task: P3-T11
+- Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
 - Last gate passed: Gate 2 (2026-08-26)

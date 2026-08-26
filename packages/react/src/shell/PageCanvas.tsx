@@ -61,6 +61,7 @@ export function PageCanvas({
   const session = useDocumentSession(page);
   const [swapped, setSwapped] = useState(false);
 
+  const canvasRef = useRef<HTMLElement | null>(null);
   const editorRef = useRef<PlateEditor | null>(null);
   const pending = useRef<PendingFocus | null>(null);
   const offset = useRef<number | null>(null);
@@ -107,9 +108,20 @@ export function PageCanvas({
   }, []);
 
   // Both entries into edit mode land here: the first one when the chunk swaps in, every later
-  // one when only `mode` changes, because the editor is already mounted by then.
+  // one when only `mode` changes, because the editor is already mounted by then. Edit and
+  // `Cmd+Shift+E` only ask for the mode, so the start of the first block is where the caret
+  // goes unless something asked for a point of its own (docs/07 section 7, state matrix).
   useEffect(() => {
-    if (mode === 'edit' && showEditor) applyFocus();
+    if (mode !== 'edit' || !showEditor) return;
+    // Edit and `Cmd+Shift+E` ask for the mode and nothing else, so the start of the first
+    // block is where the caret goes (docs/07 section 7, the state matrix). Not when the page
+    // itself already holds it: the title takes the caret on a rename and on a page created a
+    // moment ago, and the editor chunk can land a commit or two after that (docs/06 s.8).
+    if (pending.current === null && canvasRef.current?.contains(document.activeElement) === true) {
+      return;
+    }
+    pending.current ??= { type: 'start' };
+    applyFocus();
   }, [mode, showEditor, applyFocus]);
 
   /** Both "Edit anyway" buttons: the large-page guard is the one that has to come off first. */
@@ -199,6 +211,7 @@ export function PageCanvas({
 
   return (
     <article
+      ref={canvasRef}
       className="mx-auto w-full max-w-[calc(var(--docs-content-width)+8rem)] px-4 pt-20 pb-[40vh] md:px-16 md:pt-[88px]"
       onPointerDown={(event) => {
         pointerDown.current = { x: event.clientX, y: event.clientY };

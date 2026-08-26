@@ -95,8 +95,33 @@
   --docs-motion: 150ms;
 }
 
+/*
+ * DEV-027: shadcn paints a destructive control as `text-destructive` on `bg-destructive/10`,
+ * which measures 3.82:1 in light mode - below the 4.5:1 of docs/06 section 1. The tint cannot
+ * carry the text on its own, so the ink darkens instead. Dark mode already measures 6.1:1.
+ */
+.docs-root {
+  --docs-destructive-ink: color-mix(in oklab, var(--destructive) 85%, black);
+}
+
+.docs-root:is(.dark *) {
+  --docs-destructive-ink: var(--destructive);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .docs-root {
     --docs-motion: 0ms;
+  }
+
+  /*
+   * docs/06 section 8: a surface that opens or closes is simply there, with no scale and no
+   * slide. This is every Radix surface at once - menus, dialogs, popovers, the sheet sidebar -
+   * because each one carries `data-state` while it is open or closing. A looping opacity
+   * animation (the save spinner, a skeleton) is left alone: it says that something is working.
+   */
+  .docs-root [data-state='open'],
+  .docs-root [data-state='closed'] {
+    animation-duration: 0ms;
+    transition-duration: 0ms;
   }
 }

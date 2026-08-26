@@ -101,7 +101,11 @@ export function PageMenuSurface({ id, rootId, label }: PageMenuSurfaceProps): Re
   return (
     // The picker opens where the menu was, so both come out of the same button.
     <Popover open={picking} onOpenChange={setPicking}>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      {/*
+       * Not modal: Radix would hide the rest of the app with `aria-hidden` while leaving every
+       * control inside it focusable, which is an `aria-hidden-focus` violation (docs/10 s2).
+       */}
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <PopoverAnchor asChild>
           <DropdownMenuTrigger aria-label={label} className={TRIGGER}>
             <Ellipsis aria-hidden="true" className="size-4" />
@@ -231,7 +235,11 @@ export function PageMenuSurface({ id, rootId, label }: PageMenuSurfaceProps): Re
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PopoverContent align="end" className="w-[352px] p-0">
+      <PopoverContent
+        align="end"
+        aria-label={strings['menu.changeIcon']}
+        className="w-[352px] p-0"
+      >
         <IconPicker
           value={node?.icon}
           onChange={(next) => {

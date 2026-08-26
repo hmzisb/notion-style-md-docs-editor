@@ -111,8 +111,13 @@ export function useUpdateMeta(
       if (renameFile === true) namedFresh(ns, id);
       if ('title' in patch) onEvent({ type: 'page:renamed', id });
     },
-    onSettled: () => {
+    onSettled: (_node, _error, { id }) => {
       void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+      // The title and the icon live in the file's frontmatter, so this wrote the file: until
+      // the page is read again, the session is holding a version that no longer exists and
+      // its next save is rejected as a stale base (docs/04 section 3.2). The module's own
+      // first-title rename lands while the page it renames is being typed into.
+      void client.invalidateQueries({ queryKey: keys.page(id) });
     },
   });
 }

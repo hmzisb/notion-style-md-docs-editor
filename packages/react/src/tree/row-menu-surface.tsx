@@ -41,7 +41,11 @@ export function RowMenuSurface({
   return (
     // The picker opens where the menu was, so it is anchored on the button both come out of.
     <Popover open={picking} onOpenChange={setPicking}>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      {/*
+       * Not modal: Radix would hide the rest of the app with `aria-hidden` while leaving every
+       * control inside it focusable, which is an `aria-hidden-focus` violation (docs/10 s2).
+       */}
+      <DropdownMenu open={open} onOpenChange={setOpen} modal={false}>
         <PopoverAnchor asChild>
           <DropdownMenuTrigger
             tabIndex={-1}
@@ -157,7 +161,7 @@ export function RowMenuSurface({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PopoverContent align="start" className="w-[352px] p-0">
+      <PopoverContent align="start" aria-label={labels.changeIcon} className="w-[352px] p-0">
         {onIcon !== undefined && (
           <IconPicker
             value={icon}

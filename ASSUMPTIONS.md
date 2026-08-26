@@ -2,6 +2,30 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-149 · P3-T10 · 2026-08-26
+Question: inside a `page.evaluate` callback the linter reads a DOM where `Element.textContent` is never null, so `?? ''` on it is reported as an unnecessary condition - while `tsc`, which the same files pass through, types it `string | null` and requires the fallback.
+Assumed: keep the fallback, which is what the browser needs, and carry one `eslint-disable-next-line @typescript-eslint/no-unnecessary-condition` per site with the reason next to it.
+Why: the two checkers disagree and only one of them is right about the runtime; `reportUnusedDisableDirectives` is an error here, so the directive removes itself the day the types agree.
+Cheap to reverse: yes
+
+## ASM-148 · P3-T10 · 2026-08-26
+Question: docs/07 section 7's state matrix says every way into edit mode - `E`, `Enter`, the Edit button, `Cmd+Shift+E` - lands at the start of the first block, but only the two keys asked the canvas for a caret; the button and the shortcut set the mode and nothing else, so the focus stayed where it was and the first keystroke went nowhere.
+Assumed: entering edit mode places the caret at the start of the first block by default, unless something asked for a caret of its own (a click, `Enter` in the title) or the page already holds the focus - which is how the title keeps it on a rename and on a page created a moment ago.
+Why: the matrix is unambiguous about where the caret goes; the containment check is what keeps the title's own claim, which lands one commit earlier than the editor chunk.
+Cheap to reverse: yes
+
+## ASM-147 · P3-T10 · 2026-08-26
+Question: docs/04 section 3.2 gives a version that changed under an open session two outcomes - swap in silently when clean, conflict when dirty - and the module's own first-title rename is such a change: it rewrites the frontmatter of the page being typed into, so the file hashes differently while the body under it does not move.
+Assumed: a version whose body is byte-identical to the one the session started from is adopted, dirty or not: the base moves to the new version and nothing is reset. `useUpdateMeta` invalidates the page it wrote, so the session is told at all.
+Why: without the invalidation the session saves against a version that no longer exists and the provider rejects it; with the invalidation alone, renaming a page while typing in it raised "Changed on disk" over the user's own rename. A frontmatter write is not a body conflict, and there is nothing to reload or overwrite.
+Cheap to reverse: yes
+
+## ASM-146 · P3-T10 · 2026-08-26
+Question: docs/09 P3-T10 asks for a "reduced-motion snapshot", and a screenshot cannot prove that an animation was skipped rather than caught after it finished.
+Assumed: the check reads what the page applies under `prefers-reduced-motion: reduce` - computed `animation-duration`, `transition-duration`, the `--docs-motion` token and the absence of a transform - on a menu opened with the media feature emulated.
+Why: `getAnimations()` is a racy snapshot of what happens to be running and a pixel baseline only proves the end state; the applied rule is the thing docs/06 section 8 actually requires. Playwright's `test.use({ reducedMotion })` does not reach the page through this file's fixtures, so the test emulates the media feature itself.
+Cheap to reverse: yes
+
 ## ASM-145 · P3-T06 · 2026-08-26
 Question: `useHotkeys` calls `preventDefault()` on every match before it runs, so the `Enter` binding of docs/07 section 7 (content scope) swallowed `Enter` on every button inside the content region - the page menu, the icon button, the banner actions - and the button never saw a click.
 Assumed: a bare `Enter` or `Space` on a control that activates on it (`button`, `a[href]`, `summary`, `role=button|link|menuitem|option|treeitem`) never reaches a hotkey, and the guard lives in `useHotkeys` rather than in the one binding that hit it.

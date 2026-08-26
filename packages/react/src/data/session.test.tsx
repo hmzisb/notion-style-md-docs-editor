@@ -513,6 +513,28 @@ describe('useDocumentSession: failures (docs/04 sections 3.4 and 3.5)', () => {
     await tick(5000);
     expect(h.savePage).not.toHaveBeenCalled();
   });
+
+  it('takes a version whose body did not move, mid-edit, as its own', async () => {
+    const h = await setup();
+    type(h);
+    h.editor.tf.setValue.mockClear();
+
+    // What a rename, a move or an icon leaves behind: the frontmatter is rewritten, so the
+    // file hashes differently while the body under it is the one the session started from.
+    act(() => {
+      h.view.rerender({ page: { ...page, meta: { ...page.meta, title: 'Renamed' }, version: V2 } });
+    });
+    await tick(0);
+
+    expect(h.status()).toBe('dirty');
+    expect(h.editor.tf.setValue).not.toHaveBeenCalled();
+
+    await tick(1500);
+    expect(h.savePage).toHaveBeenCalledWith(page.id, {
+      body: defaultCodec.toMarkdown(edited),
+      baseVersion: V2,
+    });
+  });
 });
 
 describe('useDocumentSession: drafts (docs/04 section 3.3)', () => {

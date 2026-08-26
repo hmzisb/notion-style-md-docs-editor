@@ -85,6 +85,8 @@ interface Live {
   baseline: Value;
   /** The version this edit started from; what `savePage` is called with. */
   base: string | null;
+  /** The markdown on disk at `base`, so a version that only moved the frontmatter is known. */
+  body: string;
   /** The version currently reflected in the editor, so our own saves are not read as refreshes. */
   seen: string;
   dirty: boolean;
@@ -161,6 +163,7 @@ export function useDocumentSession(page: PageDocument): DocumentSession {
     value: initial,
     baseline: initial,
     base: page.version,
+    body: page.body,
     seen: page.version,
     dirty: false,
     saving: null,
@@ -216,8 +219,8 @@ export function useDocumentSession(page: PageDocument): DocumentSession {
   // silently; one that changed while the user was typing is a conflict, and the cache is left
   // alone so the banner can offer both ways out.
   useEffect(() => {
-    api.refreshed(page.version, initial);
-  }, [api, page.version, initial]);
+    api.refreshed(page.version, page.body, initial);
+  }, [api, page.version, page.body, initial]);
 
   useEffect(() => api.listen(options.guardUnload), [api, options.guardUnload]);
 
@@ -303,6 +306,7 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
   const succeeded = (body: string, sent: Value, result: SaveResult, started: number): void => {
     const { client, id, keys, onEvent } = now.current;
     live.current.base = result.version;
+    live.current.body = body;
     live.current.baseline = sent;
     live.current.seen = result.version;
     live.current.attempt = 0;
@@ -486,6 +490,7 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
       live.current.dirty = false;
       live.current.attempt = 0;
       live.current.base = now.current.page.version;
+      live.current.body = now.current.page.body;
       live.current.seen = now.current.page.version;
       reset(now.current.initial);
       void now.current.drafts.remove(now.current.id);
@@ -510,6 +515,7 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
       live.current.dirty = false;
       live.current.attempt = 0;
       live.current.base = fresh.version;
+      live.current.body = fresh.body;
       live.current.seen = fresh.version;
       reset(codec.toValue(fresh.body));
       void now.current.drafts.remove(id);
@@ -548,9 +554,18 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
       patch({ draftMismatch: true, draftAt: draft.updatedAt });
     },
 
-    refreshed: (version: string, value: Value): void => {
+    refreshed: (version: string, body: string, value: Value): void => {
       if (version === live.current.seen) return;
       live.current.seen = version;
+      // A rename, a move or an icon rewrites the frontmatter, so the file is a new version
+      // with the same body - including the module's own first-title rename, which lands while
+      // the user is typing into the page it renames (docs/03 section 4.7). Nothing to reload
+      // and nothing to overwrite: the edit carries on against the version the file has now.
+      if (body === live.current.body) {
+        live.current.base = version;
+        return;
+      }
+      live.current.body = body;
       if (live.current.dirty) {
         clear('draft', 'save', 'retry');
         patch({ status: 'conflict', pending: false });
@@ -568,6 +583,7 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
      */
     rekey: (from: NodeId, version: string): void => {
       live.current.base = version;
+      live.current.body = now.current.page.body;
       live.current.seen = version;
       void now.current.drafts.remove(from);
       const store = now.current.store.getState();

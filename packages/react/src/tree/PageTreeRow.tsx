@@ -162,7 +162,9 @@ function Row({
           type="button"
           tabIndex={-1}
           aria-label={expandLabel}
-          className="flex size-5 shrink-0 items-center justify-center rounded-sm hover:bg-black/8 dark:hover:bg-white/10"
+          // docs/06 section 15: a 44 px finger target below 768 px, without the 44 px of
+          // layout that would push every title across the screen.
+          className="flex size-5 shrink-0 items-center justify-center rounded-sm hover:bg-black/8 max-md:-mx-3 max-md:size-11 dark:hover:bg-white/10"
           onClick={(event) => {
             event.stopPropagation();
             onToggle(id);
@@ -198,7 +200,13 @@ function Row({
         </span>
       ) : (
         // Not a tab stop: the row owns the roving tabindex (docs/07 section 9).
-        <a href={href} tabIndex={-1} className="flex-1 truncate" onDoubleClick={startRename}>
+        <a
+          href={href}
+          tabIndex={-1}
+          // The row is 44 px tall on a phone, and the link a finger aims at fills it.
+          className="flex-1 truncate max-md:py-3"
+          onDoubleClick={startRename}
+        >
           {title}
         </a>
       )}

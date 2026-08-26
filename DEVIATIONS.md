@@ -2,6 +2,13 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-027 · P3-T10 · 2026-08-26
+Spec said: docs/06 section 1 pins the shadcn default palette and its tokens, and section 3 requires 4.5:1 for body text; the destructive control shadcn ships is `text-destructive` on `bg-destructive/10`.
+Reality: that pair measures 3.82:1 in light mode (`#e7000b` on `#f8e1e2`), which axe fails on the Delete button and on both destructive menu items. No reduction of the tint reaches 4.5:1 - the ink is what has to move. Dark mode already measures 6.1:1.
+Decision: a `--docs-destructive-ink` variable, `color-mix(in oklab, var(--destructive) 85%, black)` in light mode and `var(--destructive)` in dark, used by the destructive button variant and the destructive menu items. The token itself is untouched, so a host that themes `--destructive` still themes both.
+Impact: `styles/styles.css`; `ui/button.tsx`, `ui/dropdown-menu.tsx`, `ui/context-menu.tsx`; `e2e/a11y.spec.ts` covers it; no public API change.
+Reverse when: shadcn's own destructive pair reaches 4.5:1, or docs/06 names a destructive ink of its own.
+
 ## DEV-026 · P3-T08 · 2026-08-26
 Spec said: docs/06 section 5 enumerates the sidebar header - workspace title on the left, and on the right "collapse button ... and New page (`SquarePen` ...) when `write`". Nothing else.
 Reality: docs/09 P3-T08 requires a "sidebar footer or header control for expand-all/collapse-all", and the footer already holds the New page row plus the host's `sidebarFooter` slot, where a control the host did not put there would read as the host's.

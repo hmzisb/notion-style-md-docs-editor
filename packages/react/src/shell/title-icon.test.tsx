@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
-import { useTreeIndex } from '@/data/queries.js';
+import { usePage, useTreeIndex } from '@/data/queries.js';
 import type { DocsEvent } from '@/data/events.js';
 import type { DocsNavigation } from '@/data/types.js';
 import { IconPickerGrid } from '@/tree/icon-picker-grid.js';
@@ -24,6 +24,7 @@ const navigation: DocsNavigation = { activePageId: 'p_title', mode: 'edit', navi
 let instance = 0;
 
 interface Mounted {
+  getPage: Mock<DocumentProvider['getPage']>;
   updateMeta: Mock<DocumentProvider['updateMeta']>;
   events: DocsEvent[];
 }
@@ -40,7 +41,8 @@ function mount(node: ReactNode, opts: { hang?: boolean } = {}): Mounted {
           })
       : (id, patch, options) => base.updateMeta(id, patch, options);
   const updateMeta = vi.fn(impl);
-  const provider: DocumentProvider = { ...base, updateMeta };
+  const getPage = vi.fn(base.getPage.bind(base));
+  const provider: DocumentProvider = { ...base, getPage, updateMeta };
   instance += 1;
 
   render(
@@ -57,14 +59,21 @@ function mount(node: ReactNode, opts: { hang?: boolean } = {}): Mounted {
       onEvent={(event) => events.push(event)}
     >
       <TreeRow />
+      <OpenPage />
       {node}
     </DocsProvider>,
   );
-  return { updateMeta, events };
+  return { getPage, updateMeta, events };
 }
 
 /** Rejects the held provider call. */
 let reject_: (error: Error) => void = () => undefined;
+
+/** A reader on the page itself, so an invalidation of it is a read the provider answers. */
+function OpenPage(): React.JSX.Element {
+  const page = usePage('p_title');
+  return <span data-testid="page">{page.data?.version ?? ''}</span>;
+}
 
 /** The tree row's title, which is what the sidebar draws (docs/07 section 5). */
 function TreeRow(): React.JSX.Element {
@@ -116,6 +125,25 @@ describe('PageTitle (docs/07 section 5)', () => {
     });
     await waitFor(() => {
       expect(row()).toHaveTextContent('Renamed');
+    });
+  });
+
+  it('re-reads the page whose file the rename just rewrote', async () => {
+    const user = userEvent.setup();
+    const view = mount(title());
+    await waitFor(() => {
+      expect(view.getPage).toHaveBeenCalledTimes(1);
+    });
+
+    await user.type(screen.getByRole('textbox', { name: 'Page title' }), '!');
+    await waitFor(() => {
+      expect(view.updateMeta).toHaveBeenCalled();
+    });
+
+    // docs/04 section 3.2: the title lives in the frontmatter, so the file this page is open
+    // on has a new version. A session left on the old one saves against a stale base.
+    await waitFor(() => {
+      expect(view.getPage).toHaveBeenCalledTimes(2);
     });
   });
 

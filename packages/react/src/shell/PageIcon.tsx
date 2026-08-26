@@ -100,7 +100,11 @@ export function PageIcon({
   ) : (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
-      <PopoverContent align="start" className="w-[352px] gap-0 p-0">
+      <PopoverContent
+        align="start"
+        aria-label={strings['menu.changeIcon']}
+        className="w-[352px] gap-0 p-0"
+      >
         <IconPicker value={icon} onChange={change} />
       </PopoverContent>
     </Popover>
