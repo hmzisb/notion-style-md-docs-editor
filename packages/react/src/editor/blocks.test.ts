@@ -44,6 +44,7 @@ describe('the slash menu block set (docs/05 section 2)', () => {
     [KEYS.ol, 'First', '1. First\n'],
     [KEYS.listTodo, 'Task', '- [ ] Task\n'],
     [KEYS.codeBlock, 'const a = 1;', '```\nconst a = 1;\n```\n'],
+    [KEYS.callout, 'Heads up', '> [!NOTE]\n> Heads up\n'],
   ])('saves %s as its Markdown', (type, text, expected) => {
     expect(markdown(insert(type, text))).toBe(expected);
   });
@@ -81,10 +82,42 @@ describe('the slash menu block set (docs/05 section 2)', () => {
   });
 
   it('leaves no block in the menu that the codec cannot write', () => {
-    // Callout and toggle are drawn but not serialized yet (P2-T10, P2-T11): the guard is that
-    // nothing offers them until they are.
+    // Toggle is drawn but not serialized yet (P2-T11): its words do not survive a save, which
+    // is why docs/05 section 5 keeps it out of the menu until its rule lands.
     const editor = open();
-    editor.tf.setNodes({ type: KEYS.callout }, { at: [0] });
-    expect(() => markdown(editor)).toThrow();
+    editor.tf.insertText('Words');
+    editor.tf.setNodes({ type: KEYS.toggle }, { at: [0] });
+    expect(markdown(editor)).toBe('');
+  });
+});
+
+/** docs/05 section 5 and docs/07 section 2: the three ways into a callout, and one way out. */
+describe('the callout block', () => {
+  it('turns the block the caret is in into a note (Cmd+Alt+9)', () => {
+    const editor = open();
+    editor.tf.insertText('Words');
+    setBlockType(editor, KEYS.callout);
+    expect(markdown(editor)).toBe('> [!NOTE]\n> Words\n');
+  });
+
+  it('takes its variant from the marker the reader types', () => {
+    const editor = open();
+    editor.tf.insertText('[!warning]');
+    editor.tf.insertText(' ');
+    editor.tf.insertText('Careful');
+    expect(editor.children[0]).toMatchObject({
+      type: KEYS.callout,
+      variant: 'warning',
+      icon: 'triangle-alert',
+    });
+    expect(markdown(editor)).toBe('> [!WARNING]\n> Careful\n');
+  });
+
+  it('is a paragraph again, with its words, when turned back', () => {
+    const editor = open();
+    editor.tf.insertText('Words');
+    setBlockType(editor, KEYS.callout);
+    setBlockType(editor, KEYS.p);
+    expect(markdown(editor)).toBe('Words\n');
   });
 });

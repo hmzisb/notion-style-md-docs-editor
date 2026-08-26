@@ -11,6 +11,7 @@ import {
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
+  InfoIcon,
   ListIcon,
   ListOrderedIcon,
   PilcrowIcon,
@@ -54,6 +55,7 @@ export const turnIntoItems: TurnIntoItem[] = [
   { icon: <SquareIcon />, name: 'editor.block.listTodo', value: KEYS.listTodo },
   { icon: <FileCodeIcon />, name: 'editor.block.codeBlock', value: KEYS.codeBlock },
   { icon: <QuoteIcon />, name: 'editor.block.blockquote', value: KEYS.blockquote },
+  { icon: <InfoIcon />, name: 'editor.block.callout', value: KEYS.callout },
 ];
 
 type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuPrimitive.Root>;

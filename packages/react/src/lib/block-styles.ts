@@ -5,6 +5,8 @@
  */
 export const blockStyles = {
   blockquote: 'my-1 border-l-[3px] border-foreground pl-4',
+  callout: 'my-1 flex gap-3 rounded-md bg-muted p-4',
+  calloutIcon: 'mt-0.5 size-5 shrink-0',
   code: 'rounded-[4px] bg-muted px-[0.3em] py-[0.15em] font-mono text-[85%]',
   codeBlock: 'my-1',
   /** 12 px of hit area around a 1 px rule. */

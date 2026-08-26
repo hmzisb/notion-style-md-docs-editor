@@ -20,6 +20,7 @@ import {
 } from 'platejs/static';
 import { useEffect, useState, type ReactNode } from 'react';
 import { blockStyles } from '@/lib/block-styles.js';
+import { CALLOUT_VARIANTS, calloutVariantOf } from '@/lib/callout.js';
 import { useDocs } from '@/data/context.js';
 import { codeLanguageLabel } from '@/lib/code-languages';
 import { cn } from '@/lib/utils';
@@ -129,6 +130,19 @@ function H3Static(props: SlateElementProps): React.JSX.Element {
 
 function BlockquoteStatic(props: SlateElementProps): React.JSX.Element {
   return <Block props={props} as="blockquote" className={blockStyles.blockquote} />;
+}
+
+/** docs/06 section 7: the variant tints the icon, and nothing else about the box. */
+function CalloutStatic(props: SlateElementProps): React.JSX.Element {
+  const { Icon, tint } = CALLOUT_VARIANTS[calloutVariantOf(props.element.variant)];
+  return (
+    <SlateElement {...props} className={blockStyles.callout}>
+      <span contentEditable={false}>
+        <Icon aria-hidden="true" className={cn(blockStyles.calloutIcon, tint)} />
+      </span>
+      <div className="w-full min-w-0">{props.children}</div>
+    </SlateElement>
+  );
 }
 
 /** Void: the hairline is decoration, the empty text child still has to render. */
@@ -294,6 +308,7 @@ function StrikethroughStatic(props: SlateLeafProps): React.JSX.Element {
 /** Keyed by plugin key, which is how `override.components` reaches the static renderer. */
 export const viewComponents: NodeComponents = {
   [KEYS.blockquote]: BlockquoteStatic,
+  [KEYS.callout]: CalloutStatic,
   [KEYS.bold]: BoldStatic,
   [KEYS.code]: CodeLeafStatic,
   [KEYS.codeBlock]: CodeBlockStatic,

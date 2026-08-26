@@ -6,6 +6,7 @@ import {
   Heading2Icon,
   Heading3Icon,
   ImageIcon,
+  Info,
   LinkIcon,
   ListIcon,
   ListOrdered,
@@ -51,9 +52,9 @@ interface SlashGroup {
 /**
  * docs/06 section 8, over the v1 block set (docs/05 section 2): the registry item's AI group
  * and its advanced blocks - TOC, columns, equations, excalidraw, dates and footnotes - have
- * no plugin in this module, so they are not offered. Callout and toggle do have one, but
- * neither has a serialization rule yet (P2-T10 and P2-T11), and docs/05 section 5 keeps a
- * block out of this menu until its rule round-trips.
+ * no plugin in this module, so they are not offered. Toggle has a plugin but no
+ * serialization rule yet (P2-T11), and docs/05 section 5 keeps a block out of this menu
+ * until its rule round-trips.
  */
 const GROUPS: SlashGroup[] = [
   {
@@ -93,6 +94,13 @@ const GROUPS: SlashGroup[] = [
         name: 'editor.block.blockquote',
         description: 'editor.blockDesc.blockquote',
         keywords: ['citation', 'quote', '>'],
+      },
+      {
+        icon: <Info />,
+        value: KEYS.callout,
+        name: 'editor.block.callout',
+        description: 'editor.blockDesc.callout',
+        keywords: ['note', 'warning', 'alert', 'aside', '[!'],
       },
       {
         icon: <Minus />,

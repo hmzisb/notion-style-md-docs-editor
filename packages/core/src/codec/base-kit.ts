@@ -19,7 +19,6 @@ import {
   convertChildrenDeserialize,
   convertNodesSerialize,
   type DeserializeMdOptions,
-  type MdBlockquote,
   type MdHtml,
   type MdParagraph,
   type MdRules,
@@ -31,6 +30,7 @@ import { BaseTogglePlugin } from '@platejs/toggle';
 import { getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
+import { calloutRules } from './rules/callout.js';
 
 /**
  * Headless plugin list for the v1 block set (docs/05 section 2), shared by the codec and
@@ -56,22 +56,11 @@ export const DEFAULT_STRINGIFY_OPTIONS: StringifyOptions = {
 };
 
 /**
- * Four fixes to the stock rules, all of them about not rewriting a file the user did not
- * touch (D-02). Each replaces one default; anything not named here stays Plate's.
+ * Three fixes to the stock rules, all of them about not rewriting a file the user did not
+ * touch (D-02). Each replaces one default; anything not named here stays Plate's. The
+ * blockquote pair lives with the callout rule it shares a block with.
  */
 const FIDELITY_RULES: MdRules = {
-  /** A GFM alert marker is syntax: escaped to `\[!NOTE]` it stops being an alert. */
-  blockquote: {
-    serialize: (node, options) => {
-      const children = convertNodesSerialize(
-        node.children,
-        options,
-        true,
-      ) as MdBlockquote['children'];
-      keepAlertMarker(children[0]);
-      return { children, type: 'blockquote' };
-    },
-  },
   /**
    * H4-H6 are not in the block set, so they land on H3 rather than degrading to a
    * paragraph, and the serializer can never emit them back (`heading_level_clamped`).
@@ -114,22 +103,6 @@ const FIDELITY_RULES: MdRules = {
 /** The editor is optional on the options, and its plugin key is the type either way. */
 const headingType = (options: DeserializeMdOptions, depth: number): string =>
   options.editor ? getPluginType(options.editor, `h${depth}`) : `h${depth}`;
-
-const ALERT_MARKER = /^\[!(?:NOTE|TIP|IMPORTANT|WARNING|CAUTION)]/;
-
-/** Splits a leading alert marker out of the first line so it serializes as raw bytes. */
-function keepAlertMarker(first: MdBlockquote['children'][number] | undefined): void {
-  if (first?.type !== 'paragraph') return;
-  const [text] = first.children;
-  if (text?.type !== 'text') return;
-  const marker = ALERT_MARKER.exec(text.value)?.[0];
-  if (marker === undefined) return;
-  first.children = [
-    { type: 'html', value: marker },
-    { type: 'text', value: text.value.slice(marker.length) },
-    ...first.children.slice(1),
-  ];
-}
 
 export interface BaseKitOptions {
   /** Merged over {@link DEFAULT_STRINGIFY_OPTIONS}. */
@@ -181,7 +154,7 @@ export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
         plainMarks: UNSHIPPED_MARKS,
         remarkPlugins: [remarkGfm, remarkInlineRefs],
         remarkStringifyOptions: { ...DEFAULT_STRINGIFY_OPTIONS, ...opts.remarkStringifyOptions },
-        rules: { ...FIDELITY_RULES, ...opts.rules },
+        rules: { ...FIDELITY_RULES, ...calloutRules, ...opts.rules },
       },
     }),
   ];

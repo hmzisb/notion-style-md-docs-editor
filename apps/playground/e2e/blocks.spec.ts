@@ -82,6 +82,33 @@ test('the slash menu writes every block it offers as Markdown', async ({ page })
   expect(markdown).toMatch(/^# Blocks$/m);
 });
 
+/** docs/05 section 5: the one block whose Markdown is a marker, so the golden is the marker. */
+test('a callout saves as a GFM alert, and the picker changes which one', async ({ page }) => {
+  await slash(page, 'Callout');
+  await page.keyboard.type('Heads up');
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('> [!NOTE]\n> Heads up\n');
+  // Read mode draws it too, from the same variant (docs/05 section 7).
+  await expect(page.getByText('Heads up')).toBeVisible();
+
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+  await page.getByRole('button', { name: 'Callout style' }).click();
+  await page.getByRole('menuitemradio', { name: 'Warning' }).click();
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('> [!WARNING]\n> Heads up\n');
+});
+
+test('the alert marker turns the block into a callout as it is typed', async ({ page }) => {
+  // docs/05 section 5: `[!tip] ` is to a callout what `# ` is to a heading.
+  await page.keyboard.type('[!tip] Handy');
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('> [!TIP]\n> Handy\n');
+});
+
 test('the slash menu groups its blocks and says when nothing matches', async ({ page }) => {
   await page.keyboard.type('/');
   await expect(menu(page).getByRole('option', { name: 'Heading 1' })).toBeVisible();

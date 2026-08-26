@@ -1,5 +1,6 @@
 'use client';
 
+import { CALLOUT_ICONS, DEFAULT_CALLOUT_VARIANT } from '@docs/core';
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { triggerFloatingLink } from '@platejs/link/react';
@@ -48,7 +49,13 @@ const insertBlockMap: Record<string, (editor: PlateEditor, type: string, at: Pat
   [KEYS.ol]: insertList,
   [KEYS.ul]: insertList,
   [KEYS.callout]: (editor) => {
-    insertCallout(editor, { select: true });
+    // docs/05 section 5: the variant is what the file carries, and the icon follows it. The
+    // plugin's own default is the last emoji the user picked, which no alert can hold.
+    insertCallout(editor, {
+      select: true,
+      variant: DEFAULT_CALLOUT_VARIANT,
+      icon: CALLOUT_ICONS[DEFAULT_CALLOUT_VARIANT],
+    });
   },
   [KEYS.codeBlock]: (editor) => {
     insertCodeBlock(editor, { select: true });
@@ -131,6 +138,12 @@ const setBlockMap: Record<
   [KEYS.ul]: setList,
   [KEYS.codeBlock]: (editor) => {
     toggleCodeBlock(editor);
+  },
+  [KEYS.callout]: (editor, type, [, path]) => {
+    editor.tf.setNodes(
+      { type, variant: DEFAULT_CALLOUT_VARIANT, icon: CALLOUT_ICONS[DEFAULT_CALLOUT_VARIANT] },
+      { at: path },
+    );
   },
 };
 

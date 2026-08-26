@@ -7,7 +7,8 @@ import {
 } from '@docs/core';
 import { loadCorpus } from '@docs/core/testing';
 import { QueryClient } from '@tanstack/react-query';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import type { Value } from 'platejs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
@@ -109,6 +110,45 @@ describe('EditorKit (docs/05 section 1)', () => {
     );
     expect(withToolbar).toContain('floating-toolbar');
     expect(without).not.toContain('floating-toolbar');
+  });
+});
+
+describe('the callout variant picker (docs/05 section 5)', () => {
+  const callout = (variant: string): Value => [
+    { children: [{ text: 'Heads up' }], type: 'callout', variant, icon: 'info' },
+  ];
+
+  it('picks a variant instead of an emoji, and says so in the value', async () => {
+    const user = userEvent.setup();
+    const opened = await open('index.md');
+    const onChange = vi.fn<(value: Value) => void>();
+    mount(opened, { value: callout('note'), onChange });
+
+    // docs/06 section 13: an icon-only control carries its name for a screen reader.
+    await user.click(await screen.findByRole('button', { name: 'Callout style' }));
+    const menu = screen.getByRole('menu');
+    expect(
+      within(menu)
+        .getAllByRole('menuitemradio')
+        .map((item) => item.textContent),
+    ).toEqual(['Note', 'Tip', 'Important', 'Warning', 'Caution']);
+
+    await user.click(within(menu).getByRole('menuitemradio', { name: 'Warning' }));
+    // The icon follows the variant, because the Markdown has nowhere else to keep it.
+    await waitFor(() => {
+      expect(onChange.mock.lastCall?.[0][0]).toMatchObject({
+        type: 'callout',
+        variant: 'warning',
+        icon: 'triangle-alert',
+      });
+    });
+  });
+
+  it('is not a control at all in read mode', async () => {
+    const opened = await open('index.md');
+    mount(opened, { value: callout('tip'), readOnly: true });
+    expect(await screen.findByText('Heads up')).toBeVisible();
+    expect(screen.queryByRole('button', { name: 'Callout style' })).toBeNull();
   });
 });
 

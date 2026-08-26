@@ -146,6 +146,13 @@ export {
 } from './codec/base-kit.js';
 
 export {
+  CALLOUT_ICONS,
+  DEFAULT_CALLOUT_VARIANT,
+  isCalloutVariant,
+  type CalloutVariant,
+} from './codec/rules/callout.js';
+
+export {
   createCodec,
   defaultCodec,
   markdownToValue,

@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-093 · P2-T10 · 2026-08-26
+Question: docs/05 section 5 names the five alert variants but not what happens to `> [!NOTE] text`, where the marker shares its line with prose.
+Assumed: only a marker that owns its line makes a callout; anything else stays a blockquote and keeps its bytes.
+Why: that is what GitHub renders, and remark-gfm does not parse alerts at all, so the codec is the only judge - a looser rule would silently eat the words after the marker on a blockquote that was never an alert.
+Cheap to reverse: yes
+
+## ASM-092 · P2-T10 · 2026-08-26
+Question: the variant list is two halves - core owns the mdast marker and the `icon` string, `@/lib` owns the Lucide icon, the tint and the label - and docs/02 section 2 forbids `react-lib` from importing `@docs/core`.
+Assumed: `lib/callout.ts` carries the presentation half with its own `note` fallback, and the two halves are checked against each other in `editor/ui/callout-node.tsx` by `const VARIANTS: Record<CalloutVariant, CalloutStyle> = CALLOUT_VARIANTS`.
+Why: keeps the leaf layer a leaf while still failing the build the day core learns a sixth variant this file cannot draw.
+Cheap to reverse: yes
+
+## ASM-091 · P2-T10 · 2026-08-26
+Question: the stock Plate callout carries an author-picked emoji in `icon`, and a GFM alert has nowhere to put one.
+Assumed: the icon button picks the variant instead, `icon` is written from `CALLOUT_ICONS` as the variant's Lucide name, and an emoji already in the value is dropped on save.
+Why: docs/05 section 2 makes Markdown the document; a control that edits something the file cannot hold is a control that loses the user's work at the next save. docs/05 section 5 also pins IMPORTANT to `megaphone`, so the stock `MessageSquareWarning` goes with it.
+Cheap to reverse: yes
+
 ## ASM-088 · P2-T08 · 2026-08-26
 Question: docs/04 section 3.4 asks for buttons disabled with a tooltip, and a `disabled` button takes no focus and fires no pointer events.
 Assumed: the gated controls carry `aria-disabled` and stay focusable; the title field is `readOnly`. Both keep their tooltip, on hover and on focus.
