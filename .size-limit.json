@@ -86,6 +86,7 @@
       "./tree/delete-dialog.js",
       "./command-palette.js",
       "./shell/page-menu-surface.js",
+      "./draft-compare.js",
       "../ui/toast-surface.js",
       "@docs/core",
       "lucide-react/dynamic",

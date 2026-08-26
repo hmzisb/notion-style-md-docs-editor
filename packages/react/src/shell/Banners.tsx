@@ -1,6 +1,14 @@
 import type { NodeId, PageMode } from '@docs/core';
 import { FileText, History, TriangleAlert, type LucideIcon } from 'lucide-react';
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from 'react';
+import {
+  Suspense,
+  lazy,
+  useEffect,
+  useRef,
+  useState,
+  type ComponentProps,
+  type ReactNode,
+} from 'react';
 import { useDocs } from '@/data/context.js';
 import type { DocumentSession } from '@/data/session.js';
 import { useSessionState } from '@/data/session-store.js';
@@ -9,6 +17,12 @@ import { cancelIdle, requestIdle } from '@/lib/idle.js';
 import { relativeTime } from '@/lib/relative-time.js';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
+
+/** The diff and the dialog around it are a chunk of their own: `Compare` is what fetches it. */
+const DraftCompare = lazy(async () => {
+  const { DraftCompare: Component } = await import('./draft-compare.js');
+  return { default: Component };
+});
 
 export type BannerVariant = 'info' | 'warning' | 'danger';
 
@@ -96,6 +110,9 @@ export function PageBanners({
   // docs/07 section 8: the lossy banner is shown before the first edit, so entering edit mode
   // at all is the acknowledgement - coming back to read mode does not bring it back.
   const [acked, setAcked] = useState(false);
+
+  /** The two bodies, read once when `Compare` is pressed; `null` while the dialog is closed. */
+  const [comparing, setComparing] = useState<{ file: string; draft: string } | null>(null);
   useEffect(() => {
     if (mode === 'edit') setAcked(true);
   }, [mode]);
@@ -213,11 +230,30 @@ export function PageBanners({
                   session.resolveDraft('discard');
                 }}
               />
+              <Action
+                variant="ghost"
+                label={strings['banner.draftCompare']}
+                onClick={() => {
+                  setComparing(session.compareDraft());
+                }}
+              />
             </>
           }
         >
           {strings['banner.draftMismatch']}
         </Banner>
+      )}
+
+      {comparing !== null && (
+        <Suspense fallback={null}>
+          <DraftCompare
+            file={comparing.file}
+            draft={comparing.draft}
+            onClose={() => {
+              setComparing(null);
+            }}
+          />
+        </Suspense>
       )}
 
       {showLossy && <LossyBanner reasons={lossy} onEdit={onEdit} />}

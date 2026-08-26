@@ -68,6 +68,12 @@ export interface DocumentSession {
   discard: () => void;
   resolveConflict: (choice: 'reload' | 'overwrite') => Promise<void>;
   resolveDraft: (choice: 'keep' | 'discard') => void;
+  /**
+   * The two texts behind the mismatch banner: the file as it is now and the waiting draft, or
+   * `null` when nothing is waiting. Read on demand - the bodies are the size of a page, and the
+   * compare dialog is the only thing that ever wants them.
+   */
+  compareDraft: () => { file: string; draft: string } | null;
 }
 
 const fidelityCache: Lru<Fidelity> = createLru<Fidelity>();
@@ -250,6 +256,7 @@ export function useDocumentSession(page: PageDocument): DocumentSession {
       discard: api.discard,
       resolveConflict: api.resolveConflict,
       resolveDraft: api.resolveDraft,
+      compareDraft: api.compareDraft,
     }),
     [api, fidelity, initial, state.draftRestored, state.status],
   );
@@ -526,6 +533,11 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
       reset(codec.toValue(fresh.body));
       void now.current.drafts.remove(id);
       now.current.store.getState().reset(id);
+    },
+
+    compareDraft: (): { file: string; draft: string } | null => {
+      const pending = live.current.pendingDraft;
+      return pending === null ? null : { file: live.current.body, draft: pending.body };
     },
 
     resolveDraft: (choice: 'keep' | 'discard'): void => {

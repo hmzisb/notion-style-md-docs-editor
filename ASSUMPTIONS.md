@@ -2,6 +2,18 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-158 · P4-T03 · 2026-08-27
+Question: docs/04 section 3.3 lists `Compare (text diff dialog)` as optional and does not say what the diff shows or whether it can resolve the mismatch.
+Assumed: a read-only side-by-side line diff of the file against the waiting draft, opened from a third ghost action on the mismatch banner. The two banner buttons stay the only way to answer; the dialog has no Apply of its own.
+Why: the question the banner asks is "which of these two", and a third answer inside a dialog would be a second place to make the same choice. Read-only also means a page cannot be resolved by a dialog the user opened to look at it.
+Cheap to reverse: yes
+
+## ASM-159 · P4-T03 · 2026-08-27
+Question: docs/09 offers `a small diff implementation or the `diff` package`.
+Assumed: an internal line diff (`packages/react/src/lib/line-diff.ts`, ~90 lines: common prefix/suffix trim, then LCS over what is left), and the dialog behind a lazy chunk of its own so `./shell` does not carry either.
+Why: docs/11 section 8 requires a deviation entry with size and licence for a new runtime dependency, and `diff` would be one for a feature marked optional; the fallback above 1,200 changed lines a side is "all of this went, all of that came", which is still readable side by side.
+Cheap to reverse: yes
+
 ## ASM-156 · P4-T02 · 2026-08-27
 Question: docs/03 section 9 gives the adapter `events: 'sse' | 'poll'`, but the contract has no "what changed since" endpoint for the poll to ask.
 Assumed: the poll asks the two questions the module acts on, both conditionally - `GET /tree` and `GET /pages/:id` for the page last read, each with `If-None-Match`, so an unchanged backend answers `304` and nothing else. `sse` carries whatever the backend pushes.

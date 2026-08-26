@@ -1,6 +1,6 @@
 import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
 import { QueryClient } from '@tanstack/react-query';
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import type { Value } from 'platejs';
 import type { ReactNode } from 'react';
@@ -73,6 +73,7 @@ function stubSession(overrides: Partial<DocumentSession> = {}): DocumentSession 
     discard: vi.fn(),
     resolveConflict: vi.fn(() => Promise.resolve()),
     resolveDraft: vi.fn(),
+    compareDraft: vi.fn(() => null),
     ...overrides,
   };
 }
@@ -212,6 +213,35 @@ describe('PageBanners (docs/06 section 10)', () => {
     expect(session.resolveDraft).toHaveBeenCalledWith('keep');
     await userEvent.click(screen.getByRole('button', { name: 'Keep file' }));
     expect(session.resolveDraft).toHaveBeenCalledWith('discard');
+  });
+
+  it('shows the file beside the draft when asked to compare (docs/04 section 3.3)', async () => {
+    const session = stubSession({
+      compareDraft: () => ({ file: '# Notes\n\nOne line.\n', draft: '# Notes\n\nTwo lines.\n' }),
+    });
+    banners(session);
+    setState({ draftMismatch: true, draftAt: Date.now() });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Compare' }));
+
+    const dialog = await screen.findByRole('dialog');
+    expect(dialog).toHaveTextContent('Compare with the file');
+    // The heading is shared, so it is a `same` row; only the changed line is on one side each.
+    expect(dialog).toHaveTextContent('One line.');
+    expect(dialog).toHaveTextContent('Two lines.');
+    expect(within(dialog).getAllByText('# Notes')).toHaveLength(2);
+
+    await userEvent.click(within(dialog).getByRole('button', { name: 'Done' }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('says so when the draft and the file turn out to match', async () => {
+    const session = stubSession({ compareDraft: () => ({ file: 'Same.\n', draft: 'Same.\n' }) });
+    banners(session);
+    setState({ draftMismatch: true, draftAt: Date.now() });
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Compare' }));
+    expect(await screen.findByText('The two are identical.')).toBeVisible();
   });
 
   it('names what editing would drop, and lists it on request', async () => {

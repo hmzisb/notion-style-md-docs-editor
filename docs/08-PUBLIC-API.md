@@ -156,7 +156,7 @@ interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeI
 
 ## 6. Strings
 
-`DocsStrings` is a flat object of every user-facing string (251 keys), each with an English default. Interpolation uses `{name}` placeholders and a tiny `format()` helper; no i18n dependency. Keys are grouped by prefix: `tree.*`, `header.*`, `status.*`, `banner.*`, `empty.*`, `dialog.*`, `menu.*`, `palette.*`, `editor.*`, `error.*`.
+`DocsStrings` is a flat object of every user-facing string (258 keys), each with an English default. Interpolation uses `{name}` placeholders and a tiny `format()` helper; no i18n dependency. Keys are grouped by prefix: `tree.*`, `header.*`, `status.*`, `banner.*`, `empty.*`, `dialog.*`, `menu.*`, `palette.*`, `editor.*`, `error.*`.
 
 ## 7. Adapters
 
