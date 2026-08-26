@@ -22,7 +22,7 @@ const seed = {
   'notes/2024.md': page('p_notes', 'Notes 2024'),
 };
 
-/** A provider that answers `search`, which the file store itself does not (docs/03 §10). */
+/** A provider whose `search` answers with fixed hits, so a case can pin what comes back. */
 function searchable(provider: DocumentProvider, hits: SearchHit[]): DocumentProvider {
   const capabilities = { ...provider.capabilities, search: true };
   return {
@@ -193,6 +193,26 @@ describe('CommandPalette (docs/06 section 8, docs/07 section 4)', () => {
     const dialog = within(await palette());
     expect(await dialog.findByText('the auth rewrite shipped')).toBeInTheDocument();
     expect(dialog.getByText('Results')).toBeInTheDocument();
+  });
+
+  it('leaves a title match to the Pages group', async () => {
+    const user = userEvent.setup();
+    mount(
+      {},
+      searchable(createFileStoreProvider(new MemoryFileStore(seed)), [
+        // What `search` returns for a page it matched on the title: a hit with no snippet.
+        { id: 'p_notes', title: 'Notes 2024' },
+        { id: 'p_auth', title: 'Authentication', snippet: 'the notes live here' },
+      ]),
+    );
+    await ready();
+
+    await user.type(await openPalette(user), 'notes');
+
+    const dialog = within(await palette());
+    // The content hit proves the search ran; the title hit is still one row, in Pages.
+    expect(await dialog.findByText('the notes live here')).toBeInTheDocument();
+    expect(dialog.getAllByRole('option', { name: /Notes 2024/ })).toHaveLength(1);
   });
 
   it('leaves the theme to the host that offered to change it', async () => {

@@ -101,6 +101,10 @@ test.describe('visual baselines (docs/06 section 15)', () => {
       // Typing rather than the bare list: recents carry a relative time that ages between runs.
       await dialog.getByPlaceholder('Search pages…').fill('gui');
       await expect(dialog.getByRole('option', { name: 'Guides' }).first()).toBeVisible();
+      // Content search runs 250 ms after the last keystroke, and its row is what a shot taken
+      // before then misses: wait past the debounce, then for the search itself to settle.
+      await page.waitForTimeout(400);
+      await expect(dialog.getByRole('option', { name: 'Search in content' })).toBeHidden();
       await shot(dialog, `palette-${theme}.png`);
     });
 

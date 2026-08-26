@@ -27,7 +27,7 @@ fail**, with all four phase reports present. The per-phase detail is in
 
 | Measure | Result | Budget (docs/10 §5) |
 |---|---|---|
-| `@docs/core` entry, min + gz | **33.05 kB** | 40 kB |
+| `@docs/core` entry, min + gz | **33.76 kB** | 40 kB |
 | `@docs/react` `.` | **14.63 kB** | 25 kB |
 | `@docs/react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
 | `@docs/react` `./shell` | **96.71 kB** | 98 kB ratchet — over docs/02 §7's 60 kB (DEV-012) |
@@ -52,7 +52,7 @@ are one worker against a production build on this machine (DEV-028).
 
 ## Deviations
 
-33 entries in `DEVIATIONS.md`. The ones a host can see:
+32 entries in `DEVIATIONS.md`. The ones a host can see:
 
 - **DEV-003 / DEV-004** raw HTML survives as its own bytes; underline is not in the block set.
 - **DEV-012** `./shell` is 96.71 kB against docs/02 §7's 60 kB, held by a ratchet.
@@ -67,7 +67,7 @@ serializer fixes that keep a save from reflowing a file nobody edited.
 
 ## Assumptions
 
-163 entries in `ASSUMPTIONS.md`, each with its question, the choice, the reason and whether it is
+162 entries in `ASSUMPTIONS.md`, each with its question, the choice, the reason and whether it is
 cheap to reverse. The ones that shape the product rather than the code: Markdown stays canonical
 and Plate JSON transient (D-01/D-02 as built); a page is never written unless the user edited it;
 the browser cache is a feature, so drafts and the tree survive a reload and a dropped connection;
@@ -84,7 +84,10 @@ end; and every optional capability is hidden rather than disabled when a provide
 3. **Lazy chunks** are ignored inside the entries that load them and carry no limit of their own,
    so nothing gates their growth (DEV-023).
 4. **Perf and visual baselines** are one machine, darwin + Chromium (DEV-028, ASM-153). No CI
-   hardware baseline exists, so the numbers above are a reference, not a gate.
+   hardware baseline exists, so the numbers above are a reference, not a gate. A re-run of the
+   gate under load found the cost of that: the palette baseline was racing the 250 ms search
+   debounce and only settled inside it on an idle machine. Fixed, but slower hardware would have
+   caught it first.
 5. **Two docs/06 §7 spec questions** are open: an image caption centres on the column rather than
    under a narrow picture, and the floating toolbar draws over the page title when the selection
    is the first block.

@@ -22,7 +22,7 @@ lands where it was left.
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gz | **33.05 kB** | 40 kB (docs/10 §5) |
+| `@docs/core` entry, min + gz | **33.76 kB** | 40 kB (docs/10 §5) |
 | `@docs/react` `.` entry | **14.63 kB** | 25 kB |
 | `@docs/react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
 | `@docs/react` `./shell` | **96.71 kB** | 98 kB ratchet (DEV-012) |
@@ -53,8 +53,8 @@ own vitest project for the same reason.
 - **Boundaries**: `pnpm lint` green at `--max-warnings 0`. The new Node file store is in
   `scripts/`, not in either package, so `node:fs` stays out of the published surface.
 - **Budgets**: `./shell` moved 96.47 → 96.71 kB, inside its ratchet, with the compare dialog and
-  its diff behind a lazy `shell/draft-compare` entry. Content search is core-side and cost the
-  core entry nothing measurable.
+  its diff behind a lazy `shell/draft-compare` entry. Content search cost the core entry
+  0.71 kB, 33.05 → 33.76.
 - **States**: the mismatch banner keeps Apply draft / Keep file as the only place the choice is
   made — Compare is read-only (ASM-158). The large-page banner is the only way into the editor
   on a page past the threshold, and the opt-in is per page session.

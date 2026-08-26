@@ -84,7 +84,11 @@ export function CommandPaletteDialog({
   const wantsSearch = capabilities.search && debounced.trim().length >= SEARCH_MIN_QUERY;
   const hits = useSearch(debounced, { enabled: open, rootId });
   // Not `hits.data` alone: the last query's hits are still cached while a shorter one is typed.
-  const results = wantsSearch ? (hits.data ?? []) : [];
+  // Only hits with a snippet: docs/07 section 2 gives Results the content matches, and a page
+  // that matched on its title is already a row in Pages.
+  const results = wantsSearch
+    ? (hits.data ?? []).filter((hit) => hit.snippet !== undefined)
+    : [];
 
   const close = (): void => {
     onOpenChange(false);
@@ -226,7 +230,7 @@ export function CommandPaletteDialog({
             </CommandGroup>
           )}
 
-          {wantsSearch && (
+          {wantsSearch && (results.length > 0 || hits.isFetching || hits.error !== null) && (
             <CommandGroup heading={strings['palette.results']} forceMount>
               {results.map((hit) => (
                 <CommandItem
