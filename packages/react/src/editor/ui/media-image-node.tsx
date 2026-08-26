@@ -1,12 +1,13 @@
 'use client';
 
-import type { TImageElement } from 'platejs';
 import type { PlateElementProps } from 'platejs/react';
 
+import { CaptionTextarea } from '@platejs/caption/react';
 import { useDraggable } from '@platejs/dnd';
 import { Image, useMediaState } from '@platejs/media/react';
 import { ResizableProvider } from '@platejs/resizable';
 import { ImageIcon } from 'lucide-react';
+import { NodeApi, type TCaptionProps, type TImageElement } from 'platejs';
 import { PlateElement, withHOC } from 'platejs/react';
 import { useState } from 'react';
 
@@ -20,8 +21,12 @@ import { mediaResizeHandleVariants, Resizable, ResizeHandle } from './resize-han
 export const ImageElement = withHOC(
   // `@platejs/resizable` declares its provider as `any`.
   ResizableProvider as Parameters<typeof withHOC>[0],
-  function ImageElement(props: PlateElementProps<TImageElement>) {
+  function ImageElement(props: PlateElementProps<TImageElement & TCaptionProps>) {
     const { align = 'center', focused, readOnly, selected } = useMediaState();
+    const { strings } = useDocs();
+    // What the caption UI edits is one text node, which is what `CaptionTextarea` writes.
+    const [line] = props.element.caption ?? [];
+    const caption = line === undefined ? '' : NodeApi.string(line);
 
     const { isDragging, handleRef } = useDraggable({
       element: props.element,
@@ -53,7 +58,7 @@ export const ImageElement = withHOC(
                   focused && selected && 'ring-2 ring-ring ring-offset-2',
                   isDragging && 'opacity-50',
                 )}
-                alt={props.attributes.alt as string | undefined}
+                alt={typeof props.element.alt === 'string' ? props.element.alt : undefined}
               />
             </div>
             <ResizeHandle
@@ -65,11 +70,25 @@ export const ImageElement = withHOC(
           </Resizable>
 
           {/*
-            docs/05 section 5 gives an image its caption from a following italic paragraph, and
-            that rule is P2-T12. Until it lands, `caption` holds only the Markdown alt text, which
-            the read view (docs/05 section 7) does not draw - so neither does the editor, or the
-            swap between them would move the page under the caret (docs/05 section 8).
+            docs/05 section 5: the caption is the italic paragraph after the image, and the alt
+            text above is a different string. The field only appears once there is something to
+            show or the image is selected, so read and edit draw the same page (docs/05
+            section 8) until the writer asks for the field.
           */}
+          {caption !== '' || (!readOnly && selected) ? (
+            <figcaption className={blockStyles.caption}>
+              {readOnly ? (
+                caption
+              ) : (
+                <CaptionTextarea
+                  // A placeholder is not a label: the field needs a name of its own.
+                  aria-label={strings['editor.image.caption']}
+                  className="w-full resize-none bg-transparent text-center outline-none placeholder:text-muted-foreground/60"
+                  placeholder={strings['editor.image.caption']}
+                />
+              )}
+            </figcaption>
+          ) : null}
         </figure>
 
         {props.children}

@@ -43,6 +43,12 @@ interface SlashItem {
   keywords?: string[];
   /** An inline element opens its own popover, which is what takes the focus back. */
   inline?: boolean;
+  /**
+   * The block takes the caret itself - an inline popover, or the image block's URL field
+   * (docs/05 section 6). Putting the caret back in the editor would blur that field, and an
+   * image with no URL removes itself on blur.
+   */
+  ownsFocus?: boolean;
 }
 
 interface SlashGroup {
@@ -153,6 +159,7 @@ export const SLASH_GROUPS: SlashGroup[] = [
         name: 'editor.block.img',
         description: 'editor.blockDesc.img',
         keywords: ['picture', 'photo', 'media', '!['],
+        ownsFocus: true,
       },
     ],
   },
@@ -180,6 +187,7 @@ export const SLASH_GROUPS: SlashGroup[] = [
         description: 'editor.blockDesc.link',
         keywords: ['url', 'href', 'anchor'],
         inline: true,
+        ownsFocus: true,
       },
     ],
   },
@@ -220,7 +228,7 @@ export function SlashInputElement(
                   }}
                   className="h-auto items-center gap-2 px-2 py-1"
                   label={strings[item.name]}
-                  focusEditor={item.inline !== true}
+                  focusEditor={item.ownsFocus !== true}
                   group={strings[group.label]}
                   keywords={item.keywords}
                 >

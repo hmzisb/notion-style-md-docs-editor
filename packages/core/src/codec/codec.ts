@@ -9,6 +9,7 @@ import {
   type Value,
 } from 'platejs';
 import { createBaseKit, type BaseKitOptions } from './base-kit.js';
+import { unfoldCaptions } from './rules/caption.js';
 import { foldToggles } from './rules/toggle.js';
 
 /**
@@ -47,11 +48,13 @@ export function createCodec(opts: CodecOptions = {}): Codec {
   const codec: Codec = {
     toValue: (body, onError) =>
       deserializeMd(ready(), body, { onError, preserveEmptyParagraphs: true, withoutMdx: true }),
-    // A toggle carries the blocks after it, not under it (docs/05 section 5), so the value is
-    // folded into raw `<details>` blocks before the serializer sees one node at a time.
+    // Two of the rules of docs/05 section 5 span more than one block, and the serializer
+    // only ever sees one node, so the value is reshaped first: a caption grows back into the
+    // italic paragraph after its image, and a toggle swallows the blocks indented under it.
+    // Captions first, or a captioned image inside a toggle would leave its caption outside.
     toMarkdown: (value) =>
       serializeMd(ready(), {
-        value: marked(foldToggles(withoutTrailingBlanks(value), codec.toMarkdown)),
+        value: marked(foldToggles(unfoldCaptions(withoutTrailingBlanks(value)), codec.toMarkdown)),
       }),
     toAst: (body) => markdownToAstProcessor(ready(), body, { withoutMdx: true }),
   };

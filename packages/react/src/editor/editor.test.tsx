@@ -189,6 +189,50 @@ describe('the toggle block', () => {
   });
 });
 
+describe('the image caption', () => {
+  const withImage = (caption?: string): Value => [
+    {
+      children: [{ text: '' }],
+      type: 'img',
+      id: 'image',
+      url: 'https://cdn.example.com/a.png',
+      alt: 'The alt text',
+      ...(caption === undefined ? {} : { caption: [{ text: caption }] }),
+    },
+  ];
+
+  it('draws the caption it has, and keeps the alt text apart from it', async () => {
+    const opened = await open('index.md');
+    const { update } = mount(opened, { value: withImage('What the picture shows.') });
+
+    expect(await screen.findByRole('img', { name: 'The alt text' })).toBeInTheDocument();
+    const field = screen.getByRole('textbox', { name: 'Write a caption…' });
+    expect(field).toHaveValue('What the picture shows.');
+
+    // The reader gets the same words without a field to type in (docs/05 section 8).
+    update({ readOnly: true });
+    await waitFor(() => {
+      expect(screen.queryByRole('textbox', { name: 'Write a caption…' })).toBeNull();
+    });
+    expect(screen.getByText('What the picture shows.')).toBeVisible();
+  });
+
+  it('offers the field on an image that has no caption once it is selected', async () => {
+    const user = userEvent.setup();
+    const opened = await open('index.md');
+    mount(opened, { value: withImage() });
+
+    await screen.findByRole('img', { name: 'The alt text' });
+    // Nothing under the image until the writer asks: read and edit draw the same page.
+    expect(screen.queryByRole('textbox', { name: 'Write a caption…' })).toBeNull();
+
+    await user.click(screen.getByRole('img', { name: 'The alt text' }));
+    await waitFor(() => {
+      expect(screen.getByRole('textbox', { name: 'Write a caption…' })).toBeVisible();
+    });
+  });
+});
+
 describe('DocumentEditor (docs/05 section 6)', () => {
   let errors: string[];
   let spy: ReturnType<typeof vi.spyOn>;

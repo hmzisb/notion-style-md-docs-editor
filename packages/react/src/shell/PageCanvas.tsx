@@ -76,7 +76,7 @@ export function PageCanvas({
   const showEditor = wants && chunk !== null;
 
   useEffect(() => {
-    if (wants) void preloadEditor();
+    if (wants) void preloadEditor().catch(() => undefined);
   }, [wants]);
 
   useEffect(() => {

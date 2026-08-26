@@ -13,11 +13,19 @@ const listeners = new Set<() => void>();
  * promise. Hosts that compose their own layout call it whenever they like.
  */
 export function preloadEditor(): Promise<EditorModule> {
-  inflight ??= import('./editor/index.js').then((module) => {
-    loaded = module;
-    for (const listener of listeners) listener();
-    return module;
-  });
+  inflight ??= import('./editor/index.js').then(
+    (module) => {
+      loaded = module;
+      for (const listener of listeners) listener();
+      return module;
+    },
+    (error: unknown) => {
+      // A load that failed because the radio was off has to be able to happen again: without
+      // this the rejected promise is what every later call gets back, for the rest of the visit.
+      inflight = null;
+      throw error;
+    },
+  );
   return inflight;
 }
 

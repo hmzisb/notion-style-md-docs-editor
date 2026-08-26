@@ -31,6 +31,7 @@ import { getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
 import { calloutRules } from './rules/callout.js';
+import { captionRules, remarkCaptions } from './rules/caption.js';
 import { remarkToggles, toggleRules } from './rules/toggle.js';
 
 /**
@@ -153,9 +154,15 @@ export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
     MarkdownPlugin.configure({
       options: {
         plainMarks: UNSHIPPED_MARKS,
-        remarkPlugins: [remarkGfm, remarkInlineRefs, remarkToggles],
+        remarkPlugins: [remarkGfm, remarkInlineRefs, remarkCaptions, remarkToggles],
         remarkStringifyOptions: { ...DEFAULT_STRINGIFY_OPTIONS, ...opts.remarkStringifyOptions },
-        rules: { ...FIDELITY_RULES, ...calloutRules, ...toggleRules, ...opts.rules },
+        rules: {
+          ...FIDELITY_RULES,
+          ...calloutRules,
+          ...captionRules,
+          ...toggleRules,
+          ...opts.rules,
+        },
       },
     }),
   ];

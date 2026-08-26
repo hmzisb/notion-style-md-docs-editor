@@ -22,10 +22,15 @@ test.beforeEach(async ({ page, mode }) => {
 const title = (page: Page) => page.getByRole('textbox', { name: 'Page title' });
 
 test('the page still reads and still takes body edits offline', async ({ page, context }) => {
+  // The editor is a chunk of its own (docs/05 section 8) and nothing here caches assets, so
+  // it has to be in the browser before the radio goes off - which is what the shell's idle
+  // preload does on a real visit, and what one edit here waits for.
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+
   await context.setOffline(true);
   await expect(page.getByText('Body text')).toBeVisible();
 
-  await page.getByRole('button', { name: 'Edit' }).click();
   await page.locator(EDITOR).getByText('Body text').click();
   await page.keyboard.type('plus more ');
   await page.getByRole('button', { name: 'Done' }).click();

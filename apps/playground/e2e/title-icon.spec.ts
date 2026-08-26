@@ -100,6 +100,9 @@ test('the emoji tab takes the highlighted emoji from the keyboard', async ({ pag
 
   // docs/07 section 6: the emoji tab is the one that opens, with the search box focused.
   await page.keyboard.type('grinning');
+  // The emoji data is fetched, so the highlight only exists once the results are drawn -
+  // `Enter` before that lands on nothing.
+  await expect(page.getByRole('dialog').getByText('\u{1F600}', { exact: true })).toBeVisible();
   await page.keyboard.press('Enter');
 
   await expect.poll(() => saved(page)).toContain('icon: 😀');

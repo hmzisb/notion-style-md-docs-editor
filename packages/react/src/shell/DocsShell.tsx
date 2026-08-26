@@ -184,7 +184,8 @@ function ShellBody({
   useEffect(() => {
     if (!capabilities.write || preload !== 'idle') return;
     const idle = requestIdle(() => {
-      void preloadEditor();
+      // Nothing waits on this one: offline, the read view is what stays up (docs/04 section 3.4).
+      void preloadEditor().catch(() => undefined);
     });
     return () => {
       cancelIdle(idle);
@@ -192,7 +193,7 @@ function ShellBody({
   }, [capabilities.write, preload]);
 
   const warm = useCallback(() => {
-    if (capabilities.write && preload !== 'never') void preloadEditor();
+    if (capabilities.write && preload !== 'never') void preloadEditor().catch(() => undefined);
   }, [capabilities.write, preload]);
   const goHome = useCallback(() => {
     navigation.navigate({ pageId: null });

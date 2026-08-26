@@ -380,24 +380,24 @@ function TableHeaderCellStatic(props: SlateElementProps): React.JSX.Element {
 }
 
 /**
- * Void: `caption` holds the Markdown alt text and `url` the path as written. The caption
- * repeats the alt text, so a screen reader is told once (docs/06 section 7).
- */
-/**
- * The Markdown alt text lands in `caption`, which is where Plate keeps it and where the
- * serializer reads it back from. It is alternative text, not a visible caption: docs/05
- * section 5 gives an image a caption of its own from a following italic paragraph, and that
- * rule is P2, so nothing is drawn under the image here.
+ * Void: `url` is the path as written, `alt` the Markdown alt text, and `caption` the visible
+ * caption of docs/05 section 5 - the italic paragraph after the image. They are two different
+ * strings and the codec keeps them apart, so a caption is drawn and the alt text is not.
  */
 function ImageStatic(props: SlateElementProps<TImageElement & TCaptionProps>): React.JSX.Element {
   const { node } = useView();
   const { caption, url } = props.element;
   const title = props.element.title as string | undefined;
-  const alt = caption === undefined ? '' : caption.map((line) => NodeApi.string(line)).join(' ');
+  const alt = typeof props.element.alt === 'string' ? props.element.alt : '';
+  const [line] = caption ?? [];
+  const text = line === undefined ? '' : NodeApi.string(line);
 
   return (
     <SlateElement {...props} className={blockStyles.image} style={indentStyle(props.element)}>
-      <AssetImage src={url} alt={alt} title={title} node={node} />
+      <figure className="m-0">
+        <AssetImage src={url} alt={alt} title={title} node={node} />
+        {text !== '' && <figcaption className={blockStyles.caption}>{text}</figcaption>}
+      </figure>
       {props.children}
     </SlateElement>
   );

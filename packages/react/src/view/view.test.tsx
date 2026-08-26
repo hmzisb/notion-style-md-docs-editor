@@ -240,6 +240,15 @@ describe('DocumentView', () => {
       expect(screen.queryByText('The logo')).not.toBeInTheDocument();
     });
 
+    it('draws the caption under the image, and the alt text stays alt text', async () => {
+      await mount('![The logo](assets/logo.png)\n\n*What the logo is.*');
+
+      await screen.findByRole('img', { name: 'The logo' });
+      expect(screen.getByText('What the logo is.')).toBeInTheDocument();
+      // The caption is one block: the italic paragraph it came from is not drawn twice.
+      expect(screen.getAllByText('What the logo is.')).toHaveLength(1);
+    });
+
     it('reports a path that is not there', async () => {
       await mount('![Missing](assets/nope.png)');
 

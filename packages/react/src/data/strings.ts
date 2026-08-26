@@ -220,6 +220,7 @@ export const defaultStrings = {
   'editor.callout.caution': 'Caution',
   'editor.image.placeholder': 'Paste an image URL or path',
   'editor.image.apply': 'Add',
+  'editor.image.caption': 'Write a caption…',
   'editor.toolbar.label': 'Formatting',
   'editor.toolbar.turnInto': 'Turn into',
   'editor.toolbar.bold': 'Bold',

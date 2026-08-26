@@ -16,6 +16,8 @@ export const blockStyles = {
   h2: 'mt-6 mb-0.5 text-2xl leading-[1.3] font-semibold first:mt-0',
   h3: 'mt-4 mb-0.5 text-xl leading-[1.3] font-semibold first:mt-0',
   image: 'my-2',
+  /** docs/06 section 7: the visible caption of docs/05 section 5, under the image. */
+  caption: 'mt-1 text-center text-sm text-muted-foreground',
   p: 'py-[3px]',
   table: 'my-2 overflow-x-auto',
   /** The summary line of a toggle; the blocks inside it are indented siblings. */

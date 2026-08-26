@@ -155,6 +155,27 @@ test('the slash menu groups its blocks and says when nothing matches', async ({ 
   await expect(page.getByText('No results')).toBeHidden();
 });
 
+/** docs/05 section 5: the caption is the italic paragraph after the image, not its alt text. */
+test('an image keeps its caption as the italic paragraph after it', async ({ page }) => {
+  // Not `slash`: the image block asks for its URL in place (docs/05 section 6) and that field
+  // is what takes the focus, so the caret does not go back to the editor here. Upload is P2-T13.
+  await page.keyboard.type('/Image');
+  const item = menu(page).getByRole('option', { name: 'Image' });
+  await expect(item).toBeVisible();
+  await item.click();
+  const url = page.getByRole('textbox', { name: 'Paste an image URL or path' });
+  await expect(url).toBeVisible();
+  await url.fill('a.png');
+  await page.keyboard.press('Enter');
+
+  const caption = page.getByRole('textbox', { name: 'Write a caption…' });
+  await expect(caption).toBeVisible();
+  await caption.fill('What the picture shows.');
+
+  await done(page);
+  await expect.poll(() => saved(page)).toContain('![](a.png)\n\n*What the picture shows.*\n');
+});
+
 test('the floating toolbar marks a selection', async ({ page }) => {
   await page.keyboard.type('Bold me');
   // Selecting backwards over the last word is what puts the toolbar up.

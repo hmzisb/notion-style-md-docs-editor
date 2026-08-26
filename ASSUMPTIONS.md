@@ -14,6 +14,42 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-103 · P2-T12 · 2026-08-26
+Question: `preloadEditor()` is fired and forgotten from the shell's idle preload and from every hover; docs/05 section 8 says nothing about what a load that fails should do.
+Assumed: a failed import clears the cached promise so the next call tries again, and the three fire-and-forget callers swallow the rejection.
+Why: the promise was cached rejected, so one failed fetch - the radio going off mid-import is the way it happens - left the visit unable to edit at all, and the unhandled rejection printed a `pageerror` the e2e console check rightly failed on. The read view is what stays up either way (docs/04 section 3.4), so there is nothing to report to the user; a click on Edit retries. The offline e2e now warms the chunk before it pulls the radio, because nothing here caches assets for a cold start offline.
+Cheap to reverse: yes
+
+## ASM-102 · P2-T12 · 2026-08-26
+Question: the slash menu puts the caret back in the editor after it inserts a block, and the image block asks for its URL in a field of its own that takes the focus first (docs/05 section 6).
+Assumed: an item can say it takes the caret itself (`ownsFocus`), and the image and the link say so.
+Why: `InlineComboboxItem` calls `restoreFocus(editor)` after the click handler, which blurred the URL field a frame after it auto-focused - and an image with no URL removes itself on blur, so the block the user just asked for disappeared. The link item already opted out through `inline`; the image needs the same opt-out for a different reason, so the reason is now its own flag.
+Cheap to reverse: yes
+
+## ASM-101 · P2-T12 · 2026-08-26
+Question: the plan names the fixture `rules/caption.md`; the corpus has `rules/image-caption.md`.
+Assumed: the corpus wins.
+Why: the fixture is a file that exists and the corpus manifest names it; the plan line is a reference to it, not a second file to create.
+Cheap to reverse: yes
+
+## ASM-100 · P2-T12 · 2026-08-26
+Question: Plate types the image rule's `serialize` as returning an mdast `Image`, but a block image is a paragraph holding one image - which is what Plate's own image rule returns.
+Assumed: build the paragraph and return it through `as unknown as MdImage`.
+Why: the behaviour is what the serializer consumes, and the stock rule proves the shape; the alternative is to emit an inline `Image` at block level, which remark writes without the blank lines around it and the caption paragraph then glues onto the image line.
+Cheap to reverse: yes
+
+## ASM-099 · P2-T12 · 2026-08-26
+Question: the caption field in the editor could always be visible, the way a placeholder line is, or only once there is something to show.
+Assumed: it appears when the image has a caption or is selected.
+Why: docs/05 section 8 asks read and edit to draw the same page; an always-on empty field is a line of type in edit that read does not have. Selecting the image is how a writer asks for the field, and `CaptionTextarea` focuses it from there.
+Cheap to reverse: yes
+
+## ASM-098 · P2-T12 · 2026-08-26
+Question: Plate's stock image rule maps the mdast `alt` to the node's `caption`, and docs/05 section 5 makes the caption the italic paragraph after the image instead.
+Assumed: `alt` and `caption` stay two separate properties on the node - `alt` is the Markdown alt text, `caption` is the italic paragraph - and the rule is overridden to keep them apart. The paragraph is folded into the node on read (`remarkCaptions`, top level only) and unfolded again before serialization (`unfoldCaptions`).
+Why: the two carry different text and either would otherwise overwrite the other on a round trip; a caption also has to survive being inside a toggle, which only a value pass ordered before `foldToggles` can do. Top level only, because a caption in a list item or a table cell is not the shape docs/05 section 5 pins.
+Cheap to reverse: no - the node shape is what the editor and both renderers read.
+
 ## ASM-097 · P2-T11 · 2026-08-26
 Question: `packages/react/src/styles/styles.css` compiles the fallback sheet from `@source '../**/*.tsx'`, but `lib/block-styles.ts` - the one place both renderers take their block classes from - is a `.ts` file.
 Assumed: widen the glob to `'../**/*.{ts,tsx}'`.
