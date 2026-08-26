@@ -155,7 +155,7 @@ function ShellBody({
   onThemeChange,
 }: ShellBodyProps): React.JSX.Element {
   const { navigation, strings, capabilities } = useDocs();
-  const { isMobile, open, openMobile, toggleSidebar } = useSidebar();
+  const { isMobile, open, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
@@ -164,12 +164,21 @@ function ShellBody({
   const regionRef = useRef<HTMLElement>(null);
   const chunk = useEditorChunk();
 
+  /**
+   * Below 768 px the sidebar is a sheet over the page it opens (docs/06 section 5), so every
+   * row that answers with a page puts it away again. A no-op on a desktop, where nothing covers.
+   */
+  const closeSheet = useCallback(() => {
+    setOpenMobile(false);
+  }, [setOpenMobile]);
+
   const openPage = useCallback(
     (id: NodeId, opts?: { mode?: PageMode }) => {
       // docs/07 section 7: navigating away from an edit opens the next page in read mode.
       navigation.navigate({ pageId: id, mode: opts?.mode ?? 'read' });
+      closeSheet();
     },
-    [navigation],
+    [closeSheet, navigation],
   );
 
   /** docs/07 section 7: the mode is part of the URL, but not part of its history. */
@@ -200,7 +209,8 @@ function ShellBody({
   }, [capabilities.write, preload]);
   const goHome = useCallback(() => {
     navigation.navigate({ pageId: null });
-  }, [navigation]);
+    closeSheet();
+  }, [closeSheet, navigation]);
   const openPalette = useCallback(() => {
     setPaletteOpen(true);
   }, []);

@@ -66,6 +66,18 @@ function mount(
   return { events, navigate, onEvent };
 }
 
+/**
+ * docs/06 section 5: below 768 px the sidebar is a sheet over the page. `useIsMobile` reads
+ * `window.innerWidth`, and jsdom lets a test say what it is.
+ */
+function onAPhone(): () => void {
+  const was = window.innerWidth;
+  window.innerWidth = 390;
+  return () => {
+    window.innerWidth = was;
+  };
+}
+
 /** A host whose provider cannot write: no Edit control, no editor chunk (docs/07 section 8). */
 function mountReadOnly(): Mounted {
   const base = createFileStoreProvider(new MemoryFileStore(seed));
@@ -366,6 +378,27 @@ describe('DocsShell', () => {
       expect(await screen.findByText('This folder has no page yet')).toBeInTheDocument();
       expect(screen.queryByRole('button', { name: 'Create page' })).not.toBeInTheDocument();
       expect(screen.getByRole('button', { name: 'Notes 2024' })).toBeInTheDocument();
+    });
+  });
+
+  describe('on a phone (docs/06 section 5)', () => {
+    it('closes the sheet over the page it was asked to open', async () => {
+      const restore = onAPhone();
+      try {
+        // One page at the root, so the row is the only thing in the sheet by that name.
+        mount({}, { 'notes.md': page('p_notes', 'Notes') });
+        // Not `ready()`: the tree is inside the sheet, and the sheet is closed until it is asked for.
+        await userEvent.click(await screen.findByRole('button', { name: 'Show sidebar' }));
+        const sheet = await screen.findByRole('dialog');
+        await userEvent.click(await within(sheet).findByText('Notes'));
+
+        // The sheet covers the whole width it opened over, so leaving it up hides the answer.
+        await waitFor(() => {
+          expect(sheet).toHaveAttribute('data-state', 'closed');
+        });
+      } finally {
+        restore();
+      }
     });
   });
 });
