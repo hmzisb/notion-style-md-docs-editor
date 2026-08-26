@@ -1,5 +1,4 @@
 import { ancestorsOf, type NodeId, type PageMode, type TreeIndex, type TreeNode } from '@docs/core';
-import { useQuery } from '@tanstack/react-query';
 import { defaultFilter } from 'cmdk';
 import {
   ChevronsDownUp,
@@ -13,7 +12,7 @@ import {
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
-import { useTreeIndex } from '@/data/queries.js';
+import { SEARCH_MIN_QUERY, useSearch, useTreeIndex } from '@/data/queries.js';
 import { expandableIds, useSidebarStore } from '@/data/sidebar-store.js';
 import { formatKeys } from '@/lib/hotkeys';
 import { relativeTime } from '@/lib/relative-time.js';
@@ -38,7 +37,6 @@ const MAX_RECENT = 5;
 const MAX_PAGES = 50;
 /** docs/07 section 4. */
 const SEARCH_DEBOUNCE = 250;
-const MIN_QUERY = 2;
 
 interface Action {
   id: string;
@@ -57,7 +55,7 @@ export function CommandPaletteDialog({
   onCreatePage,
   onThemeChange,
 }: CommandPaletteProps): React.JSX.Element {
-  const { strings, capabilities, provider, keys } = useDocs();
+  const { strings, capabilities } = useDocs();
   const { data: index } = useTreeIndex(rootId);
   const recents = useRecents((state) => state.recents);
   const { toggleSidebar } = useSidebar();
@@ -83,13 +81,9 @@ export function CommandPaletteDialog({
   );
 
   const debounced = useDebounced(query, SEARCH_DEBOUNCE);
-  const wantsSearch = capabilities.search && debounced.trim().length >= MIN_QUERY;
-  const hits = useQuery({
-    queryKey: keys.search(debounced.trim()),
-    queryFn: async () => (await provider.search?.(debounced.trim(), { rootId, limit: 20 })) ?? [],
-    enabled: open && wantsSearch,
-    staleTime: 30_000,
-  });
+  const wantsSearch = capabilities.search && debounced.trim().length >= SEARCH_MIN_QUERY;
+  const hits = useSearch(debounced, { enabled: open, rootId });
+  // Not `hits.data` alone: the last query's hits are still cached while a shorter one is typed.
   const results = wantsSearch ? (hits.data ?? []) : [];
 
   const close = (): void => {

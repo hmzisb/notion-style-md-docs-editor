@@ -4,15 +4,29 @@ export { preloadEditor } from './editor-chunk.js';
 export { createKeys, createNamespace, type DocsKeys } from './data/keys.js';
 export {
   GC,
+  SEARCH_MIN_QUERY,
   STALE,
   metaQuery,
   pageQuery,
   treeQuery,
   useMeta,
   usePage,
+  useSearch,
   useTreeIndex,
+  type UseSearchOptions,
 } from './data/queries.js';
-export { useUpdateMeta, type UpdateMetaVariables } from './data/mutations.js';
+export {
+  useCreatePage,
+  useDeletePage,
+  useMovePage,
+  useSavePage,
+  useUpdateMeta,
+  type CreatePageVariables,
+  type DeletePageVariables,
+  type MovePageVariables,
+  type SavePageVariables,
+  type UpdateMetaVariables,
+} from './data/mutations.js';
 export { useDocumentSession, type DocumentSession, type SessionEditor } from './data/session.js';
 export type { SessionState, SessionStatus } from './data/session-store.js';
 export { MAX_RECENTS, useRecents, type Recent, type RecentsState } from './data/cache/recents.js';

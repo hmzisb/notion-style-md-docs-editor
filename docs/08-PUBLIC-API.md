@@ -19,37 +19,73 @@ Non-Tailwind host: import only `@docs/react/styles.css` (precompiled, scoped, no
 
 ## 2. Exports
 
-```ts
-// @docs/react
-export { DocsProvider, useDocs, preloadEditor } from './data/DocsProvider';
-export { createKeys } from './data/keys';
-export { metaQuery, treeQuery, pageQuery, useMeta, useTreeIndex, usePage, useSearch } from './data/queries';
-export { useSavePage, useUpdateMeta, useCreatePage, useMovePage, useDeletePage } from './data/mutations';
-export { useDocumentSession } from './data/session';
-export { useSidebarStore } from './data/sidebar-store';
-export { useRecents } from './data/cache/recents';
-export { useOnline } from './data/online';
-export { defaultStrings } from './data/strings';
-export type { DocsNavigation, DocsEvent, DocsStrings, DocsProviderProps } from './types';
-export type * from '@docs/core';
+Every name below is checked against the real entry points by `packages/react/src/public-api.test.ts`:
+a `complete` list is the whole entry and a `headline` list is a subset of one, and either way a name
+that is documented and gone fails the suite. `@docs/react` also re-exports every type of
+`@docs/core`, so a host that only composes UI never imports the core package directly.
 
-// subpaths
-'@docs/react/tree'               PageTree, PageTreeProps
-'@docs/react/editor'             DocumentEditor, DocumentEditorProps, EditorErrorBoundary
-'@docs/react/view'               DocumentView, DocumentViewProps
-'@docs/react/shell'              DocsShell, Sidebar, PageHeader, Breadcrumbs, PageTitle, PageIcon, IconPicker,
-                                 CommandPalette, SaveStatus, ModeToggle, banners, EmptyState
-'@docs/react/adapters/http'      createHttpProvider
-'@docs/react/adapters/filesystem' createFileSystemProvider, pickDirectory, getOpfsRoot, exportToDirectory, importFromDirectory
-'@docs/react/adapters/memory'    createMemoryProvider
-'@docs/react/styles.css', '@docs/react/theme.css'
+<!-- exports:start -->
+```text
+@docs/react  complete
+  CreatePageVariables, DEFAULT_SIDEBAR_WIDTH, DeletePageVariables, DocsContextValue,
+  DocsEvent, DocsEventHandler, DocsKeys, DocsNavigation, DocsOptions, DocsProvider,
+  DocsProviderProps, DocsStrings, DocumentSession, GC, MAX_RECENTS, MovePageVariables,
+  PersistOptions, Recent, RecentsState, SEARCH_MIN_QUERY, STALE, SavePageVariables,
+  SessionEditor, SessionState, SessionStatus, SidebarState, UpdateMetaVariables,
+  UseSearchOptions, createKeys, createNamespace, defaultStrings, format, metaQuery,
+  pageQuery, preloadEditor, treeQuery, useCreatePage, useDeletePage, useDocs,
+  useDocumentSession, useMeta, useMovePage, useOnline, usePage, useRecents, useSavePage,
+  useSearch, useSidebarStore, useTreeIndex, useUpdateMeta
 
-// @docs/core
-models, DocumentProvider, FileStore, createFileStoreProvider, MemoryFileStore, buildIndex + apply*, splitFrontmatter,
-joinFrontmatter, resolvePageLink, createCodec, markdownToValue, valueToMarkdown, classifyFidelity, errors, schemas,
-CONTRACT_VERSION, generateId, pathHashId
-'@docs/core/testing'             runProviderConformance, loadCorpus
+@docs/react/tree  complete
+  PageTree, PageTreeProps
+
+@docs/react/editor  complete
+  DocumentEditor, DocumentEditorProps, EditorErrorBoundary, EditorErrorBoundaryProps,
+  EditorKitOptions, PlateEditor, baseKitKeys, createEditorKit
+
+@docs/react/view  complete
+  DocumentView, DocumentViewProps
+
+@docs/react/shell  complete
+  Banner, BannerProps, BannerVariant, Breadcrumbs, BreadcrumbsProps, CommandPalette,
+  CommandPaletteProps, DocsShell, DocsShellProps, DocsShellSidebarOptions, DocsShellSlots,
+  EmptyState, EmptyStateAction, EmptyStateProps, IconPicker, IconPickerProps, ModeToggle,
+  ModeToggleProps, PageBanners, PageBannersProps, PageHeader, PageHeaderProps, PageIcon,
+  PageIconProps, PageMenu, PageMenuProps, PageTitle, PageTitleProps, SaveStatus,
+  SaveStatusProps
+
+@docs/react/adapters/http  complete
+  HttpProviderOptions, createHttpProvider
+
+@docs/react/adapters/filesystem  complete
+  FileSystemProviderOptions, ImportOptions, PickDirectoryOptions, createFileSystemProvider,
+  exportToDirectory, getOpfsRoot, importFromDirectory, pickDirectory
+
+@docs/react/adapters/memory  complete
+  MemoryProviderOptions, MemorySeed, createMemoryProvider
+
+@docs/core  headline
+  DocumentProvider, ProviderCapabilities, ProviderError, ConflictError, StorageQuotaError,
+  isProviderError, isConflictError, PageDocument, PageMeta, PageMetaPatch, TreeSnapshot,
+  TreeNode, TreeIndex, NodeId, NodeKind, PageMode, SearchHit, SaveResult, BackendMeta,
+  FileStore, MemoryFileStore, createFileStoreProvider, FileStoreProvider, buildIndex,
+  buildSnapshotFromEntries, applyInsert, applyMeta, applyMove, applyRemove, applyRename,
+  ancestorsOf, childIdsOf, subtreeIds, isDescendant, sortSiblings, nextOrder, midpointOrder,
+  renumber, splitFrontmatter, joinFrontmatter, normalizeMarkdown, firstH1, titleFromPath,
+  createCodec, defaultCodec, markdownToValue, valueToMarkdown, classifyFidelity, Fidelity,
+  FidelityLevel, BaseKit, createBaseKit, resolvePageLink, parseHref, isSafeHref, generateId,
+  pathHashId, folderHashId, slugify, uniqueSlug, CONTRACT_VERSION, CONTRACT_SCHEMAS,
+  INDEX_FILE, README_FILE
+
+@docs/core/testing  complete
+  ConformanceOptions, Corpus, CorpusFidelity, CorpusFolder, CorpusManifest, CorpusPage,
+  FidelityLevel, LoadCorpusOptions, loadCorpus, runProviderConformance
 ```
+<!-- exports:end -->
+
+CSS lives at `@docs/react/styles.css` and `@docs/react/theme.css`; both packages also expose
+`./package.json`. Nothing else is importable: `dist` has no deep paths in its `exports` map.
 
 ## 3. `DocsProvider`
 
@@ -110,8 +146,9 @@ Composing without the shell: use `PageTree`, `PageHeader`, `DocumentEditor`/`Doc
 ## 5. Component props (essentials)
 
 ```ts
-interface PageTreeProps { activeId: NodeId | null; onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void; rootId?: NodeId; className?: string }
-interface DocumentEditorProps { pageId: NodeId; value: Value; readOnly: boolean; onChange: (v: Value) => void; onReady?: (editor: PlateEditor) => void; onRequestEdit?: () => void; page: TreeNode; toolbar?: 'floating' | 'fixed' | 'none'; autoFocus?: boolean | 'title-next' }
+interface PageTreeProps { activeId: NodeId | null; onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void; rootId?: NodeId; onCreate?: (parentId: NodeId) => void; className?: string }
+// `onCreate` absent on a read-only provider, and then so is every `+` on a row.
+interface DocumentEditorProps { pageId: NodeId; value: Value; readOnly: boolean; onChange: (v: Value) => void; onReady?: (editor: PlateEditor) => void; onRequestEdit?: () => void; page: TreeNode; rootId?: NodeId; toolbar?: 'floating' | 'fixed' | 'none'; autoFocus?: boolean | 'title-next'; className?: string }
 // `value` is the initial value only (Plate semantics). External resets (conflict Reload, silent refresh while clean, draft Discard)
 // go through the editor instance handed to `onReady`: `editor.tf.setValue(next)` plus `editor.history` reset. The session owns that ref.
 interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeId; className?: string }
@@ -119,7 +156,7 @@ interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeI
 
 ## 6. Strings
 
-`DocsStrings` is a flat object of every user-facing string (≈120 keys), each with an English default. Interpolation uses `{name}` placeholders and a tiny `format()` helper; no i18n dependency. Keys are grouped by prefix: `tree.*`, `header.*`, `status.*`, `banner.*`, `empty.*`, `dialog.*`, `menu.*`, `palette.*`, `editor.*`, `error.*`.
+`DocsStrings` is a flat object of every user-facing string (251 keys), each with an English default. Interpolation uses `{name}` placeholders and a tiny `format()` helper; no i18n dependency. Keys are grouped by prefix: `tree.*`, `header.*`, `status.*`, `banner.*`, `empty.*`, `dialog.*`, `menu.*`, `palette.*`, `editor.*`, `error.*`.
 
 ## 7. Adapters
 
@@ -127,7 +164,7 @@ interface DocumentViewProps { page: PageDocument; node: TreeNode; rootId?: NodeI
 createHttpProvider({ baseUrl, fetch?, headers?, credentials?, rootId?, events?: 'sse' | 'poll' | 'none', pollIntervalMs? }): DocumentProvider
 createFileSystemProvider(handle: FileSystemDirectoryHandle, opts?: { key?: string; title?: string; indexCache?: boolean; watch?: boolean; readOnly?: boolean; onProgress?: (p: { done: number; total: number }) => void }): DocumentProvider
 // onProgress fires during the first (uncached) index build so the shell can show "Indexing 1,240 / 5,000 pages" under the tree skeleton.
-createMemoryProvider(seed: { files: Record<string, string> } | { tree: TreeSnapshot; pages: Record<NodeId, PageDocument> }, opts?: { capabilities?: Partial<ProviderCapabilities>; latencyMs?: number; failNext?: ProviderErrorCode }): DocumentProvider
+createMemoryProvider(seed: { files: Record<string, string | Uint8Array> } | { tree: TreeSnapshot; pages: Record<NodeId, PageDocument> }, opts?: { capabilities?: Partial<ProviderCapabilities>; latencyMs?: number; failNext?: ProviderErrorCode; key?: string }): DocumentProvider
 
 pickDirectory(opts?: { mode?: 'read' | 'readwrite'; id?: string }): Promise<FileSystemDirectoryHandle | null>   // wraps showDirectoryPicker; persists the handle in IndexedDB under id for reuse after reload (permission re-requested on user gesture)
 getOpfsRoot(subdir?: string): Promise<FileSystemDirectoryHandle>

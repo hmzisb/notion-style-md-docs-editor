@@ -1,5 +1,11 @@
 import { buildIndex, type NodeId, type TreeIndex, type TreeSnapshot } from '@docs/core';
-import type { BackendMeta, DocumentProvider, PageDocument, WalkWarning } from '@docs/core';
+import type {
+  BackendMeta,
+  DocumentProvider,
+  PageDocument,
+  SearchHit,
+  WalkWarning,
+} from '@docs/core';
 import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { queryPersister } from './cache/persister.js';
@@ -101,5 +107,36 @@ export function usePage(id: NodeId | null): UseQueryResult<PageDocument> {
     ...pageQuery(provider, keys, id ?? ''),
     enabled: id !== null,
     persister: queryPersister<PageDocument, ReturnType<DocsKeys['page']>>(persister),
+  });
+}
+
+/** Below this a query matches most of the corpus, so the provider is not asked (docs/07 §4). */
+export const SEARCH_MIN_QUERY = 2;
+
+export interface UseSearchOptions {
+  /** Scopes the hits to one subtree, the way the shell scopes its palette. */
+  rootId?: NodeId;
+  limit?: number;
+  /** The palette only searches while it is open; a host with its own UI does the same. */
+  enabled?: boolean;
+}
+
+/**
+ * Full-text search, when the provider offers it (docs/03 section 4). Optional on the provider
+ * and short queries are not worth a round trip, so the query idles rather than fetching in
+ * both cases: a host renders `data ?? []` and gets nothing, not an error.
+ */
+export function useSearch(
+  query: string,
+  { enabled = true, limit = 20, rootId }: UseSearchOptions = {},
+): UseQueryResult<SearchHit[]> {
+  const { capabilities, keys, provider } = useDocs();
+  const trimmed = query.trim();
+  return useQuery({
+    queryKey: keys.search(trimmed),
+    queryFn: async (): Promise<SearchHit[]> =>
+      (await provider.search?.(trimmed, { limit, rootId })) ?? [],
+    enabled: enabled && capabilities.search && trimmed.length >= SEARCH_MIN_QUERY,
+    staleTime: 30_000,
   });
 }

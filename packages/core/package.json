@@ -1,6 +1,6 @@
 {
   "name": "@docs/core",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Backend-agnostic Markdown docs core: models, contract, tree ops, filesystem semantics, Markdown codec.",
   "license": "MIT",
   "type": "module",

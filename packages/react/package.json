@@ -1,6 +1,6 @@
 {
   "name": "@docs/react",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Notion-grade Markdown docs UI for React: tree, viewer, editor, shell and adapters.",
   "license": "MIT",
   "type": "module",
