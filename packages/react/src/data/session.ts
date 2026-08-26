@@ -42,6 +42,8 @@ const RETRY_MS = [1000, 2000, 4000, 8000, 16_000, 30_000];
  * `platejs/react`, which belongs to the editor chunk.
  */
 export interface SessionEditor {
+  /** What the editor holds now, which is what it will hand back on the next change. */
+  children: Value;
   history: { redos: unknown[]; undos: unknown[] };
   tf: { setValue: (value?: Value) => void };
 }
@@ -371,13 +373,31 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
     return run;
   };
 
+  /**
+   * What the editor holds after it has taken a value in, which is what it will hand back on
+   * the next change. Plate normalizes on the way in - block ids, the trailing paragraph - so
+   * the value that went in is not the value that comes out, and read against the one that went
+   * in, the editor's own pass looks like an edit. Baselining what it holds keeps docs/04
+   * section 3.2 true (a page nobody typed in is never written) and leaves a restored draft
+   * waiting for the banner's answer instead of saving itself.
+   */
+  const keep = (editor: SessionEditor): void => {
+    live.current.value = editor.children;
+    live.current.baseline = editor.children;
+  };
+
+  const adopt = (editor: SessionEditor, value: Value): void => {
+    editor.tf.setValue(value);
+    keep(editor);
+  };
+
   /** Every path that replaces what the editor holds without the user typing it. */
   const reset = (value: Value): void => {
     live.current.value = value;
     live.current.baseline = value;
     const editor = live.current.editor;
     if (editor === null) return;
-    editor.tf.setValue(value);
+    adopt(editor, value);
     // The history belongs to the value that just went away: undoing into it would put the
     // editor back to text that no longer matches the file (docs/08 section 5).
     editor.history.undos = [];
@@ -407,8 +427,11 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
 
     bind: (editor: SessionEditor): void => {
       live.current.editor = editor;
-      // The editor can mount after a draft was restored; it mounted with the file's value.
-      if (live.current.value !== now.current.initial) editor.tf.setValue(live.current.value);
+      // An editor that already holds the session's value - the usual mount, and every mode
+      // swap - only hands over what it made of it. One that does not was mounted with the
+      // file while a draft or an unsaved edit was live, and is given that instead.
+      if (sameValue(editor.children, live.current.value)) keep(editor);
+      else adopt(editor, live.current.value);
     },
 
     onChange: (value: Value): void => {

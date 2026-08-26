@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-109 · P2-T14 · 2026-08-26
+Question: docs/09 P2-T14 asks for "one word" of diff per page, but the first save of a corpus page also stamps `id` into frontmatter (DEV-002).
+Assumed: the id line is not part of the diff. `withoutId` strips it from both sides before comparing, and the draft test asserts the stamp itself once, so the behavior is still covered.
+Why: the id write is required by docs/03 section 4.2; folding it into "one word" would either hide it or fail 30 pages for one documented byte.
+Cheap to reverse: yes
+
+## ASM-110 · P2-T14 · 2026-08-26
+Question: which line of each corpus page the test should type into.
+Assumed: the longest run of a line that reaches the DOM as one piece (marks split a line into several nodes), 8-70 characters, unique in the page, preferring a line with no marks at all; fences, toggles, tables, headings, images and links are skipped. The word goes at the end of the caret's visual line.
+Why: the assertion is about the file, so the anchor only has to be findable and unambiguous; picking it from the source keeps all 30 pages on one code path instead of a hand-written table.
+Cheap to reverse: yes
+
+## ASM-111 · P2-T14 · 2026-08-26
+Question: a page that fails mid-loop tells the reader nothing about the other 29.
+Assumed: every page is attempted, failures are collected with their file name, and the test asserts the whole list at the end - a per-step timeout (10 s) keeps a hung page from eating the budget.
+Why: 30 pages are 30 answers; the first failure is not the report.
+Cheap to reverse: yes
+
 ## ASM-108 · P2-T13 · 2026-08-26
 Question: docs/03 section 10 wants an optional provider method present exactly when its flag is on, and the file-store provider now has `uploadAsset`; a writable store can always take one.
 Assumed: `capabilities.upload` is `!store.readOnly`, and `uploadAsset` is attached to the provider only when that flag survives the `capabilities` override - the same shape `subscribe` already uses.

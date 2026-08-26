@@ -158,6 +158,23 @@ function renderYaml(meta: PageMeta, source: string | undefined): string {
     return source;
   }
 
+  // Nothing but new keys: the author's block goes back byte for byte with the key appended,
+  // which is the whole of what a first write does to frontmatter (docs/03 section 4.2).
+  // Re-emitting the document would re-lay-out what it did not change - `[a, b]` comes back
+  // as `[ a, b ]` - and docs/03 section 4.5 says a save touches nothing else.
+  const kept = keys.filter((key) => key in current);
+  if (
+    kept.length < keys.length &&
+    kept.length === Object.keys(current).length &&
+    kept.every((key) => sameValue(current[key], meta[key]))
+  ) {
+    const added = Object.fromEntries(
+      keys.filter((key) => !(key in current)).map((key) => [key, meta[key]]),
+    );
+    const block = source.endsWith('\n') ? source : `${source}\n`;
+    return `${block}${YAML.stringify(added, YAML_STRINGIFY_OPTIONS)}`;
+  }
+
   for (const key of Object.keys(current)) {
     if (!(key in meta)) doc.delete(key);
   }

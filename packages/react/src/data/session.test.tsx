@@ -129,9 +129,16 @@ async function setup(
     { wrapper, initialProps: { page } },
   );
 
+  // Plate keeps what it was given in `children`, and hands that back on the next change. It
+  // is created with the session's value, which is what the canvas does (docs/04 section 3.1).
   const editor: SessionEditor & { tf: { setValue: Mock } } = {
+    children: view.result.current.value,
     history: { undos: [{}], redos: [{}] },
-    tf: { setValue: vi.fn() },
+    tf: {
+      setValue: vi.fn((value?: Value) => {
+        editor.children = value ?? [];
+      }),
+    },
   };
   act(() => {
     view.result.current.bind(editor);
@@ -522,6 +529,26 @@ describe('useDocumentSession: drafts (docs/04 section 3.3)', () => {
 
     // The swap is not an edit: nothing is saved until the reader answers the banner.
     type(h, DRAFT);
+    await tick(5000);
+    expect(h.savePage).not.toHaveBeenCalled();
+  });
+
+  it('leaves the normalization Plate runs on the way in out of it', async () => {
+    const gate = deferred();
+    const h = await setup({ draft: {}, storage: gate.storage });
+    // A real editor does not keep what it was handed: `TrailingBlockPlugin` adds the empty
+    // paragraph and `NodeIdPlugin` the ids, inside `setValue`, and hands that back through
+    // `onChange`. Read as an edit, it saves the draft the banner is still asking about.
+    h.editor.tf.setValue.mockImplementation((value?: Value) => {
+      h.editor.children = [...(value ?? []), { children: [{ text: '' }], id: 'n1', type: 'p' }];
+    });
+    gate.open();
+    await tick(0);
+
+    type(h, h.editor.children);
+
+    expect(h.status()).toBe('draft');
+    expect(h.state().draftRestored).toBe(true);
     await tick(5000);
     expect(h.savePage).not.toHaveBeenCalled();
   });

@@ -134,6 +134,17 @@ describe('joinFrontmatter', () => {
     expect(next).toBe('---\n# owner block\ntitle: "A: B"\nicon: "🧠"\nid: abc\n---\n\nBody.\n');
   });
 
+  it('leaves a value it did not change laid out the way the author wrote it', () => {
+    // docs/03 section 4.5: the first write adds the id and touches nothing else. Re-emitting
+    // the document would return `[ ada, grace ]` and drop the quotes around `done`.
+    const file = "---\nattendees: [ada, grace]\nstatus: 'done'\n---\n\nBody.\n";
+    const source = splitFrontmatter(file);
+    const next = joinFrontmatter(setMetaKey(source.meta, 'id', 'abc'), source.body, source.eol, {
+      source,
+    });
+    expect(next).toBe("---\nattendees: [ada, grace]\nstatus: 'done'\nid: abc\n---\n\nBody.\n");
+  });
+
   it('keeps an empty block the author wrote', () => {
     const source = splitFrontmatter('---\n---\n\nBody.\n');
     expect(joinFrontmatter(source.meta, source.body, source.eol, { source })).toBe(

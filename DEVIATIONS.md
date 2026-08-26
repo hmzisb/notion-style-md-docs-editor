@@ -17,6 +17,13 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-018 · P2-T14 · 2026-08-26
+Spec said: docs/09 P2-T14 - "reload mid-typing -> draft banner -> Keep -> save -> file contains the draft".
+Reality: a reload cannot leave a draft owing. docs/04 section 3.1 flushes the session on `visibilitychange` -> hidden and on `pagehide`, and the unmount effect flushes too, so a tab that goes away politely saves what it had. The one path that reaches the banner is a tab that never runs those handlers.
+Decision: the e2e drives that tab instead. A second tab types, waits for the 500 ms draft write and then has its clock stopped through CDP (`Emulation.setVirtualTimePolicy`, `pause`) before the 1500 ms save - the tab that sleeps, loses power or is killed. The first tab opens the same page and gets the banner, and `Keep` saves the draft. The assertion the plan asks for is unchanged; only the way the tab dies is.
+Impact: `apps/playground/e2e/roundtrip.spec.ts` (the third test). No product change. `Page.crash` was tried first and cannot be used: both tabs are same-origin and share a renderer, so crashing one takes the whole context down.
+Reverse when: the session stops flushing on `pagehide`, or Playwright can kill one tab's renderer without its siblings.
+
 ## DEV-017 · P2-T05 · 2026-08-26
 Spec said: docs/05 section 3 pins `bullet: '-'` so a save never reflows a file the user did not touch (D-02).
 Reality: `- Item\n- [x] Task\n` is one GFM list with one task item, but Plate's indent lists model a to-do as its own `listStyleType`, so the value holds two lists. Two lists in a row cannot share a marker without merging back into one, and remark writes the second with its other bullet: the page comes back as `- Item\n\n* [x] Task\n`.
