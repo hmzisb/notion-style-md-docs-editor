@@ -30,6 +30,7 @@ function mount(activePageId: string | null = null) {
   const provider: DocumentProvider = createFileStoreProvider(new MemoryFileStore(seed));
   const deletePage = vi.spyOn(provider, 'deletePage');
   const navigate = vi.fn();
+  const onEvent = vi.fn();
   const navigation: DocsNavigation = { activePageId, mode: 'read', navigate };
   instance += 1;
   render(
@@ -39,12 +40,13 @@ function mount(activePageId: string | null = null) {
       instanceId={`delete-${String(instance)}`}
       queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       persist={false}
+      onEvent={onEvent}
     >
       <PageTree activeId={activePageId} onOpen={() => undefined} onCreate={() => undefined} />
       <ToastSurface />
     </DocsProvider>,
   );
-  return { deletePage, navigate };
+  return { deletePage, navigate, onEvent };
 }
 
 const row = (title: string): HTMLElement => screen.getByRole('treeitem', { name: title });
@@ -72,7 +74,7 @@ beforeEach(() => {
 describe('Tree delete (docs/06 section 8)', () => {
   it('counts the sub-pages that go with the page, and takes the subtree on confirm', async () => {
     const user = userEvent.setup();
-    const { deletePage } = mount();
+    const { deletePage, onEvent } = mount();
     await ready();
 
     const dialog = await press(user, 'Beta', '{Delete}');
@@ -92,6 +94,8 @@ describe('Tree delete (docs/06 section 8)', () => {
       expect(row('Alpha')).toHaveFocus();
     });
     expect(await screen.findByText("Deleted 'Beta'")).toBeInTheDocument();
+    // docs/08 section 3: the host hears about the page, not about the subtree under it.
+    expect(onEvent).toHaveBeenCalledWith({ type: 'page:deleted', id: 'p_beta' });
   });
 
   it('says only that the page goes when nothing is under it', async () => {

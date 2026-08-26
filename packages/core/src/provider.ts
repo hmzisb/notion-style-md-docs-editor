@@ -33,6 +33,13 @@ export interface DocumentProvider {
   /** Local stores return object URLs; remote stores return absolute URLs. */
   assetUrl(relativePath: string, page: TreeNode): Promise<string>;
 
+  /**
+   * Sibling files a write had to renumber since the last call (docs/03 section 4.4), and zero
+   * when nothing was rewritten. Reading it clears the count: the UI layer reads it after a
+   * move and reports it as `tree:renumbered`.
+   */
+  takeRenumbered?(): number;
+
   uploadAsset?(pageId: NodeId, file: File): Promise<{ path: string; url: string }>;
   search?(query: string, opts?: { rootId?: NodeId; limit?: number }): Promise<SearchHit[]>;
   subscribe?(listener: (e: ChangeEvent) => void): () => void;

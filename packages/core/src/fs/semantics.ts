@@ -77,6 +77,8 @@ export interface FileStoreProviderOptions {
 export interface FileStoreProvider extends DocumentProvider {
   /** Non-fatal problems found while walking, e.g. a duplicate frontmatter id. */
   readonly warnings: readonly WalkWarning[];
+  /** Always there on a file store, and reading it clears the count (docs/03 section 4.4). */
+  takeRenumbered(): number;
   /** Drops the cached tree so the next `getTree` re-reads the store. */
   invalidate(): void;
 }
@@ -153,6 +155,8 @@ export function createFileStoreProvider(
 
   let cached: Promise<LoadedTree> | null = null;
   let warnings: readonly WalkWarning[] = [];
+  /** Sibling files rewritten since the consumer last asked (docs/03 section 4.4). */
+  let renumbered = 0;
   const assetCache = new Map<string, string>();
   const listeners = new Set<(event: ChangeEvent) => void>();
   let disposed = false;
@@ -398,6 +402,7 @@ export function createFileStoreProvider(
     for (const [i, node] of ordered.entries()) {
       await writeOrder(node.path, values[i] ?? (i + 1) * 10);
     }
+    renumbered += ordered.length;
     opts.onRenumber?.(ordered.length);
   }
 
@@ -425,6 +430,12 @@ export function createFileStoreProvider(
     },
 
     invalidate,
+
+    takeRenumbered(): number {
+      const count = renumbered;
+      renumbered = 0;
+      return count;
+    },
 
     getMeta(): Promise<BackendMeta> {
       const meta: BackendMeta = { contractVersion: CONTRACT_VERSION, capabilities };

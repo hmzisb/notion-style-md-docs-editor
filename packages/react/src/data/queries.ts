@@ -1,9 +1,10 @@
 import { buildIndex, type NodeId, type TreeIndex, type TreeSnapshot } from '@docs/core';
-import type { BackendMeta, DocumentProvider, PageDocument } from '@docs/core';
+import type { BackendMeta, DocumentProvider, PageDocument, WalkWarning } from '@docs/core';
 import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { queryPersister } from './cache/persister.js';
 import { useDocs } from './context.js';
+import type { DocsEventHandler } from './events.js';
 import type { DocsKeys } from './keys.js';
 
 /** docs/04 section 1. Meta never goes stale on its own; the tree and pages revalidate. */
@@ -19,11 +20,13 @@ export const metaQuery = (provider: DocumentProvider, keys: DocsKeys) =>
     gcTime: GC.meta,
   });
 
+const fetchTree = (provider: DocumentProvider, rootId?: NodeId): Promise<TreeSnapshot> =>
+  provider.getTree(rootId === undefined ? undefined : { rootId });
+
 export const treeQuery = (provider: DocumentProvider, keys: DocsKeys, rootId?: NodeId) =>
   queryOptions({
     queryKey: keys.tree(rootId),
-    queryFn: (): Promise<TreeSnapshot> =>
-      provider.getTree(rootId === undefined ? undefined : { rootId }),
+    queryFn: (): Promise<TreeSnapshot> => fetchTree(provider, rootId),
     staleTime: STALE.tree,
     gcTime: GC.tree,
   });
@@ -36,6 +39,30 @@ export const pageQuery = (provider: DocumentProvider, keys: DocsKeys, id: NodeId
     gcTime: GC.page,
   });
 
+/** Reported once per provider: a walk repeats its warnings on every rebuild of the tree. */
+const reported = new WeakMap<DocumentProvider, Set<string>>();
+
+/**
+ * docs/03 section 4.2: a file store hands back the non-fatal problems it found while walking,
+ * e.g. two files claiming one id. docs/08 section 3 turns them into `warning` events, which is
+ * the only place a host ever hears about them.
+ */
+function reportWarnings(provider: DocumentProvider, onEvent: DocsEventHandler): void {
+  const { warnings } = provider as { warnings?: readonly WalkWarning[] };
+  if (warnings === undefined || warnings.length === 0) return;
+  let seen = reported.get(provider);
+  if (seen === undefined) {
+    seen = new Set();
+    reported.set(provider, seen);
+  }
+  for (const warning of warnings) {
+    const key = `${warning.code}:${warning.path}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    onEvent({ type: 'warning', code: warning.code, details: warning });
+  }
+}
+
 export function useMeta(): UseQueryResult<BackendMeta> {
   const { provider, keys } = useDocs();
   return useQuery(metaQuery(provider, keys));
@@ -47,7 +74,7 @@ export function useMeta(): UseQueryResult<BackendMeta> {
  * `TreeIndex` object, and the rows that depend on it do not re-render (docs/04 section 1).
  */
 export function useTreeIndex(rootId?: NodeId): UseQueryResult<TreeIndex> {
-  const { keys, persister, provider } = useDocs();
+  const { keys, onEvent, persister, provider } = useDocs();
   const select = useMemo(() => {
     let cached: TreeIndex | undefined;
     return (snapshot: TreeSnapshot): TreeIndex => {
@@ -57,6 +84,11 @@ export function useTreeIndex(rootId?: NodeId): UseQueryResult<TreeIndex> {
   }, []);
   return useQuery({
     ...treeQuery(provider, keys, rootId),
+    queryFn: async (): Promise<TreeSnapshot> => {
+      const snapshot = await fetchTree(provider, rootId);
+      reportWarnings(provider, onEvent);
+      return snapshot;
+    },
     select,
     persister: queryPersister<TreeSnapshot, ReturnType<DocsKeys['tree']>>(persister),
   });

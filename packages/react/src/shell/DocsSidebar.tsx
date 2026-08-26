@@ -122,7 +122,10 @@ export function DocsSidebar({
             onClick={onSearch}
             // DEV-014: `text-muted-foreground` on the sidebar surface measures 4.42:1.
             trailing={
-              <Kbd className="bg-transparent text-sidebar-foreground/70">{formatKeys('Mod+P')}</Kbd>
+              // The shortcut is a hint, not part of what the button is called.
+              <Kbd aria-hidden="true" className="bg-transparent text-sidebar-foreground/70">
+                {formatKeys('Mod+P')}
+              </Kbd>
             }
           >
             {strings['tree.search']}

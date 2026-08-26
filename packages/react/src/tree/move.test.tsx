@@ -4,6 +4,7 @@ import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
+import type { DocsEvent } from '@/data/events.js';
 import type { DocsNavigation } from '@/data/types.js';
 import { ToastSurface } from '@/ui/toast-surface.js';
 import { PageTree } from './PageTree.js';
@@ -27,8 +28,8 @@ const navigation: DocsNavigation = { activePageId: null, mode: 'read', navigate:
 
 let instance = 0;
 
-function mount() {
-  const provider: DocumentProvider = createFileStoreProvider(new MemoryFileStore(seed));
+function mount(files: Record<string, string> = seed, onEvent?: (event: DocsEvent) => void) {
+  const provider: DocumentProvider = createFileStoreProvider(new MemoryFileStore(files));
   const movePage = vi.spyOn(provider, 'movePage');
   instance += 1;
   render(
@@ -38,6 +39,7 @@ function mount() {
       instanceId={`move-${String(instance)}`}
       queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       persist={false}
+      onEvent={onEvent}
     >
       <PageTree activeId={null} onOpen={() => undefined} onCreate={() => undefined} />
       <ToastSurface />
@@ -77,6 +79,31 @@ describe('Tree move (docs/07 section 3)', () => {
     });
     // The row keeps the keyboard, so the next press moves the same page again.
     expect(row('Alpha')).toHaveFocus();
+  });
+
+  it('tells the host when the move ran out of midpoints (docs/03 section 4.4)', async () => {
+    const user = userEvent.setup();
+    const onEvent = vi.fn();
+    // Two siblings share an order, so there is nothing left to put a third page between.
+    mount(
+      {
+        'alpha.md': page('p_alpha', 'Alpha', 10),
+        'gamma.md': page('p_gamma', 'Gamma', 10),
+        'omega.md': page('p_omega', 'Omega', 30),
+      },
+      onEvent,
+    );
+    await ready();
+
+    row('Omega').focus();
+    await user.keyboard('{Meta>}{ArrowUp}{/Meta}');
+
+    await waitFor(() => {
+      expect(onEvent).toHaveBeenCalledWith({ type: 'page:moved', id: 'p_omega' });
+    });
+    await waitFor(() => {
+      expect(onEvent).toHaveBeenCalledWith({ type: 'tree:renumbered', count: 3 });
+    });
   });
 
   it('stops at the ends rather than moving the row out of its parent', async () => {

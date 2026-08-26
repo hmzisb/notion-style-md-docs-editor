@@ -7,6 +7,7 @@ import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
 import { useDocs } from '@/data/context.js';
+import type { DocsEvent } from '@/data/events.js';
 import { registerSession, type DocumentSession } from '@/data/session.js';
 import { sessionStoreFor, type SessionState } from '@/data/session-store.js';
 import type { DocsNavigation } from '@/data/types.js';
@@ -25,7 +26,7 @@ function Probe(): null {
   return null;
 }
 
-function mount(ui: ReactNode, write = true): void {
+function mount(ui: ReactNode, write = true, onEvent?: (event: DocsEvent) => void): void {
   const base: DocumentProvider = createFileStoreProvider(new MemoryFileStore(files));
   const capabilities = { ...base.capabilities, write };
   const provider: DocumentProvider = {
@@ -43,6 +44,7 @@ function mount(ui: ReactNode, write = true): void {
       instanceId={`status-${String(instance)}`}
       queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       persist={false}
+      onEvent={onEvent}
     >
       <Probe />
       <TooltipProvider>
@@ -230,6 +232,24 @@ describe('PageBanners (docs/06 section 10)', () => {
       'aria-expanded',
       'true',
     );
+  });
+
+  it('tells the host what the reader was told about fidelity (docs/08 section 3)', async () => {
+    const onEvent = vi.fn();
+    const session = stubSession({ fidelity: { level: 'lossy', reasons: ['math'] } });
+    mount(
+      <PageBanners pageId={PAGE_ID} session={session} mode="read" onEdit={vi.fn()} />,
+      true,
+      onEvent,
+    );
+
+    await screen.findByRole('status');
+    expect(onEvent).toHaveBeenCalledWith({
+      type: 'warning',
+      code: 'lossy_document',
+      id: PAGE_ID,
+      details: ['math'],
+    });
   });
 
   it('keeps quiet about fidelity when the host cannot write', async () => {

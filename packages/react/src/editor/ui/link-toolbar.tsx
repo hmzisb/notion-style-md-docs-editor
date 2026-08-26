@@ -24,6 +24,7 @@ import {
   usePluginOption,
 } from 'platejs/react';
 
+import { useDocs } from '@/data/context.js';
 import { buttonVariants } from '@/ui/button';
 import { Separator } from '@/ui/separator';
 
@@ -36,6 +37,7 @@ const inputVariants = cva(
 );
 
 export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarState }) {
+  const { strings } = useDocs();
   const activeCommentId = usePluginOption({ key: KEYS.comment }, 'activeId');
   const activeSuggestionId = usePluginOption({ key: KEYS.suggestion }, 'activeId');
 
@@ -95,7 +97,7 @@ export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarStat
 
         <FloatingLinkUrlInput
           className={inputVariants()}
-          placeholder="Paste link"
+          placeholder={strings['editor.link.placeholder']}
           data-plate-focus
         />
       </div>
@@ -106,7 +108,7 @@ export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarStat
         </div>
         <input
           className={inputVariants()}
-          placeholder="Text to display"
+          placeholder={strings['editor.link.text']}
           data-plate-focus
           {...textInputProps}
         />
@@ -123,7 +125,7 @@ export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarStat
         type="button"
         {...editButtonProps}
       >
-        Edit link
+        {strings['editor.link.edit']}
       </button>
 
       <Separator orientation="vertical" />
@@ -138,6 +140,7 @@ export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarStat
           variant: 'ghost',
         })}
         type="button"
+        aria-label={strings['editor.link.remove']}
         {...unlinkButtonProps}
       >
         <Unlink width={18} />
@@ -159,6 +162,7 @@ export function LinkFloatingToolbar({ state }: { state?: LinkFloatingToolbarStat
 }
 
 function LinkOpenButton() {
+  const { strings } = useDocs();
   const editor = useEditorRef();
   const selection = useEditorSelection();
 
@@ -187,7 +191,7 @@ function LinkOpenButton() {
       onMouseOver={(e) => {
         e.stopPropagation();
       }}
-      aria-label="Open link in a new tab"
+      aria-label={strings['editor.link.open']}
       target="_blank"
     >
       <ExternalLink width={18} />

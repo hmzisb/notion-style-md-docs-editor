@@ -2,7 +2,7 @@ import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from 
 import { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from './DocsProvider.js';
 import { createKeys, createNamespace } from './keys.js';
 import {
@@ -175,5 +175,45 @@ describe('useOnline', () => {
     await waitFor(() => {
       expect(result.current).toBe(true);
     });
+  });
+});
+
+describe('walk warnings (docs/08 section 3)', () => {
+  it('tells the host about a duplicate id, once for the whole visit', async () => {
+    const onEvent = vi.fn();
+    const provider = createFileStoreProvider(
+      new MemoryFileStore({
+        'one.md': '---\nid: p_same\ntitle: One\n---\n\n# One\n',
+        'two.md': '---\nid: p_same\ntitle: Two\n---\n\n# Two\n',
+      }),
+    );
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const wrapper = ({ children }: { children: ReactNode }): React.JSX.Element => (
+      <DocsProvider
+        provider={provider}
+        navigation={navigation}
+        queryClient={client}
+        instanceId="warnings"
+        onEvent={onEvent}
+      >
+        {children}
+      </DocsProvider>
+    );
+
+    const { result } = renderHook(() => useTreeIndex(), { wrapper });
+    await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true);
+    });
+
+    expect(onEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'warning', code: 'duplicate_id' }),
+    );
+
+    // The walk repeats its warnings on every rebuild; the host hears each one once.
+    onEvent.mockClear();
+    await act(async () => {
+      await client.refetchQueries();
+    });
+    expect(onEvent).not.toHaveBeenCalled();
   });
 });

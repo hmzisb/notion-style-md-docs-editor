@@ -228,3 +228,31 @@ describe('context', () => {
     expect(() => renderHook(() => useDocs())).toThrow(/useDocs must be used inside/);
   });
 });
+
+describe('storage (docs/04 section 8)', () => {
+  it('tells the host when the browser will not give it a database', async () => {
+    // Every route into IndexedDB goes through `open`: private mode, a full quota, a policy.
+    vi.stubGlobal('indexedDB', {
+      open: () => {
+        throw new DOMException('SecurityError', 'SecurityError');
+      },
+    });
+    const events: DocsEvent[] = [];
+    renderHook(() => useDocs(), {
+      wrapper: wrapperFor({
+        provider: makeProvider(),
+        persist: true,
+        onEvent: (event) => events.push(event),
+      }),
+    });
+
+    // The first thing to touch the database is the idle sweep the provider schedules.
+    await waitFor(
+      () => {
+        expect(events).toContainEqual({ type: 'warning', code: 'storage_unavailable' });
+      },
+      { timeout: 3000 },
+    );
+    vi.unstubAllGlobals();
+  });
+});

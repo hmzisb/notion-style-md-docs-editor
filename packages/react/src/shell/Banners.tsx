@@ -90,7 +90,7 @@ export function PageBanners({
   onEdit,
   className,
 }: PageBannersProps): React.JSX.Element | null {
-  const { capabilities, ns, strings } = useDocs();
+  const { capabilities, ns, onEvent, strings } = useDocs();
   const state = useSessionState(ns, pageId);
 
   // docs/07 section 8: the lossy banner is shown before the first edit, so entering edit mode
@@ -111,12 +111,17 @@ export function PageBanners({
     if (skip) return;
     const idle = requestIdle(() => {
       const fidelity = latest.current.fidelity;
-      setLossy(fidelity.level === 'lossy' ? fidelity.reasons : null);
+      const reasons = fidelity.level === 'lossy' ? fidelity.reasons : null;
+      setLossy(reasons);
+      // docs/08 section 3: the host hears what the reader is about to be told.
+      if (reasons !== null) {
+        onEvent({ type: 'warning', code: 'lossy_document', id: pageId, details: reasons });
+      }
     });
     return () => {
       cancelIdle(idle);
     };
-  }, [pageId, skip]);
+  }, [pageId, skip, onEvent]);
 
   const conflict = state?.status === 'conflict';
   const draftRestored = state?.draftRestored === true;

@@ -4,6 +4,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
+import type { DocsEvent } from '@/data/events.js';
 import type { DocsNavigation } from '@/data/types.js';
 import { DEFAULT_SIDEBAR_WIDTH } from '@/data/sidebar-store.js';
 import { DocsShell, type DocsShellProps } from './DocsShell.js';
@@ -24,7 +25,9 @@ const seed = {
 };
 
 interface Mounted {
+  events: DocsEvent[];
   navigate: ReturnType<typeof vi.fn>;
+  onEvent: ReturnType<typeof vi.fn>;
 }
 
 let instance = 0;
@@ -37,6 +40,10 @@ function mount(
   const provider: DocumentProvider = custom ?? createFileStoreProvider(new MemoryFileStore(files));
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   const navigate = vi.fn();
+  const events: DocsEvent[] = [];
+  const onEvent = vi.fn((event: DocsEvent) => {
+    events.push(event);
+  });
   instance += 1;
   const navigation: DocsNavigation = {
     activePageId: props.pageId ?? null,
@@ -51,11 +58,12 @@ function mount(
       instanceId={`shell-${String(instance)}`}
       queryClient={client}
       persist={false}
+      onEvent={onEvent}
     >
       <DocsShell pageId={props.pageId ?? null} mode={props.mode ?? 'read'} {...props} />
     </DocsProvider>,
   );
-  return { navigate };
+  return { events, navigate, onEvent };
 }
 
 /** A host whose provider cannot write: no Edit control, no editor chunk (docs/07 section 8). */
@@ -248,6 +256,32 @@ describe('DocsShell', () => {
 
       await user.click(within(menu).getByRole('menuitem', { name: 'Charlie' }));
       expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_c', mode: 'read' });
+    });
+  });
+
+  describe('events (docs/08 section 3)', () => {
+    it('tells the host which page is open', async () => {
+      const { events, onEvent } = mount({ pageId: 'p_c' });
+      await ready();
+
+      expect(onEvent).toHaveBeenCalledWith({ type: 'page:open', id: 'p_c' });
+      // The title arrives with the tree, and a page does not open twice for it.
+      expect(events.filter((event) => event.type === 'page:open')).toHaveLength(1);
+    });
+
+    it('warns about a page too big to open in the editor (docs/05 section 6)', async () => {
+      const blocks = Array.from({ length: 5001 }, (_, index) => `Line ${String(index)}`).join(
+        '\n\n',
+      );
+      const { onEvent } = mount({ pageId: 'p_big' }, {
+        'big.md': `---\nid: p_big\ntitle: Big\n---\n\n${blocks}\n`,
+      });
+      await ready();
+
+      expect(
+        await screen.findByText('Large page: opened in read mode for performance.'),
+      ).toBeVisible();
+      expect(onEvent).toHaveBeenCalledWith({ type: 'warning', code: 'large_page', id: 'p_big' });
     });
   });
 

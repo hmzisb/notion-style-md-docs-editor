@@ -271,6 +271,9 @@ export function useMovePage(
 
     onSuccess: (_node, { id }) => {
       onEvent({ type: 'page:moved', id });
+      // docs/03 section 4.4: the move ran out of midpoints and rewrote the siblings.
+      const count = provider.takeRenumbered?.() ?? 0;
+      if (count > 0) onEvent({ type: 'tree:renumbered', count });
     },
 
     onError: (error, { id }, context) => {

@@ -362,6 +362,9 @@ describe('movePage', () => {
     await h.provider.movePage(c.id, { parentId: (await h.at('index.md')).id, index: 1 });
 
     expect(onRenumber).toHaveBeenCalledWith(3);
+    // What the React layer reads after a move, and reads once (docs/08 section 3).
+    expect(h.provider.takeRenumbered()).toBe(3);
+    expect(h.provider.takeRenumbered()).toBe(0);
     expect(orderIn(await h.store.readText('a.md'))).toBe(10);
     expect(orderIn(await h.store.readText('c.md'))).toBe(20);
     expect(orderIn(await h.store.readText('b.md'))).toBe(30);

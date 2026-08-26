@@ -74,6 +74,7 @@ import {
   DropdownMenuTrigger,
 } from '@/ui/dropdown-menu';
 import { Popover, PopoverAnchor, PopoverContent } from '@/ui/popover';
+import { useDocs } from '@/data/context.js';
 import { cn } from '@/lib/utils';
 
 import { blockSelectionVariants } from './block-selection';
@@ -825,6 +826,8 @@ function TableFloatingToolbarContent({
   onMerge?: () => void;
   onSplit?: () => void;
 }) {
+  const { strings } = useDocs();
+
   return (
     <PopoverContent
       asChild
@@ -845,7 +848,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Merge cells"
+              tooltip={strings['editor.table.mergeCells']}
             >
               <CombineIcon />
             </ToolbarButton>
@@ -856,7 +859,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Split cell"
+              tooltip={strings['editor.table.splitCell']}
             >
               <SquareSplitHorizontalIcon />
             </ToolbarButton>
@@ -864,7 +867,7 @@ function TableFloatingToolbarContent({
 
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <ToolbarButton tooltip="Cell borders">
+              <ToolbarButton tooltip={strings['editor.table.borders']}>
                 <Grid2X2Icon />
               </ToolbarButton>
             </DropdownMenuTrigger>
@@ -876,7 +879,7 @@ function TableFloatingToolbarContent({
 
           {singleCellMode && (
             <ToolbarGroup>
-              <ToolbarButton tooltip="Delete table" {...buttonProps}>
+              <ToolbarButton tooltip={strings['editor.table.deleteTable']} {...buttonProps}>
                 <Trash2Icon />
               </ToolbarButton>
             </ToolbarGroup>
@@ -890,7 +893,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Insert row before"
+              tooltip={strings['editor.table.insertRowBefore']}
             >
               <ArrowUp />
             </ToolbarButton>
@@ -899,7 +902,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Insert row after"
+              tooltip={strings['editor.table.insertRowAfter']}
             >
               <ArrowDown />
             </ToolbarButton>
@@ -908,7 +911,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Delete row"
+              tooltip={strings['editor.table.deleteRow']}
             >
               <XIcon />
             </ToolbarButton>
@@ -922,7 +925,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Insert column before"
+              tooltip={strings['editor.table.insertColumnBefore']}
             >
               <ArrowLeft />
             </ToolbarButton>
@@ -931,7 +934,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Insert column after"
+              tooltip={strings['editor.table.insertColumnAfter']}
             >
               <ArrowRight />
             </ToolbarButton>
@@ -940,7 +943,7 @@ function TableFloatingToolbarContent({
               onMouseDown={(e) => {
                 e.preventDefault();
               }}
-              tooltip="Delete column"
+              tooltip={strings['editor.table.deleteColumn']}
             >
               <XIcon />
             </ToolbarButton>
@@ -953,6 +956,7 @@ function TableFloatingToolbarContent({
 
 function TableBordersDropdownMenuContent(props: React.ComponentProps<typeof DropdownMenuContent>) {
   const editor = useEditorRef();
+  const { strings } = useDocs();
   const {
     getOnSelectTableBorder,
     hasBottomBorder,
@@ -981,28 +985,28 @@ function TableBordersDropdownMenuContent(props: React.ComponentProps<typeof Drop
           onCheckedChange={getOnSelectTableBorder('top')}
         >
           <BorderTopIcon />
-          <div>Top Border</div>
+          <div>{strings['editor.table.borderTop']}</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasRightBorder}
           onCheckedChange={getOnSelectTableBorder('right')}
         >
           <BorderRightIcon />
-          <div>Right Border</div>
+          <div>{strings['editor.table.borderRight']}</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasBottomBorder}
           onCheckedChange={getOnSelectTableBorder('bottom')}
         >
           <BorderBottomIcon />
-          <div>Bottom Border</div>
+          <div>{strings['editor.table.borderBottom']}</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasLeftBorder}
           onCheckedChange={getOnSelectTableBorder('left')}
         >
           <BorderLeftIcon />
-          <div>Left Border</div>
+          <div>{strings['editor.table.borderLeft']}</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
 
@@ -1012,14 +1016,14 @@ function TableBordersDropdownMenuContent(props: React.ComponentProps<typeof Drop
           onCheckedChange={getOnSelectTableBorder('none')}
         >
           <BorderNoneIcon />
-          <div>No Border</div>
+          <div>{strings['editor.table.borderNone']}</div>
         </DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem
           checked={hasOuterBorders}
           onCheckedChange={getOnSelectTableBorder('outer')}
         >
           <BorderAllIcon />
-          <div>Outside Borders</div>
+          <div>{strings['editor.table.borderOutside']}</div>
         </DropdownMenuCheckboxItem>
       </DropdownMenuGroup>
     </DropdownMenuContent>

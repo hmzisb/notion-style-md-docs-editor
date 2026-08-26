@@ -56,7 +56,7 @@ export function PageCanvas({
   toolbar,
   onModeChange,
 }: PageCanvasProps): React.JSX.Element {
-  const { capabilities, strings } = useDocs();
+  const { capabilities, onEvent, strings } = useDocs();
   const chunk = useEditorChunk();
   const session = useDocumentSession(page);
   const [swapped, setSwapped] = useState(false);
@@ -72,6 +72,11 @@ export function PageCanvas({
   const large = session.value.length > MAX_BLOCKS && !insisted;
 
   const editable = capabilities.write && !large;
+
+  // docs/05 section 6: the page is too big to edit, and the host hears it once per page.
+  useEffect(() => {
+    if (large) onEvent({ type: 'warning', code: 'large_page', id: page.id });
+  }, [large, page.id, onEvent]);
   const wants = editable && (mode === 'edit' || swapped);
   const showEditor = wants && chunk !== null;
 
@@ -225,6 +230,9 @@ export function PageCanvas({
       {showEditor ? (
         <chunk.EditorErrorBoundary
           resetKey={page.id}
+          onError={(error) => {
+            onEvent({ type: 'error', code: 'editor_crash', id: page.id, error });
+          }}
           fallback={(_error, retry) => (
             <EmptyState
               icon={TriangleAlert}

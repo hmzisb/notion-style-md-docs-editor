@@ -27,6 +27,7 @@ function mount(instanceId: string, { write = true }: { write?: boolean } = {}) {
   const provider: DocumentProvider = createFileStoreProvider(new MemoryFileStore(seed));
   const updateMeta = vi.spyOn(provider, 'updateMeta');
   const onCreate = vi.fn();
+  const onEvent = vi.fn();
   render(
     <DocsProvider
       provider={provider}
@@ -34,11 +35,12 @@ function mount(instanceId: string, { write = true }: { write?: boolean } = {}) {
       instanceId={instanceId}
       queryClient={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       persist={false}
+      onEvent={onEvent}
     >
       <PageTree activeId={null} onOpen={() => undefined} onCreate={write ? onCreate : undefined} />
     </DocsProvider>,
   );
-  return { provider, updateMeta, onCreate };
+  return { provider, updateMeta, onCreate, onEvent };
 }
 
 const row = (title: string): HTMLElement => screen.getByRole('treeitem', { name: title });
@@ -64,7 +66,7 @@ beforeEach(() => {
 describe('Tree rename (docs/07 section 5)', () => {
   it('opens on F2 with the title selected, and Enter writes it', async () => {
     const user = userEvent.setup();
-    const { updateMeta } = mount('f2');
+    const { updateMeta, onEvent } = mount('f2');
     await ready();
 
     row('Home').focus();
@@ -86,6 +88,7 @@ describe('Tree rename (docs/07 section 5)', () => {
     expect(await screen.findByRole('treeitem', { name: 'Handbook' })).toBeInTheDocument();
     // The row takes the focus back: the keyboard came from there.
     expect(screen.getByRole('treeitem', { name: 'Handbook' })).toHaveFocus();
+    expect(onEvent).toHaveBeenCalledWith({ type: 'page:renamed', id: 'p_home' });
   });
 
   it('opens on a double click and Esc leaves the title alone', async () => {

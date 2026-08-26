@@ -23,6 +23,7 @@ import {
   CommandList,
 } from '@/ui/command';
 import { Popover, PopoverContent, PopoverTrigger } from '@/ui/popover';
+import { useDocs } from '@/data/context.js';
 import { codeBlockLanguages, codeLanguageLabel } from '@/lib/code-languages';
 import { cn } from '@/lib/utils';
 
@@ -37,6 +38,7 @@ function getCodeBlockLanguageLabel(lang?: string | null) {
 }
 
 export function CodeBlockElement({ showLanguageLabel = true, ...props }: CodeBlockElementProps) {
+  const { strings } = useDocs();
   const { editor, element } = props;
 
   return (
@@ -62,7 +64,7 @@ export function CodeBlockElement({ showLanguageLabel = true, ...props }: CodeBlo
               onClick={() => {
                 formatCodeBlock(editor, { element });
               }}
-              title="Format code"
+              title={strings['editor.code.format']}
             >
               <BracesIcon className="!size-3.5 text-muted-foreground" />
             </Button>
@@ -83,6 +85,7 @@ export function CodeBlockElement({ showLanguageLabel = true, ...props }: CodeBlo
 }
 
 function CodeBlockCombobox({ showLanguageLabel }: { showLanguageLabel: boolean }) {
+  const { strings } = useDocs();
   const [open, setOpen] = React.useState(false);
   const readOnly = useReadOnly();
   const editor = useEditorRef();
@@ -131,9 +134,9 @@ function CodeBlockCombobox({ showLanguageLabel }: { showLanguageLabel: boolean }
             onValueChange={(value) => {
               setSearchValue(value);
             }}
-            placeholder="Search language..."
+            placeholder={strings['editor.code.language']}
           />
-          <CommandEmpty>No language found.</CommandEmpty>
+          <CommandEmpty>{strings['editor.code.noLanguage']}</CommandEmpty>
 
           <CommandList className="h-[344px] overflow-y-auto">
             <CommandGroup>
@@ -176,6 +179,7 @@ function CopyButton({
   value,
   ...props
 }: { value: (() => string) | string } & Omit<React.ComponentProps<typeof Button>, 'value'>) {
+  const { strings } = useDocs();
   const [hasCopied, setHasCopied] = React.useState(false);
 
   React.useEffect(() => {
@@ -192,7 +196,7 @@ function CopyButton({
       }}
       {...props}
     >
-      <span className="sr-only">Copy</span>
+      <span className="sr-only">{strings['editor.code.copy']}</span>
       {hasCopied ? <CheckIcon className="!size-3" /> : <CopyIcon className="!size-3" />}
     </Button>
   );

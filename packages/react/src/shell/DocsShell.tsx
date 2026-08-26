@@ -390,7 +390,7 @@ function OpenedAnnouncer({
   pageId: NodeId | null;
   rootId?: NodeId;
 }): React.JSX.Element {
-  const { strings } = useDocs();
+  const { onEvent, strings } = useDocs();
   const { data: index } = useTreeIndex(rootId);
   const record = useRecents((state) => state.record);
   const setLastOpenedPageId = useSidebarStore((state) => state.setLastOpenedPageId);
@@ -406,6 +406,12 @@ function OpenedAnnouncer({
     record(pageId);
     if (title !== null) setMessage(format(strings['status.opened'], { title }));
   }, [pageId, title, record, setLastOpenedPageId, strings]);
+
+  // docs/08 section 3: one event per open. The title arrives with the tree, later than the
+  // open and again on every rename, so the announcement above cannot carry this.
+  useEffect(() => {
+    if (pageId !== null) onEvent({ type: 'page:open', id: pageId });
+  }, [pageId, onEvent]);
 
   return (
     <div aria-live="polite" className="sr-only">
