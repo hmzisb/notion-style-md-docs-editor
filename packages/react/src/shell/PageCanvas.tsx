@@ -210,7 +210,7 @@ export function PageCanvas({
         onEdit={editAnyway}
       />
       {/* docs/06 section 7: the icon's own button is only there on hover of this block. */}
-      <div data-docs-title className="group/title">
+      <div data-docs-title className="group/title relative">
         <PageIcon pageId={page.id} node={node} rootId={rootId} mode={mode} editable={editable} />
         <PageTitle
           pageId={page.id}
@@ -244,6 +244,7 @@ export function PageCanvas({
           <chunk.DocumentEditor
             pageId={page.id}
             page={node}
+            rootId={rootId}
             value={session.value}
             readOnly={mode === 'read'}
             toolbar={toolbar}

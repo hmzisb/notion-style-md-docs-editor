@@ -122,9 +122,12 @@ export function PageTitle({
       ref={field}
       aria-label={strings['editor.title']}
       readOnly={offline}
+      // `block`, because a textarea is inline by default and the line box under it adds six
+      // pixels the read-mode heading does not have - the page under the title would step down
+      // on the way into edit mode (docs/05 section 8).
       className={cn(
         TITLE,
-        'w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground/50',
+        'block w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground/50',
       )}
       placeholder={strings['editor.titlePlaceholder']}
       rows={1}

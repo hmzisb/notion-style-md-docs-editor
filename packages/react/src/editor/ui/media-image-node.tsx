@@ -75,8 +75,12 @@ export const ImageElement = withHOC(
                   ref={handleRef}
                   src={url}
                   alt={typeof props.element.alt === 'string' ? props.element.alt : ''}
+                  // docs/06 section 7 sizes an image `max-w-full`, not `w-full`: a picture
+                  // narrower than the column is drawn at its own size in the read view, and
+                  // stretching it here would redraw the page on the way into edit mode
+                  // (docs/05 section 8).
                   className={cn(
-                    'block w-full max-w-full cursor-pointer object-cover px-0',
+                    'block max-w-full cursor-pointer px-0',
                     'rounded-md',
                     focused && selected && 'ring-2 ring-ring ring-offset-2',
                     isDragging && 'opacity-50',

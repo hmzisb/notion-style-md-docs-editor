@@ -73,6 +73,17 @@
   --docs-sidebar-border: var(--sidebar-border, var(--border));
   --docs-sidebar-ring: var(--sidebar-ring, var(--ring));
 
+  /*
+   * The radius scale again, as properties rather than theme values. shadcn's small buttons ask
+   * for `rounded-[min(var(--radius-md),12px)]`, and a variable declared `@theme inline` is
+   * substituted into the utilities this sheet generates but never emitted - so that `var()`
+   * resolves to nothing and the corner comes out square (docs/06 section 6).
+   */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+
   --docs-sidebar-width: 240px;
   --docs-sidebar-min: 200px;
   --docs-sidebar-max: 480px;

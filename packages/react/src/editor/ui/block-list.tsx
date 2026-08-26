@@ -26,7 +26,6 @@ const config: Record<
 
 export const BlockList: RenderNodeWrapper = (props) => {
   if (!props.element.listStyleType) return;
-  if (!isOrderedList(props.element)) return;
 
   return (props) => <List {...props} />;
 };
@@ -34,11 +33,18 @@ export const BlockList: RenderNodeWrapper = (props) => {
 function List(props: PlateElementProps & { lineBreakBadge?: React.ReactNode }) {
   const { listStart, listStyleType } = props.element as TListElement;
   const { Li, Marker } = config[listStyleType] ?? {};
-  const List = isOrderedList(props.element) ? 'ol' : 'ul';
+  const ordered = isOrderedList(props.element);
+  const List = ordered ? 'ol' : 'ul';
 
   return (
     <List className="relative m-0 p-0" style={{ listStyleType }} start={listStart}>
       {Marker && <Marker {...props} />}
+      {/*
+        Bulleted and ordered alike are one real list holding one real item: Plate's own kit
+        draws a bullet by making the block itself `display: list-item` with `role="listitem"`,
+        which is a list item with no list around it - nothing an assistive technology can read
+        (docs/10 section 2).
+      */}
       {Li ? (
         <Li {...props} />
       ) : (

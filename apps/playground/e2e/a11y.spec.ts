@@ -15,7 +15,7 @@ async function violations(page: Page): Promise<string[]> {
   return result.violations.map(
     (violation) =>
       `${violation.id} (${violation.impact ?? 'unknown'}): ${violation.nodes
-        .map((node) => node.target.join(' '))
+        .map((node) => `${node.target.join(' ')} - ${node.any[0]?.message ?? ''}`)
         .join(', ')}`,
   );
 }
@@ -84,5 +84,33 @@ test('the phone layout is clean @smoke', async ({ page }) => {
   await page.getByRole('button', { name: 'Show sidebar' }).click();
   await expect(tree(page)).toBeVisible();
   await settled(page.locator('[data-slot="sidebar"][data-mobile="true"]'));
+  expect(await violations(page)).toEqual([]);
+});
+
+/**
+ * docs/10 section 2 over the editor, not only the reader. Edit mode brings its own tree -
+ * the editable itself, the gutter controls, list markers, and the off-screen input
+ * `@platejs/selection` portals to the body (DEV-019, DEV-020) - and none of it is painted
+ * on any screen the scans above visit.
+ */
+test('the editor is clean', async ({ page }) => {
+  await openWorkspace(page, 'demo');
+  await expect(tree(page)).toBeVisible();
+
+  // A page with a bulleted list, an image and internal links: the block types whose editor
+  // rendering differs most from the read view.
+  await page.keyboard.press('ControlOrMeta+p');
+  await page.getByPlaceholder('Search pages…').fill('product');
+  await page
+    .getByRole('option', { name: /Product/ })
+    .first()
+    .click();
+  await expect(page.getByRole('heading', { name: 'Product', level: 1 }).first()).toBeVisible();
+  await expect(page.getByRole('dialog')).toBeHidden();
+
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator('[data-slate-editor]')).toHaveAttribute('contenteditable', 'true');
+  // The control colours itself in over 150 ms; axe would score the half-mixed grey.
+  await settled(page.getByRole('button', { name: 'Done' }));
   expect(await violations(page)).toEqual([]);
 });

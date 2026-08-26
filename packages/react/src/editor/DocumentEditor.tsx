@@ -5,6 +5,7 @@ import type { Value } from 'platejs';
 import { Plate, usePlateEditor, type PlateEditor } from 'platejs/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDocs } from '@/data/context.js';
+import { useTreeIndex } from '@/data/queries.js';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/ui/tooltip';
 import { EditorContext, type EditorContextValue } from './context.js';
@@ -30,6 +31,8 @@ export interface DocumentEditorProps {
   onRequestEdit?: () => void;
   /** The page's tree node: the base its relative links and images resolve against. */
   page: TreeNode;
+  /** The subtree the host shows, so a link resolves against what the reader can reach. */
+  rootId?: NodeId;
   toolbar?: 'floating' | 'fixed' | 'none';
   autoFocus?: boolean | 'title-next';
   className?: string;
@@ -51,6 +54,7 @@ export function DocumentEditor({
   onReady,
   onRequestEdit,
   page,
+  rootId,
   toolbar = 'floating',
   autoFocus = false,
   className,
@@ -58,7 +62,13 @@ export function DocumentEditor({
   const { capabilities, provider, strings } = useDocs();
 
   const plugins = useMemo(() => createEditorKit({ strings, toolbar }), [strings, toolbar]);
-  const context = useMemo<EditorContextValue>(() => ({ node: page }), [page]);
+  // The same index the read view resolves links against, so an internal link is drawn the
+  // same in both modes and the swap does not reflow the line (docs/06 section 7, docs/05 s.8).
+  const { data: index } = useTreeIndex(rootId);
+  const context = useMemo<EditorContextValue>(
+    () => ({ node: page, idByPath: index?.idByPath ?? {} }),
+    [page, index],
+  );
 
   // `value` is initial-only, so the editor must not be rebuilt when it changes: `initial`
   // carries the value of the render that builds one.
@@ -79,6 +89,25 @@ export function DocumentEditor({
   useEffect(() => {
     ready?.(editor);
   }, [editor, ready]);
+
+  // `@platejs/selection` portals an off-screen input to the body to carry copy, cut and paste
+  // while whole blocks are selected. It ships without a name and inside the tab order, which is
+  // an unlabelled field a keyboard can land in (docs/10 section 2, DEV-020).
+  const clipboardLabel = strings['editor.blockClipboard'];
+  useEffect(() => {
+    const name = (): void => {
+      const input = document.querySelector('.slate-shadow-input');
+      if (input === null) return;
+      input.setAttribute('aria-label', clipboardLabel);
+      input.setAttribute('tabindex', '-1');
+    };
+    // It mounts a tick after the editor does, so once now and once after that tick.
+    name();
+    const timer = setTimeout(name);
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [clipboardLabel, editor]);
 
   // docs/05 section 6: paste and drop upload only where the backend takes uploads, and the
   // page they belong to is this editor's. Set rather than baked into the plugin, because
@@ -137,6 +166,9 @@ export function DocumentEditor({
                 is outside this box: Plate's own editor clips there, and it can afford to
                 because its text carries the padding they sit in. Ours does not. */}
             <Editor
+              // The editable is a `textbox` to the accessibility tree, and a textbox needs a
+              // name of its own - the page title is a different field (docs/10 section 2).
+              aria-label={strings['editor.body']}
               variant="none"
               className="overflow-x-visible px-0 pb-0 text-base leading-[1.65]"
             />

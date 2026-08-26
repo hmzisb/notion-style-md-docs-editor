@@ -55,6 +55,28 @@ test('clicking the text opens the editor at the same offset', async ({ page }) =
     .toContain(clicked);
 });
 
+/**
+ * docs/05 section 8: the swap is a swap, not a re-layout. This page has no icon, so edit mode
+ * is where the "Add icon" button would sit, and the title itself changes from a heading to a
+ * textarea - neither may move the text the reader was looking at.
+ */
+test('the swap leaves the title and the body where they were', async ({ page }) => {
+  const geometry = (): Promise<{ body: number; title: number }> =>
+    page.evaluate(() => {
+      const title = document.querySelector('[data-docs-title]');
+      if (title === null) throw new Error('no title block');
+      const top = title.parentElement?.getBoundingClientRect().top ?? 0;
+      const body = title.nextElementSibling?.getBoundingClientRect().top ?? 0;
+      return { body: body - top, title: title.getBoundingClientRect().top - top };
+    });
+
+  const before = await geometry();
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+
+  expect(await geometry()).toEqual(before);
+});
+
 test('E enters edit mode and Escape leaves it', async ({ page }) => {
   await page.locator(REGION).focus();
   await page.keyboard.press('e');
@@ -75,6 +97,13 @@ test('the Edit and Done control drives the same swap', async ({ page }) => {
   await page.getByRole('button', { name: 'Edit' }).click();
   await expect(page.getByRole('button', { name: 'Done' })).toBeVisible();
   await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+
+  // docs/06 section 6: a rounded control. shadcn sizes the small button from `--radius-md`,
+  // which resolves only because the module declares it as a property of its own (styles.css).
+  const radius = await page
+    .getByRole('button', { name: 'Done' })
+    .evaluate((node) => getComputedStyle(node).borderRadius);
+  expect(radius).not.toBe('0px');
 
   await page.getByRole('button', { name: 'Done' }).click();
   await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible();
@@ -100,4 +129,33 @@ test('opening another page from the tree returns to read mode', async ({ page })
   await expect(page).toHaveURL(/mode=read/);
   // A new page is a new session (docs/05 section 8): back to the read view, editor unmounted.
   await expect(page.locator(EDITOR)).not.toHaveAttribute('contenteditable', 'true');
+});
+
+/**
+ * docs/06 section 7: an internal link that resolves to a page carries a leading `FileText`
+ * icon. The editor draws it too - a link that dropped its icon on the way into edit mode
+ * would move every word after it along the line (docs/05 section 8).
+ */
+test('an internal link keeps its icon in edit mode', async ({ page }) => {
+  const row = page.getByRole('treeitem', { name: /^Product/ }).first();
+  await row.scrollIntoViewIfNeeded();
+  await row.click();
+  await expect(page.getByRole('heading', { name: 'Product', level: 1 }).first()).toBeVisible();
+
+  const link = page.locator(`${REGION} a`, { hasText: 'Roadmap' });
+  await expect(link.locator('svg')).toBeVisible();
+  const before = await link.boundingBox();
+
+  await page.getByRole('button', { name: 'Edit' }).click();
+  await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'true');
+
+  await expect(link.locator('svg')).toBeVisible();
+  expect(await link.boundingBox()).toEqual(before);
+
+  // The icon is furniture, not content: a click on it resolves to a point in the text - Slate
+  // throws on a click it cannot map - and what gets typed is typed into the page.
+  await link.locator('svg').click();
+  await page.keyboard.type('!');
+  await expect(page.locator(EDITOR)).toContainText('!Roadmap');
+  await expect(link.locator('svg')).toBeVisible();
 });

@@ -1,4 +1,4 @@
-import type { TreeNode } from '@docs/core';
+import type { NodeId, TreeNode } from '@docs/core';
 import { createContext, useContext } from 'react';
 
 /**
@@ -8,14 +8,20 @@ import { createContext, useContext } from 'react';
  */
 export interface EditorContextValue {
   node: TreeNode;
+  /** From the same tree the shell shows: a link outside that subtree stays unresolved. */
+  idByPath: Readonly<Record<string, NodeId>>;
 }
 
 export const EditorContext = createContext<EditorContextValue | null>(null);
 
-export function useEditorNode(): TreeNode {
+export function useEditorContext(): EditorContextValue {
   const value = useContext(EditorContext);
   if (value === null) {
     throw new Error('Editor components must be used inside <DocumentEditor>.');
   }
-  return value.node;
+  return value;
+}
+
+export function useEditorNode(): TreeNode {
+  return useEditorContext().node;
 }

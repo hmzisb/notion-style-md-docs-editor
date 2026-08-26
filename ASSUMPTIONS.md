@@ -14,10 +14,34 @@ Cheap to reverse: yes | no
 
 ---
 
-## ASM-109 · P2-T14 · 2026-08-26
-Question: docs/09 P2-T14 asks for "one word" of diff per page, but the first save of a corpus page also stamps `id` into frontmatter (DEV-002).
-Assumed: the id line is not part of the diff. `withoutId` strips it from both sides before comparing, and the draft test asserts the stamp itself once, so the behavior is still covered.
-Why: the id write is required by docs/03 section 4.2; folding it into "one word" would either hide it or fail 30 pages for one documented byte.
+## ASM-115 · Gate 2 · 2026-08-26
+Question: docs/06 section 7 puts a `FileText` icon on an internal link that resolves to a page, without saying whether the editor draws one too.
+Assumed: it does. `DocumentEditor` now takes `rootId` and resolves links against the same tree index the read view uses, and `LinkElement` draws the icon inside a `contentEditable={false}` span.
+Why: docs/05 section 8 - an icon that appears only in read mode moves every word after it on the way into edit mode. `edit-mode.spec.ts` asserts the link's box is identical in both modes and that a click on the icon still resolves to a caret position.
+Cheap to reverse: yes
+
+## ASM-114 · Gate 2 · 2026-08-26
+Question: docs/10 section 2 wants every field named; the editable and the block clipboard have no strings in docs/03's map.
+Assumed: two new keys, `editor.body` ("Page content") and `editor.blockClipboard` ("Selected blocks"), added to `defaultStrings`.
+Why: the strings map is the module's only translation surface; hard-coded English in a component cannot be overridden by a host.
+Cheap to reverse: yes
+
+## ASM-113 · Gate 2 · 2026-08-26
+Question: the "Add icon" affordance only exists in edit mode, and docs/06 section 7 does not say where it sits.
+Assumed: out of flow, in the padding above the title (`absolute bottom-full`), rather than as a block above it.
+Why: docs/05 section 8 - in flow it pushed the whole page down 38 px on the way into edit mode. A page that already has an icon shows the icon in flow, as before.
+Cheap to reverse: yes
+
+## ASM-112 · Gate 2 · 2026-08-26
+Question: shadcn's small buttons ask for `rounded-[min(var(--radius-md),12px)]`, but `--radius-md` is declared `@theme inline` - substituted into the utilities this sheet generates, never emitted as a property - so the `var()` resolved to nothing and every small button came out square.
+Assumed: `.docs-root` declares `--radius-sm/md/lg/xl` as real custom properties alongside the theme values, duplicating the scale.
+Why: docs/06 section 6 asks for rounded controls; the alternative is editing 25 vendored registry files to spell the radius out (against docs/11 section 5). `edit-mode.spec.ts` asserts a non-zero radius so a future token rename fails loudly.
+Cheap to reverse: yes
+
+## ASM-111 · P2-T14 · 2026-08-26
+Question: a page that fails mid-loop tells the reader nothing about the other 29.
+Assumed: every page is attempted, failures are collected with their file name, and the test asserts the whole list at the end - a per-step timeout (10 s) keeps a hung page from eating the budget.
+Why: 30 pages are 30 answers; the first failure is not the report.
 Cheap to reverse: yes
 
 ## ASM-110 · P2-T14 · 2026-08-26
@@ -26,10 +50,10 @@ Assumed: the longest run of a line that reaches the DOM as one piece (marks spli
 Why: the assertion is about the file, so the anchor only has to be findable and unambiguous; picking it from the source keeps all 30 pages on one code path instead of a hand-written table.
 Cheap to reverse: yes
 
-## ASM-111 · P2-T14 · 2026-08-26
-Question: a page that fails mid-loop tells the reader nothing about the other 29.
-Assumed: every page is attempted, failures are collected with their file name, and the test asserts the whole list at the end - a per-step timeout (10 s) keeps a hung page from eating the budget.
-Why: 30 pages are 30 answers; the first failure is not the report.
+## ASM-109 · P2-T14 · 2026-08-26
+Question: docs/09 P2-T14 asks for "one word" of diff per page, but the first save of a corpus page also stamps `id` into frontmatter (DEV-002).
+Assumed: the id line is not part of the diff. `withoutId` strips it from both sides before comparing, and the draft test asserts the stamp itself once, so the behavior is still covered.
+Why: the id write is required by docs/03 section 4.2; folding it into "one word" would either hide it or fail 30 pages for one documented byte.
 Cheap to reverse: yes
 
 ## ASM-108 · P2-T13 · 2026-08-26
@@ -140,18 +164,6 @@ Assumed: the icon button picks the variant instead, `icon` is written from `CALL
 Why: docs/05 section 2 makes Markdown the document; a control that edits something the file cannot hold is a control that loses the user's work at the next save. docs/05 section 5 also pins IMPORTANT to `megaphone`, so the stock `MessageSquareWarning` goes with it.
 Cheap to reverse: yes
 
-## ASM-088 · P2-T08 · 2026-08-26
-Question: docs/04 section 3.4 asks for buttons disabled with a tooltip, and a `disabled` button takes no focus and fires no pointer events.
-Assumed: the gated controls carry `aria-disabled` and stay focusable; the title field is `readOnly`. Both keep their tooltip, on hover and on focus.
-Why: a control the keyboard cannot reach is a reason nobody can read, and the reason is the whole point of the message. `readOnly` also leaves the title selectable and scrollable, which a reader offline still wants.
-Cheap to reverse: yes
-
-## ASM-087 · P2-T08 · 2026-08-26
-Question: D-05 lists create, move, delete, rename and icon as structural, and only rename and icon exist so far.
-Assumed: `useStructuralGate` in `data/online.ts` is the one place that answers it, and the title and icon are its first two callers; P3's tree writes use the same hook.
-Why: one hook is smaller than the same `useOnline` comparison in six components and keeps the message identical everywhere. Content edits stay ungated - the draft store and the save retry already carry them (docs/04 section 3.4).
-Cheap to reverse: yes
-
 ## ASM-090 · P2-T09 · 2026-08-26
 Question: docs/04 section 5 has a tree event invalidate "the tree", and the tree query is keyed per `rootId`.
 Assumed: a tree event invalidates the `[ns, 'tree']` prefix, so every root a host has mounted refetches.
@@ -162,6 +174,18 @@ Cheap to reverse: yes
 Question: echo suppression needs the version the session last wrote, which lived only inside the session's own ref.
 Assumed: `lastSavedVersion` is part of `SessionState`, next to `lastSavedAt`, and `useProviderEvents` reads it from the namespace's store.
 Why: the store is already the place where everything outside the editor reads a page's save state, so nothing new has to exist and nothing has to be cleaned up when a page closes.
+Cheap to reverse: yes
+
+## ASM-088 · P2-T08 · 2026-08-26
+Question: docs/04 section 3.4 asks for buttons disabled with a tooltip, and a `disabled` button takes no focus and fires no pointer events.
+Assumed: the gated controls carry `aria-disabled` and stay focusable; the title field is `readOnly`. Both keep their tooltip, on hover and on focus.
+Why: a control the keyboard cannot reach is a reason nobody can read, and the reason is the whole point of the message. `readOnly` also leaves the title selectable and scrollable, which a reader offline still wants.
+Cheap to reverse: yes
+
+## ASM-087 · P2-T08 · 2026-08-26
+Question: D-05 lists create, move, delete, rename and icon as structural, and only rename and icon exist so far.
+Assumed: `useStructuralGate` in `data/online.ts` is the one place that answers it, and the title and icon are its first two callers; P3's tree writes use the same hook.
+Why: one hook is smaller than the same `useOnline` comparison in six components and keeps the message identical everywhere. Content edits stay ungated - the draft store and the save retry already carry them (docs/04 section 3.4).
 Cheap to reverse: yes
 
 ## ASM-086 · P2-T08 · 2026-08-26

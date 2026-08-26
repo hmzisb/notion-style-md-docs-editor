@@ -1,6 +1,6 @@
 'use client';
 
-import { BulletedListRules, isOrderedList, OrderedListRules, TaskListRules } from '@platejs/list';
+import { BulletedListRules, OrderedListRules, TaskListRules } from '@platejs/list';
 import { ListPlugin } from '@platejs/list/react';
 import { KEYS } from 'platejs';
 
@@ -21,19 +21,6 @@ export const ListKit = [
     inject: {
       nodeProps: {
         nodeKey: KEYS.listType,
-        query: ({ nodeProps }) => {
-          const element = nodeProps.element;
-
-          return !!element?.listStyleType && !isOrderedList(element);
-        },
-        transformProps: ({ props }) => ({
-          ...props,
-          role: 'listitem',
-          style: {
-            ...(props.style as React.CSSProperties | undefined),
-            display: 'list-item',
-          },
-        }),
       },
       targetPlugins: [
         ...KEYS.heading,

@@ -155,6 +155,7 @@ export const defaultStrings = {
 
   // Canvas and editor (docs/06 sections 7-8).
   'editor.title': 'Page title',
+  'editor.body': 'Page content',
   'editor.titlePlaceholder': 'Untitled',
   'editor.bodyPlaceholder': "Write something, or press '/' for commands",
   'editor.heading1Placeholder': 'Heading 1',
@@ -172,6 +173,7 @@ export const defaultStrings = {
   'editor.copyCode': 'Copy',
   'editor.copiedCode': 'Copied',
   'editor.imageMissing': 'Image not found: {path}',
+  'editor.blockClipboard': 'Selected blocks',
   'editor.dragHandle': 'Drag to move',
   'editor.addBlock': 'Add a block below',
   'editor.slash.basic': 'Basic blocks',

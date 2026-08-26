@@ -17,6 +17,20 @@ Categories that always require an entry: new runtime dependency (with gz size an
 
 ---
 
+## DEV-020 · Gate 2 · 2026-08-26
+Spec said: docs/10 section 2 - every focusable control carries an accessible name, and the a11y e2e is clean at all four viewport/mode combinations.
+Reality: `@platejs/selection` portals its own `<input class="slate-shadow-input">` onto `document.body` to carry copy, cut and paste while whole blocks are selected. It ships unlabelled and in the tab order, so axe reports a critical `label` violation in edit mode - and a keyboard reaches an invisible field. The plugin exposes no prop for it.
+Decision: `DocumentEditor` names it from the DOM once the editor mounts - `aria-label` from the `editor.blockClipboard` string, `tabindex="-1"` so the tab order skips it. The module does not own that node; reaching for it by class is the only handle upstream gives.
+Impact: `packages/react/src/editor/DocumentEditor.tsx`, one new string key. Breaks silently (no name, no crash) if the class is renamed upstream; `a11y.spec.ts` in edit mode is what catches that.
+Reverse when: `@platejs/selection` takes a label option, or ships the input already named and out of the tab order.
+
+## DEV-019 · Gate 2 · 2026-08-26
+Spec said: docs/11 section 5 - vendored Plate registry files stay close to upstream so a later re-add stays mergeable.
+Reality: Plate's stock list rendering draws a bullet by injecting `role="listitem"` and `display: list-item` onto the block itself, with no list element anywhere. That is a `listitem` with no `list` parent - axe `aria-required-parent`, critical - and it is what an indent-list architecture produces: there is no real `<ul>` in the value to hang it from. Wrapping the children instead does not help; `belowNodes` renders inside the element, which only adds a second violation.
+Decision: the inject is dropped in `kits/list-kit.tsx` and `ui/block-list.tsx` emits a real one-item `<ul><li>` for a bulleted item, exactly as it already emitted `<ol><li>` for an ordered one. Markers, indentation and the Markdown the codec writes are unchanged; only the DOM is.
+Impact: `packages/react/src/editor/kits/list-kit.tsx`, `packages/react/src/editor/ui/block-list.tsx`. Edit mode is now axe-clean at 1440x900 and 390x844; `blocks.spec.ts` and `block-dnd.spec.ts` are unchanged and green.
+Reverse when: Plate's list plugin renders a real list element around each item.
+
 ## DEV-018 · P2-T14 · 2026-08-26
 Spec said: docs/09 P2-T14 - "reload mid-typing -> draft banner -> Keep -> save -> file contains the draft".
 Reality: a reload cannot leave a draft owing. docs/04 section 3.1 flushes the session on `visibilitychange` -> hidden and on `pagehide`, and the unmount effect flushes too, so a tab that goes away politely saves what it had. The one path that reaches the banner is a tab that never runs those handlers.

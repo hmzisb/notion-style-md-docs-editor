@@ -62,7 +62,7 @@ export function PageIcon({
         // A control nobody can see is a control nobody can reach: the keyboard brings it
         // back, and so does a device with no pointer to hover with (docs/06 section 13).
         className={cn(
-          'mb-1 h-7 gap-1.5 px-1.5 text-xs font-normal text-muted-foreground opacity-0 transition-opacity duration-100 group-hover/title:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100',
+          '-ml-1.5 h-7 gap-1.5 px-1.5 text-xs font-normal text-muted-foreground opacity-0 transition-opacity duration-100 group-hover/title:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100',
           offline && 'cursor-not-allowed',
         )}
       >
@@ -83,27 +83,32 @@ export function PageIcon({
       </button>
     );
 
-  if (offline) {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          {/* A disabled control fires no pointer events, so the wrapper is what is hovered. */}
-          <TooltipTrigger asChild>
-            <span className="inline-flex">{trigger}</span>
-          </TooltipTrigger>
-          <TooltipContent>{reason}</TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-
-  return (
+  const control = offline ? (
+    <TooltipProvider>
+      <Tooltip>
+        {/* A disabled control fires no pointer events, so the wrapper is what is hovered. */}
+        <TooltipTrigger asChild>
+          <span className="inline-flex">{trigger}</span>
+        </TooltipTrigger>
+        <TooltipContent>{reason}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ) : (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{trigger}</PopoverTrigger>
       <PopoverContent align="start" className="w-[352px] gap-0 p-0">
         <IconPicker value={icon} onChange={change} />
       </PopoverContent>
     </Popover>
+  );
+
+  // An icon is a block of the page and sits in the flow; the button that stands in for a missing
+  // one hangs in the padding above the title instead, so entering edit mode does not push the
+  // page down under the reader's eyes (docs/05 section 8, docs/06 section 7).
+  return icon === undefined ? (
+    <div className="absolute bottom-full left-0 mb-1">{control}</div>
+  ) : (
+    control
   );
 }
 
