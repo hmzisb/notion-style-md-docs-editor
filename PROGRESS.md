@@ -97,7 +97,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P3-T12** Built-package smoke hosts; two Vite apps consume `dist` through the exports map, one with Tailwind and the shell, one with neither and the parts, both green under `pnpm smoke`
 - [x] **P3-T13** Docs and versioning; package READMEs, docs/08 section 2 rebuilt from the real entry points and kept there by a test, `useSearch` and the mutation hooks it promised now exported, 0.1.0 through Changesets
 - [x] **P3-T14** Visual QA and polish; 14 screenshot baselines at 1440x900 and 390x844 in both themes, code-block controls no longer let scrolled code run under them
-- [ ] **Gate 3** green, `docs/execution/PHASE-3-REPORT.md` written
+- [x] **Gate 3** green, `docs/execution/PHASE-3-REPORT.md` written
 
 ## Phase 4: Hardening (optional)
 
@@ -112,7 +112,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: Gate 3
+- Current task: P4-T01 (Phase 4 is optional)
 - Open at Gate 3: keystroke to paint is 34.1 ms p95 on the 3,000-block fixture against a 16 ms budget; 10.1 ms at 500 blocks and 16.3 at 1,000 (DEV-031).
 - Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
-- Last gate passed: Gate 2 (2026-08-26)
+- Last gate passed: Gate 3 (2026-08-27) — 19 pass, 0 skip, 0 fail
