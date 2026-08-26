@@ -10,7 +10,13 @@ export interface PageTreeRowMenuProps {
   icon: PageIcon | undefined;
   /** `More options for {title}`, already formatted: the row keeps every string it renders. */
   label: string;
-  labels: { addInside: string; rename: string; changeIcon: string; copyLink: string };
+  labels: {
+    addInside: string;
+    rename: string;
+    changeIcon: string;
+    copyLink: string;
+    moveTo: string;
+  };
   /** D-05: the reason structural items are off, or `null` when the provider is reachable. */
   offline: string | null;
   /** Each handler is absent on a read-only provider, and then so is its item (docs/01 §6). */
@@ -18,6 +24,8 @@ export interface PageTreeRowMenuProps {
   onRename?: (id: NodeId) => void;
   onIcon?: (id: NodeId, icon: string) => void;
   onCopyLink: (id: NodeId) => void;
+  /** Absent on a provider that cannot move a page (docs/01 section 6). */
+  onMoveTo?: (id: NodeId) => void;
 }
 
 const Surface = lazy(async () => {

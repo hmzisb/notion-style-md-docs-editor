@@ -50,6 +50,7 @@
     "ignore": [
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
+      "./tree/move-to-dialog.js",
       "@docs/core",
       "lucide-react/dynamic",
       "@tanstack/react-query",
@@ -72,11 +73,12 @@
   {
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "102 kB",
+    "limit": "105 kB",
     "ignore": [
       "./editor/index.js",
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
+      "./tree/move-to-dialog.js",
       "./command-palette.js",
       "@docs/core",
       "lucide-react/dynamic",

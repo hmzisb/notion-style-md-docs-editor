@@ -1,6 +1,7 @@
 import {
   applyInsert,
   applyMeta,
+  applyMove,
   applyRemove,
   buildIndex,
   flatten,
@@ -196,7 +197,10 @@ export function useCreatePage(
         const index = applyRemove(buildIndex(snapshot), tempId);
         const parent = node.parentId === null ? undefined : index.byId[node.parentId];
         const at = parent === undefined ? index.rootIds.length : parent.childIds.length;
-        client.setQueryData(keys.tree(rootId), toSnapshot(applyInsert(index, node, node.parentId, at)));
+        client.setQueryData(
+          keys.tree(rootId),
+          toSnapshot(applyInsert(index, node, node.parentId, at)),
+        );
       }
       onEvent({ type: 'page:created', id: node.id });
       // Replaces the temporary id in the host's history rather than stacking a second entry.
@@ -214,6 +218,60 @@ export function useCreatePage(
     onSettled: (_node, _error, { tempId }) => {
       // After the navigation above, so nothing is left observing a page that never existed.
       client.removeQueries({ queryKey: keys.page(tempId) });
+      void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+    },
+  });
+}
+
+export interface MovePageVariables {
+  id: NodeId;
+  parentId: NodeId | null;
+  /** Where among the new parent's children it lands, counted with the moved node removed. */
+  index: number;
+}
+
+/** The tree as it was before the drop, so a refusal puts the row back where it came from. */
+interface MoveContext {
+  tree: TreeSnapshot | undefined;
+}
+
+/**
+ * docs/04 section 4: the row moves on the drop and the provider is told afterwards. Paths stay
+ * stale until the settle invalidation brings them back - `applyMove` moves ids, and ids are
+ * what the tree draws from (docs/03 section 4.2).
+ */
+export function useMovePage(
+  rootId?: NodeId,
+): UseMutationResult<TreeNode, Error, MovePageVariables, MoveContext> {
+  const { keys, onEvent, provider } = useDocs();
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, parentId, index }: MovePageVariables): Promise<TreeNode> =>
+      provider.movePage(id, { parentId, index }),
+
+    onMutate: async ({ id, parentId, index }): Promise<MoveContext> => {
+      const tree = keys.tree(rootId);
+      await client.cancelQueries({ queryKey: tree });
+      const context: MoveContext = { tree: client.getQueryData<TreeSnapshot>(tree) };
+      if (context.tree !== undefined) {
+        const next = applyMove(buildIndex(context.tree), id, parentId, index);
+        client.setQueryData(tree, toSnapshot(next));
+      }
+      return context;
+    },
+
+    onSuccess: (_node, { id }) => {
+      onEvent({ type: 'page:moved', id });
+    },
+
+    onError: (error, { id }, context) => {
+      if (context?.tree !== undefined) client.setQueryData(keys.tree(rootId), context.tree);
+      const code = isProviderError(error) ? error.code : 'internal';
+      onEvent({ type: 'error', code, id, error });
+    },
+
+    onSettled: () => {
       void client.invalidateQueries({ queryKey: keys.tree(rootId) });
     },
   });

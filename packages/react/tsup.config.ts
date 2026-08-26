@@ -13,6 +13,8 @@ export default defineConfig({
     'tree/icon-picker-grid': 'src/tree/icon-picker-grid.tsx',
     // Same reason, for the menu and picker a row only builds when its `⋯` is pressed.
     'tree/row-menu-surface': 'src/tree/row-menu-surface.tsx',
+    // Same reason, for the reparenting dialog that only the menu's `Move to` opens.
+    'tree/move-to-dialog': 'src/tree/move-to-dialog.tsx',
     // Same reason, for the palette cmdk lives in (DEV-012).
     'shell/command-palette': 'src/shell/command-palette.tsx',
     'adapters/http': 'src/adapters/http.ts',

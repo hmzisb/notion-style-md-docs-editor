@@ -1,11 +1,23 @@
-import type { NodeId, PageMode, TreeIndex, TreeNode } from '@docs/core';
-import { hotkeysCoreFeature, searchFeature, syncDataLoaderFeature } from '@headless-tree/core';
+import {
+  isDescendant,
+  type NodeId,
+  type PageMode,
+  type TreeIndex,
+  type TreeNode,
+} from '@docs/core';
+import {
+  dragAndDropFeature,
+  hotkeysCoreFeature,
+  searchFeature,
+  syncDataLoaderFeature,
+  type DragTarget,
+} from '@headless-tree/core';
 import { AssistiveTreeDescription, useTree } from '@headless-tree/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
-import { useUpdateMeta } from '@/data/mutations.js';
+import { useMovePage, useUpdateMeta } from '@/data/mutations.js';
 import { useStructuralGate } from '@/data/online.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
@@ -16,7 +28,7 @@ import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
-import { PageTreeRow } from './PageTreeRow.js';
+import { PageTreeRow, type TreeRowDrag } from './PageTreeRow.js';
 
 /** Visually hidden but focusable. Inline: a host without Tailwind has no `sr-only`. */
 const OFFSCREEN: React.CSSProperties = {
@@ -31,16 +43,31 @@ const OFFSCREEN: React.CSSProperties = {
   whiteSpace: 'nowrap',
 };
 
+/** What `getDragLineStyle` itself returns while nothing is being dragged. */
+const HIDDEN: React.CSSProperties = { display: 'none' };
+
 /** docs/06 section 4: `--docs-row-height`. Rows never measure: 5k of them stay cheap. */
 const ROW_HEIGHT = 28;
 /** docs/06 section 15: a row is a touch target below 768 px. */
 const ROW_HEIGHT_TOUCH = 44;
 const OVERSCAN = 8;
+/** docs/07 section 3: the top and bottom quarter of a row reorder, the middle half goes inside. */
+const REORDER_AREA = 0.25;
+/** docs/07 section 3: how close to an edge the pointer has to be before the tree scrolls itself. */
+const EDGE = 32;
+const EDGE_STEP = 6;
+/** docs/07 section 3, and `--docs-indent` in `styles.css`: the drag line is drawn per level. */
+const INDENT = 12;
 /**
  * headless-tree needs one item above the visible roots; it is never rendered. Node ids are
  * `p_`/`f_` hashes or ULIDs, so this cannot collide with a real one.
  */
 const ROOT = 'docs-root';
+
+const MoveTo = lazy(async () => {
+  const { MoveToDialog } = await import('./move-to-dialog.js');
+  return { default: MoveToDialog };
+});
 
 export interface PageTreeProps {
   activeId: NodeId | null;
@@ -105,14 +132,21 @@ function TreeBody({
   rootId,
   className,
 }: PageTreeProps & { index: TreeIndex }): React.JSX.Element {
-  const { navigation, strings } = useDocs();
+  const { capabilities, navigation, strings } = useDocs();
   const update = useUpdateMeta(rootId);
+  const move = useMovePage(rootId);
   // D-05: a rename, an icon and a new page all need the provider, and offline they are the
   // same controls with the reason on them.
   const { offline, reason } = useStructuralGate();
   const [renaming, setRenaming] = useState<NodeId | null>(null);
+  const [moving, setMoving] = useState<NodeId | null>(null);
+  const isMobile = useIsMobile();
+  // docs/07 section 3: a drag is a pointer gesture, and below 768 px the pointer is a finger.
+  const movable = capabilities.move && !offline;
+  const draggable = movable && !isMobile;
   const expanded = useSidebarStore((state) => state.expanded);
   const setExpandedIds = useSidebarStore((state) => state.setExpandedIds);
+  const setExpanded = useSidebarStore((state) => state.setExpanded);
   /**
    * Identity matters: headless-tree rebuilds its row list whenever this array is a new object,
    * and rebuilding sets React state, so a fresh array per render would loop.
@@ -120,10 +154,17 @@ function TreeBody({
   const expandedItems = useMemo(() => Object.keys(expanded), [expanded]);
 
   // Read by callbacks that headless-tree keeps from an earlier render.
-  const latest = useRef({ index, expandedItems });
-  latest.current = { index, expandedItems };
+  const latest = useRef({ index, expandedItems, draggable });
+  latest.current = { index, expandedItems, draggable };
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollToIndex = useRef<((rowIndex: number) => void) | null>(null);
+  const edge = useEdgeScroll(scrollRef);
+  /**
+   * docs/07 section 3: over a target it cannot take, the tree draws nothing. headless-tree
+   * leaves the last valid target in its state, so without this the line and the ring stay
+   * where the pointer no longer is.
+   */
+  const [blocked, setBlocked] = useState(false);
 
   const tree = useTree<TreeNode>({
     rootItemId: ROOT,
@@ -155,7 +196,39 @@ function TreeBody({
       getItem: (id) => nodeFor(latest.current.index, id),
       getChildren: (id) => childIdsFor(latest.current.index, id),
     },
-    features: [syncDataLoaderFeature, hotkeysCoreFeature, searchFeature],
+    canDrag: () => latest.current.draggable,
+    // docs/07 section 3: a page takes children as readily as a folder does.
+    canDrop: (items, target) => {
+      if (!latest.current.draggable) return false;
+      const parentId = parentOf(target);
+      const ok = items.every((item) => {
+        const id = item.getId();
+        // The descendant guard: a subtree cannot be moved inside itself (docs/03 section 4.6).
+        return (
+          parentId !== id &&
+          (parentId === null || !isDescendant(latest.current.index, parentId, id))
+        );
+      });
+      setBlocked(!ok);
+      return ok;
+    },
+    canReorder: true,
+    reorderAreaPercentage: REORDER_AREA,
+    openOnDropDelay: 600,
+    indent: INDENT,
+    onDrop: (items, target) => {
+      const item = items[0];
+      if (item === undefined) return;
+      const parentId = parentOf(target);
+      const at =
+        'insertionIndex' in target
+          ? target.insertionIndex
+          : // Dropped on a row rather than between two: docs/06 section 5 puts it last inside.
+            childIdsFor(latest.current.index, parentId ?? ROOT).filter((id) => id !== item.getId())
+              .length;
+      moveTo(item.getId(), parentId, at);
+    },
+    features: [syncDataLoaderFeature, hotkeysCoreFeature, searchFeature, dragAndDropFeature],
   });
 
   const create = offline ? undefined : onCreate;
@@ -233,6 +306,45 @@ function TreeBody({
     [strings, update],
   );
 
+  /**
+   * docs/04 section 4: the row is already where it was dropped; the provider is told after, and
+   * a refusal puts it back and says so rather than leaving the tree lying about where the page is.
+   */
+  const moveTo = useCallback(
+    (id: NodeId, parentId: NodeId | null, at: number) => {
+      const title = latest.current.index.byId[id]?.title ?? '';
+      // A row dropped into a collapsed parent would land somewhere nothing can see. The store
+      // rather than `item.expand()`: a page with no children yet is not a folder, and
+      // headless-tree refuses to expand one - which is exactly the page being dropped into.
+      if (parentId !== null) setExpanded(parentId, true);
+      move.mutate(
+        { id, parentId, index: at },
+        {
+          onError: () => {
+            toast(format(strings['error.move'], { title }));
+          },
+        },
+      );
+    },
+    [move, setExpanded, strings],
+  );
+
+  /** docs/07 section 3: the keyboard's reorder, one place at a time among the row's siblings. */
+  const reorder = useCallback(
+    (delta: -1 | 1) => {
+      const id = tree.getFocusedItem().getId();
+      const node = latest.current.index.byId[id];
+      if (node === undefined) return;
+      const siblings = childIdsFor(latest.current.index, node.parentId ?? ROOT);
+      const at = siblings.indexOf(id) + delta;
+      // `movePage` counts the destination with the moved row taken out, which is what makes
+      // `at` the index the row ends up at rather than the one it passes through.
+      if (at < 0 || at >= siblings.length) return;
+      moveTo(id, node.parentId, at);
+    },
+    [moveTo, tree],
+  );
+
   /** docs/06 section 8: the host's own URL when it has one, and the id it would be built from. */
   const copyLink = useCallback(
     (id: NodeId) => {
@@ -252,14 +364,46 @@ function TreeBody({
         rename: strings['menu.rename'],
         changeIcon: strings['menu.changeIcon'],
         copyLink: strings['menu.copyLink'],
+        moveTo: strings['menu.moveTo'],
       },
       offline: offline ? reason : null,
       onCreate,
       onRename: onCreate === undefined ? undefined : setRenaming,
       onIcon: onCreate === undefined ? undefined : changeIcon,
       onCopyLink: copyLink,
+      // Both: a provider that cannot move has nowhere to put the page, and a host that gave
+      // the tree no way to add one did not ask for a way to rearrange it either.
+      onMoveTo: onCreate === undefined || !capabilities.move ? undefined : setMoving,
     }),
-    [changeIcon, copyLink, offline, onCreate, reason, strings],
+    [capabilities.move, changeIcon, copyLink, offline, onCreate, reason, strings],
+  );
+
+  /**
+   * headless-tree hands out fresh handlers on every render, and a row that takes new props on
+   * every render is a row that re-renders on every scroll. These forward to whichever handlers
+   * the item has now, so what the row holds is the same object from one render to the next.
+   */
+  const dnds = useRef(new Map<NodeId, TreeRowDrag>());
+  const dndFor = useCallback(
+    (id: NodeId): TreeRowDrag => {
+      let props = dnds.current.get(id);
+      if (props === undefined) {
+        const forward = (name: keyof DragHandlers) => (event: React.DragEvent<HTMLDivElement>) => {
+          (tree.getItemInstance(id).getProps() as DragHandlers)[name]?.(event);
+        };
+        props = {
+          draggable: true,
+          onDragStart: forward('onDragStart'),
+          onDragEnter: forward('onDragEnter'),
+          onDragOver: forward('onDragOver'),
+          onDragLeave: forward('onDragLeave'),
+          onDrop: forward('onDrop'),
+        };
+        dnds.current.set(id, props);
+      }
+      return props;
+    },
+    [tree],
   );
 
   /** One stable ref callback per id, or every row would re-render on every scroll. */
@@ -309,8 +453,31 @@ function TreeBody({
     scrollRef,
   );
 
+  // docs/07 section 3: reordering without a pointer. Reparenting is the Move to dialog's.
+  useHotkeys(
+    (movable
+      ? [
+          {
+            keys: 'Mod+ArrowUp',
+            scopes: ['tree'],
+            run: () => {
+              reorder(-1);
+            },
+          },
+          {
+            keys: 'Mod+ArrowDown',
+            scopes: ['tree'],
+            run: () => {
+              reorder(1);
+            },
+          },
+        ]
+      : []) satisfies Hotkey[],
+    scrollRef,
+  );
+
   const items = tree.getItems();
-  const rowHeight = useIsMobile() ? ROW_HEIGHT_TOUCH : ROW_HEIGHT;
+  const rowHeight = isMobile ? ROW_HEIGHT_TOUCH : ROW_HEIGHT;
   const virtualizer = useVirtualizer({
     count: items.length,
     getScrollElement: () => scrollRef.current,
@@ -326,6 +493,16 @@ function TreeBody({
     virtualizer.measure();
   }, [virtualizer, rowHeight]);
 
+  /** docs/06 section 5: the row being dragged is dimmed where it still is. */
+  const dragging = new Set(
+    (tree.getState().dnd?.draggedItems ?? []).map((item) => item.getId()),
+  );
+
+  const endDrag = useCallback(() => {
+    edge.stop();
+    setBlocked(false);
+  }, [edge]);
+
   const containerProps = tree.getContainerProps(
     strings['tree.label'],
   ) as React.ComponentProps<'div'>;
@@ -333,7 +510,15 @@ function TreeBody({
   const searchProps = tree.getSearchInputElementProps() as React.ComponentProps<'input'>;
 
   return (
-    <div ref={scrollRef} className={cn('h-full overflow-y-auto overscroll-contain', className)}>
+    <div
+      ref={scrollRef}
+      className={cn('h-full overflow-y-auto overscroll-contain', className)}
+      /* Capture: the rows stop `dragover` from bubbling, and the edges are the tree's business. */
+      onDragOverCapture={edge.onDragOver}
+      onDragLeave={endDrag}
+      onDropCapture={endDrag}
+      onDragEndCapture={endDrag}
+    >
       {/* Outside the container: `role="tree"` may only hold rows, and this is a live region. */}
       <AssistiveTreeDescription tree={tree} />
       <div
@@ -341,6 +526,17 @@ function TreeBody({
         className="relative w-full"
         style={{ height: virtualizer.getTotalSize() }}
       >
+        {/* docs/07 section 3: where the row would land, between the two rows it would land between. */}
+        <div
+          aria-hidden="true"
+          data-slot="tree-drag-line"
+          // `0` for the left: the style's own default pulls the line 8 px further left than
+          // the indent headless-tree already worked out from the level it would land at.
+          style={blocked ? HIDDEN : tree.getDragLineStyle(-1, 0)}
+          className="pointer-events-none z-10 h-0.5 rounded-full bg-primary"
+        >
+          <span className="absolute -top-[2px] left-0 size-1.5 rounded-full bg-primary" />
+        </div>
         {virtualizer.getVirtualItems().map((row) => {
           const item = items[row.index];
           if (item === undefined) return null;
@@ -379,6 +575,9 @@ function TreeBody({
               onCreate={create}
               onRenameStart={menu.onRename}
               onRenameEnd={endRename}
+              dnd={draggable ? dndFor(node.id) : undefined}
+              dropInto={!blocked && item.isUnorderedDragTarget()}
+              dragged={dragging.has(node.id)}
             />
           );
         })}
@@ -388,8 +587,83 @@ function TreeBody({
        * input if the container registered first, and without it Escape cannot close search.
        */}
       <input {...searchProps} aria-label={strings['tree.typeAhead']} style={OFFSCREEN} />
+      {moving === null ? null : (
+        <Suspense fallback={null}>
+          <MoveTo
+            index={index}
+            id={moving}
+            onPick={(parentId) => {
+              setMoving(null);
+              // docs/06 section 8: the dialog reparents; where among the new siblings is the
+              // drag's business, so it lands last.
+              moveTo(moving, parentId, childIdsFor(index, parentId ?? ROOT).length);
+              focusRow(moving);
+            }}
+            onClose={() => {
+              setMoving(null);
+              focusRow(moving);
+            }}
+          />
+        </Suspense>
+      )}
     </div>
   );
+}
+
+/** The handlers headless-tree puts on a row, which are the only part of `getProps` the row wants. */
+type DragHandlers = Partial<
+  Record<
+    'onDragStart' | 'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop',
+    (event: React.DragEvent<HTMLDivElement>) => void
+  >
+>;
+
+/** The parent a drop target names; the synthetic root is no parent at all. */
+function parentOf(target: DragTarget<TreeNode>): NodeId | null {
+  const id = target.item.getId();
+  return id === ROOT ? null : id;
+}
+
+/**
+ * docs/07 section 3: within 32 px of an edge the tree scrolls itself. On an interval rather
+ * than on the event, because `dragover` stops firing when the pointer stops moving - and a
+ * pointer held against the edge is exactly the case this is for.
+ */
+function useEdgeScroll(scrollRef: React.RefObject<HTMLDivElement | null>): {
+  onDragOver: React.DragEventHandler<HTMLDivElement>;
+  stop: () => void;
+} {
+  const timer = useRef<number | undefined>(undefined);
+
+  const stop = useCallback(() => {
+    if (timer.current === undefined) return;
+    clearInterval(timer.current);
+    timer.current = undefined;
+  }, []);
+
+  const onDragOver = useCallback(
+    (event: React.DragEvent<HTMLDivElement>) => {
+      const element = scrollRef.current;
+      if (element === null) return;
+      const box = element.getBoundingClientRect();
+      const speed =
+        event.clientY - box.top < EDGE
+          ? -EDGE_STEP
+          : box.bottom - event.clientY < EDGE
+            ? EDGE_STEP
+            : 0;
+      stop();
+      if (speed === 0) return;
+      timer.current = window.setInterval(() => {
+        element.scrollTop += speed;
+      }, 16);
+    },
+    [scrollRef, stop],
+  );
+
+  useEffect(() => stop, [stop]);
+
+  return { onDragOver, stop };
 }
 
 /** Widths from docs/06 section 5, deep enough to read as a tree rather than a list. */

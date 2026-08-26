@@ -2,6 +2,41 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-136 · P3-T03 · 2026-08-26
+Question: docs/07 section 3 wants no indicator drawn over a target the guard refuses. headless-tree's `onDragOver` returns before it updates `dnd.dragTarget` when `canDrop` is false, so the last target it did accept stays in state - and the line and the ring stay drawn where the pointer no longer is.
+Assumed: `canDrop` records its verdict in a `blocked` state, and the line and the row ring render nothing while it is set; the drag ending clears it.
+Why: the guard is the tree's own rule, so the tree is what has to stop drawing for it; the alternative was re-deriving the library's hit testing from the raw `dragover` to know which row the pointer is over.
+
+## ASM-135 · P3-T03 · 2026-08-26
+Question: a page dropped onto a row lands inside it, and the parent may be collapsed - or be a page with no children at all, which is what a first drop into it makes it. `item.expand()` returns without doing anything when `isFolder()` is false, which is exactly that case.
+Assumed: the destination is expanded through the sidebar store (`setExpanded(parentId, true)`), the way `DocsShell` already expands the parent of a page it creates.
+Why: the store is the tree's expansion state, and it takes an id whether or not the node has children yet; going through the item instance makes "can this be expanded" a question about the tree before the move rather than after it.
+
+## ASM-134 · P3-T03 · 2026-08-26
+Question: docs/07 section 3 puts "into" in the middle 50% of a row. headless-tree's `reorderAreaPercentage` is the fraction at each end that reorders instead.
+Assumed: `0.25`, so the top and bottom quarters insert and the middle half goes inside; `openOnDropDelay: 600` and `indent: 12` come from the same section and `--docs-indent`.
+Why: the config is stated as one end's share, not the middle's; 0.25 at each end is the same rule written the library's way.
+
+## ASM-133 · P3-T03 · 2026-08-26
+Question: docs/07 section 3 auto-scrolls within 32 px of the tree's edge. `dragover` fires only while the pointer moves, and a pointer held against the edge does not.
+Assumed: the container's capture-phase `dragover` starts a 16 ms interval that scrolls by 6 px while the pointer is in an edge band, cleared on leave, drop and drag end. Capture, because rows call `stopPropagation` on their own `dragover`.
+Why: the case the rule exists for is a pointer that has stopped at the edge with the list still to travel.
+
+## ASM-132 · P3-T03 · 2026-08-26
+Question: docs/07 section 3 starts a drag after 4 px of movement, and long-presses for 400 ms on touch.
+Assumed: the drag is the browser's own HTML5 drag, which headless-tree's `dragAndDropFeature` is built on, so the threshold is the browser's (~5 px in Chromium) and there is no long-press. The same line of docs/07 disables touch drag below 768 px in v1, which is where `useIsMobile` turns `draggable` off; the keyboard and Move to are the rest of the answer there.
+Why: replacing the transport with a pointer-event drag to buy 1 px of threshold would cost the drag image, the cursor feedback and `Esc` - all of which the browser already provides. Dragging from the row's own buttons was checked and does not start a drag: Chromium does not treat a `button` as draggable content.
+
+## ASM-131 · P3-T03 · 2026-08-26
+Question: which hosts get `Move to` in the row menu, and what does it do offline?
+Assumed: present when the host passed `onCreate` and the provider reports `capabilities.move`; disabled with the offline reason above it while the provider is unreachable, the way Add inside, Rename and Change icon are (ASM-126).
+Why: a host that gave the tree no way to add a page did not ask for a way to rearrange one either, and D-05 is about writes not reaching a provider rather than about the item being wrong.
+
+## ASM-130 · P3-T03 · 2026-08-26
+Question: docs/06 section 5 says a drop onto a row makes the page its child, without saying where among the children it lands.
+Assumed: last, which is what docs/06 section 8 already says for the Move to dialog; between two rows the index is headless-tree's `insertionIndex`, which counts the siblings with the dragged row taken out - the same coordinate `movePage` and `applyMove` use.
+Why: one rule for both ways in, and the one the dialog already states.
+
 ## ASM-129 · P3-T02 · 2026-08-26
 Question: docs/06 section 5 gives every row a `⋯`, and docs/10 section 5 gives 45 mounted rows a 20 ms frame. A Radix dropdown and a popover per row cost more than that: the tree scroll test measured 22.9-23.2 ms with them mounted, 20.0 ms with the popover taken out.
 Assumed: the row renders a plain button, and the first `pointerdown` on it mounts `tree/row-menu-surface` - the menu, the popover and the picker trigger - in its place, already open. The surface is a tsup entry of its own, dynamically imported, and `ignore`d in both the `./shell` and the `./tree + ./view` size-limit entries, the ASM-063 shape.

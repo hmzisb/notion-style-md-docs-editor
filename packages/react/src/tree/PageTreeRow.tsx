@@ -43,9 +43,26 @@ export interface PageTreeRowProps {
   onFocus: (id: NodeId) => void;
   /** Absent on a read-only provider, and then so is the button (docs/01 section 6). */
   onCreate?: (parentId: NodeId) => void;
+  /** headless-tree's drag handlers, absent when the provider cannot move (docs/07 section 3). */
+  dnd?: TreeRowDrag;
+  /** The row itself is the drop target, rather than the gap above or below it. */
+  dropInto: boolean;
+  /** This row is the one being dragged, and is dimmed where it still is (docs/06 section 5). */
+  dragged: boolean;
 }
 
+/** The drag and drop props a row spreads onto itself, kept stable per row by `PageTree`. */
+export type TreeRowDrag = Required<
+  Pick<
+    React.ComponentProps<'div'>,
+    'draggable' | 'onDragStart' | 'onDragEnter' | 'onDragOver' | 'onDragLeave' | 'onDrop'
+  >
+>;
+
 function Row({
+  dnd,
+  dropInto,
+  dragged,
   id,
   title,
   kind,
@@ -95,6 +112,7 @@ function Row({
 
   return (
     <div
+      {...dnd}
       ref={register}
       role="treeitem"
       aria-level={depth + 1}
@@ -110,6 +128,9 @@ function Row({
         'cursor-default text-sidebar-foreground/85 outline-none',
         'hover:bg-sidebar-accent/70 focus-visible:ring-2 focus-visible:ring-sidebar-ring focus-visible:ring-inset',
         active && 'bg-sidebar-accent font-medium text-sidebar-foreground',
+        // docs/06 section 5: dropped here, the page becomes this row's child.
+        dropInto && 'bg-sidebar-accent ring-1 ring-primary/40 ring-inset',
+        dragged && 'opacity-50',
       )}
       style={{
         height,

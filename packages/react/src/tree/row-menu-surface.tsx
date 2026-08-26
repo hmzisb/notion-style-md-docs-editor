@@ -1,4 +1,4 @@
-import { Ellipsis, Link2, PenLine, Plus, Smile } from 'lucide-react';
+import { CornerUpRight, Ellipsis, Link2, PenLine, Plus, Smile } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
   DropdownMenu,
@@ -26,6 +26,7 @@ export function RowMenuSurface({
   onRename,
   onIcon,
   onCopyLink,
+  onMoveTo,
 }: PageTreeRowMenuProps): React.JSX.Element {
   // It arrives because the button was pressed, so the press is what it opens on.
   const [open, setOpen] = useState(true);
@@ -119,6 +120,20 @@ export function RowMenuSurface({
             <Link2 aria-hidden="true" />
             {labels.copyLink}
           </DropdownMenuItem>
+          {onMoveTo !== undefined && (
+            <DropdownMenuItem
+              disabled={gated}
+              onSelect={() => {
+                // A dialog, so it opens from the teardown for the same reason the picker does.
+                pending.current = () => {
+                  onMoveTo(id);
+                };
+              }}
+            >
+              <CornerUpRight aria-hidden="true" />
+              {labels.moveTo}
+            </DropdownMenuItem>
+          )}
         </DropdownMenuContent>
       </DropdownMenu>
 
