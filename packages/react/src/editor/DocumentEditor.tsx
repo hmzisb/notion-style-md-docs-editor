@@ -5,6 +5,7 @@ import type { Value } from 'platejs';
 import { Plate, usePlateEditor, type PlateEditor } from 'platejs/react';
 import { useEffect, useMemo, useRef } from 'react';
 import { useDocs } from '@/data/context.js';
+import { canvasKey } from '@/data/fresh.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/ui/tooltip';
@@ -59,7 +60,7 @@ export function DocumentEditor({
   autoFocus = false,
   className,
 }: DocumentEditorProps): React.JSX.Element {
-  const { capabilities, provider, strings } = useDocs();
+  const { capabilities, ns, provider, strings } = useDocs();
 
   const plugins = useMemo(() => createEditorKit({ strings, toolbar }), [strings, toolbar]);
   // The same index the read view resolves links against, so an internal link is drawn the
@@ -75,6 +76,10 @@ export function DocumentEditor({
   const initial = useRef(value);
   initial.current = value;
 
+  // A page created in this session keeps the id it was created under as the editor's identity,
+  // so the provider's id landing a moment later swaps the data without rebuilding the editor
+  // the user is already typing in (docs/04 section 4).
+  const identity = canvasKey(ns, pageId);
   const editor = usePlateEditor(
     {
       autoSelect: autoFocus === true ? 'start' : false,
@@ -82,7 +87,7 @@ export function DocumentEditor({
       plugins,
       value: () => initial.current,
     },
-    [pageId, plugins],
+    [identity, plugins],
   );
 
   const ready = onReady;

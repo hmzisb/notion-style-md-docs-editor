@@ -70,12 +70,16 @@ test('runs its actions: theme and sidebar', async ({ page }) => {
   await expect(page.getByRole('button', { name: 'Show sidebar' })).toBeVisible();
 });
 
-test('answers the create stub with a toast that stays out of the layout', async ({ page }) => {
+test('creates a page from the query, without disturbing the layout', async ({ page }) => {
   await page.keyboard.press('ControlOrMeta+p');
   const dialog = page.getByRole('dialog', palette());
   await dialog.getByPlaceholder('Search pages…').fill('Release notes');
+  // docs/07 section 2: a query that matched no page is a title (P3-T01 wired it up).
   await page.keyboard.press('Shift+Enter');
-  await expect(page.getByText('Creating pages is not available yet')).toBeVisible();
+  // The row lands at the end of a corpus the tree only renders a window of, so the page itself
+  // is what says the create happened: open, in edit mode, already carrying the name.
+  await expect(page.getByRole('textbox', { name: 'Page title' })).toHaveValue('Release notes');
+  await expect(page).toHaveURL(/mode=edit/);
 
   // docs/06 section 4: the shell is two columns in one row. The toaster is a shell child, so
   // anything it adds to the grid's flow would push the sidebar and the content off the bottom.

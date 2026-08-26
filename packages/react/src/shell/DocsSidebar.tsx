@@ -1,5 +1,5 @@
 import type { NodeId, PageMode } from '@docs/core';
-import { House, PanelLeftClose, Search } from 'lucide-react';
+import { House, PanelLeftClose, Plus, Search, SquarePen } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
 import { DEFAULT_SIDEBAR_WIDTH, useSidebarStore } from '@/data/sidebar-store.js';
@@ -9,6 +9,7 @@ import { PageTree } from '@/tree/PageTree.js';
 import { Button } from '@/ui/button';
 import { Kbd } from '@/ui/kbd';
 import { Sidebar, SidebarContent, SidebarFooter, SidebarHeader, useSidebar } from '@/ui/sidebar';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/tooltip';
 import { ResizeHandle } from './ResizeHandle.js';
 
 export interface DocsSidebarProps {
@@ -18,6 +19,8 @@ export interface DocsSidebarProps {
   onHome: () => void;
   /** The Search row opens the command palette (docs/06 section 5). */
   onSearch: () => void;
+  /** Absent on a read-only provider, which is how every write affordance here disappears. */
+  onCreate?: (parentId: NodeId | null) => void;
   rootId?: NodeId;
   collapsible: boolean;
   minWidth: number;
@@ -36,6 +39,7 @@ export function DocsSidebar({
   onOpen,
   onHome,
   onSearch,
+  onCreate,
   rootId,
   collapsible,
   minWidth,
@@ -57,20 +61,45 @@ export function DocsSidebar({
           <span className="truncate text-sm font-medium">
             {meta?.title ?? strings['tree.workspace']}
           </span>
-          {collapsible && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              aria-expanded={isMobile ? undefined : open}
-              aria-controls={id}
-              aria-label={strings['tree.collapseSidebar']}
-              onClick={toggleSidebar}
-              // Pointer-only affordance on desktop; touch has no hover, so it stays visible.
-              className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/docs-sidebar:opacity-100 max-md:size-11 max-md:opacity-100"
-            >
-              <PanelLeftClose aria-hidden="true" />
-            </Button>
-          )}
+          <span className="flex shrink-0 items-center gap-1">
+            {collapsible && (
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-expanded={isMobile ? undefined : open}
+                aria-controls={id}
+                aria-label={strings['tree.collapseSidebar']}
+                onClick={toggleSidebar}
+                // Pointer-only affordance on desktop; touch has no hover, so it stays visible.
+                className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/docs-sidebar:opacity-100 max-md:size-11 max-md:opacity-100"
+              >
+                <PanelLeftClose aria-hidden="true" />
+              </Button>
+            )}
+            {/* docs/06 section 5: the header's New page always makes a root page. */}
+            {onCreate !== undefined && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-sm"
+                      aria-label={strings['tree.newPageTooltip']}
+                      onClick={() => {
+                        onCreate(null);
+                      }}
+                      className="max-md:size-11"
+                    >
+                      <SquarePen aria-hidden="true" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    {strings['tree.newPageTooltip']} {formatKeys('Mod+Alt+N')}
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            )}
+          </span>
         </div>
         {slots?.header}
       </SidebarHeader>
@@ -96,12 +125,25 @@ export function DocsSidebar({
           </NavRow>
         </div>
         <SidebarContent className="min-h-0 flex-1 overflow-hidden px-0">
-          <PageTree activeId={activeId} onOpen={onOpen} rootId={rootId} />
+          <PageTree activeId={activeId} onOpen={onOpen} onCreate={onCreate} rootId={rootId} />
         </SidebarContent>
       </nav>
 
-      {slots?.footer !== undefined && slots.footer !== null && (
-        <SidebarFooter className="border-t border-sidebar-border p-2">{slots.footer}</SidebarFooter>
+      {/* docs/06 section 5: the New page row, then whatever the host puts under it. */}
+      {(onCreate !== undefined || (slots?.footer !== undefined && slots.footer !== null)) && (
+        <SidebarFooter className="border-t border-sidebar-border p-2">
+          {onCreate !== undefined && (
+            <NavRow
+              icon={<Plus aria-hidden="true" className="size-4 text-muted-foreground/70" />}
+              onClick={() => {
+                onCreate(null);
+              }}
+            >
+              {strings['tree.newPage']}
+            </NavRow>
+          )}
+          {slots?.footer}
+        </SidebarFooter>
       )}
     </Sidebar>
   );

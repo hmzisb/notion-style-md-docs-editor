@@ -2,6 +2,20 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-022 · P3-T01 · 2026-08-26
+Spec said: docs/04 section 5 - a `tree` event from `provider.subscribe` invalidates the tree query, unconditionally. Only `page` events are echo-suppressed.
+Reality: a provider that watches its own storage emits `tree` from inside `createPage`, before the call resolves. The refetch that follows lands mid-mutation, knows nothing about the temporary id the new page is open under, and takes the optimistic row off the screen the user is typing into.
+Decision: a `tree` event is ignored while `client.isMutating() > 0`. This is the same echo suppression the section already applies to `page` events, on the mutation instead of the version: the change being reported is ours, the cache already holds it, and every mutation invalidates the tree on settle a moment later.
+Impact: `data/subscriptions.ts`. An external change that happens to land during one of our mutations is picked up by that mutation's own settle invalidation rather than immediately - milliseconds, and only while a write is in flight.
+Reverse when: the module gains a way to tell its own writes from the watcher's, e.g. a provider event that carries the id it came from.
+
+## DEV-021 · P3-T01 · 2026-08-26
+Spec said: docs/08 lists `DocsStrings` as the host's override surface, and P2-T12 added `palette.createUnavailable` ("Creating pages is not available yet") for the palette's stubbed create.
+Reality: P3-T01 wires creation up, so the string names a state that no longer exists. Leaving it would ship a public key that nothing renders.
+Decision: removed `palette.createUnavailable` from `DocsStrings`. A host that overrode it now gets a type error naming the key, which is the loud version of the change.
+Impact: `data/strings.ts`; `shell/palette.test.tsx` asserts the create flow instead of the toast; `e2e/palette.spec.ts` likewise. Breaking for a host that set that key, in a module that has not shipped a release.
+Reverse when: never - the stub it belonged to is gone.
+
 Format:
 
 ```

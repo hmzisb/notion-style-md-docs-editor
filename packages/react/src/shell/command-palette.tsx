@@ -99,9 +99,10 @@ export function CommandPaletteDialog({
     close();
     onOpenPage(id, mode === undefined ? undefined : { mode });
   };
-  const create = (): void => {
+  /** docs/07 section 2: the action makes an untitled page; `Shift+Enter` names it with the query. */
+  const create = (title: string): void => {
     close();
-    onCreatePage(query.trim());
+    onCreatePage(title);
   };
 
   const actions: Action[] = [
@@ -112,7 +113,9 @@ export function CommandPaletteDialog({
             label: strings['palette.newPage'],
             icon: FilePlus,
             keys: 'Mod+Alt+N',
-            run: create,
+            run: () => {
+              create('');
+            },
           },
         ]
       : []),
@@ -185,7 +188,7 @@ export function CommandPaletteDialog({
           }
           if (event.shiftKey && capabilities.write && query.trim() !== '') {
             event.preventDefault();
-            create();
+            create(query.trim());
           }
         }}
       >

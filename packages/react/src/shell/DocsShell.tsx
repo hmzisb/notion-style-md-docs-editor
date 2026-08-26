@@ -4,6 +4,8 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import { toast } from 'sonner';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
+import { newTempId } from '@/data/fresh.js';
+import { useCreatePage } from '@/data/mutations.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import { seedSidebar, useSidebarStore } from '@/data/sidebar-store.js';
@@ -157,6 +159,7 @@ function ShellBody({
   const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
+  const setExpanded = useSidebarStore((state) => state.setExpanded);
   // The scroll container, the `E`/`Enter` scope, and where focus lands on the way out of edit.
   const regionRef = useRef<HTMLElement>(null);
   const chunk = useEditorChunk();
@@ -201,10 +204,38 @@ function ShellBody({
   const openPalette = useCallback(() => {
     setPaletteOpen(true);
   }, []);
-  // Creation is wired in P3-T01 (docs/09); until then the palette says so instead of lying.
-  const createPage = useCallback(() => {
-    toast(strings['palette.createUnavailable']);
-  }, [strings]);
+  // docs/01 section 5.3: every entry point is this call with a different parent. The row
+  // appears, the page opens in edit mode, and the mutation carries it from the temporary id it
+  // was created under to the provider's (docs/04 section 4).
+  const { mutate: createMutate } = useCreatePage(rootId);
+  const createPage = useCallback(
+    (parentId: NodeId | null, title = '') => {
+      // docs/06 section 5: a page made inside a row is only somewhere the reader can see it if
+      // that row is open, and a row with no children yet is closed by definition.
+      if (parentId !== null) setExpanded(parentId, true);
+      createMutate(
+        { parentId, title, tempId: newTempId() },
+        {
+          onError: () => {
+            toast(strings['error.create']);
+          },
+        },
+      );
+    },
+    [createMutate, setExpanded, strings],
+  );
+  /** `Cmd+Alt+N` and the palette: inside the page that is open, else a root page. */
+  const createHere = useCallback(
+    (title = '') => {
+      createPage(pageId !== null && index?.byId[pageId] !== undefined ? pageId : null, title);
+    },
+    [createPage, index, pageId],
+  );
+  const createRoot = useCallback(() => {
+    createPage(null);
+  }, [createPage]);
+  /** Every write affordance is absent, not disabled, on a read-only provider (docs/01 s.6). */
+  const create = capabilities.write ? createPage : undefined;
 
   useHotkeys(
     [
@@ -221,7 +252,12 @@ function ShellBody({
       },
       ...(capabilities.write
         ? ([
-            { keys: 'Mod+Alt+N', run: createPage },
+            {
+              keys: 'Mod+Alt+N',
+              run: () => {
+                createHere();
+              },
+            },
             {
               keys: 'Mod+Shift+E',
               scopes: ALL_SCOPES,
@@ -279,6 +315,7 @@ function ShellBody({
         collapsible={collapsible}
         minWidth={minWidth}
         maxWidth={maxWidth}
+        onCreate={create}
         slots={{ header: slots?.sidebarHeader, footer: slots?.sidebarFooter }}
       />
       <section
@@ -317,6 +354,7 @@ function ShellBody({
           emptyState={slots?.emptyState}
           onOpen={openPage}
           onHome={goHome}
+          onCreate={create === undefined ? undefined : createRoot}
         />
       </section>
       <CommandPalette
@@ -324,7 +362,7 @@ function ShellBody({
         onOpenChange={setPaletteOpen}
         rootId={rootId}
         onOpenPage={openPage}
-        onCreatePage={createPage}
+        onCreatePage={createHere}
         onThemeChange={onThemeChange}
       />
       {/*

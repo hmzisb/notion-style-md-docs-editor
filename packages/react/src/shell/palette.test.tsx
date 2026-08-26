@@ -150,16 +150,30 @@ describe('CommandPalette (docs/06 section 8, docs/07 section 4)', () => {
     expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_auth', mode: 'edit' });
   });
 
-  it('answers Shift+Enter with what creation costs today', async () => {
+  it('creates a page titled with the query on Shift+Enter', async () => {
     const user = userEvent.setup();
-    mount();
+    const view = mount();
     await ready();
 
     await user.type(await openPalette(user), 'Release notes');
     await user.keyboard('{Shift>}{Enter}{/Shift}');
 
-    // P3-T01 replaces this with the real optimistic insert (docs/09).
-    expect(await screen.findByText('Creating pages is not available yet')).toBeInTheDocument();
+    // docs/01 section 5.3: the page is open, in edit mode, under a temporary id, before the
+    // provider has written anything.
+    const first = view.navigate.mock.calls[0]?.[0] as { mode: string; pageId: string } | undefined;
+    expect(first?.mode).toBe('edit');
+    expect(first?.pageId).toMatch(/^tmp_/);
+    expect(await screen.findByRole('treeitem', { name: 'Release notes' })).toBeInTheDocument();
+
+    // docs/04 section 4: it carries on under the id the provider gave it, in the same entry of
+    // the host's history rather than a second one.
+    await waitFor(() => {
+      const last = view.navigate.mock.calls.at(-1) as
+        | [{ mode: string; pageId: string }, { replace?: boolean }?]
+        | undefined;
+      expect(last?.[0].pageId).not.toMatch(/^tmp_/);
+      expect(last?.[1]).toEqual({ replace: true });
+    });
   });
 
   it('runs a content search when the provider has one', async () => {

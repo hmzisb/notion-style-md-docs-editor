@@ -2,6 +2,48 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-123 · P3-T01 · 2026-08-26
+Question: a page created here opens on a temporary id, and the file the provider writes carries `title: Untitled`. Should the title field open on that word?
+Assumed: no. The optimistic row and the created file both say "Untitled", but the title field opens empty, on its placeholder.
+Why: docs/01 section 5.3 opens the page "with the title focused" so the first keystroke names it; a field pre-filled with `Untitled` would make that keystroke append to a word the user has to delete first.
+Cheap to reverse: yes
+
+## ASM-122 · P3-T01 · 2026-08-26
+Question: `Cmd+Alt+N` and the palette create a page inside the page that is open (docs/01 section 5.3), and a row with no children yet is collapsed by definition. Where does the new row become visible?
+Assumed: `createPage` in `DocsShell` expands the parent row before it mutates, so every entry point that creates a child - the row `+`, `Cmd+Shift+Right`, `Cmd+Alt+N`, the palette - opens the row it went into.
+Why: docs/01 section 5.3 says the row appears optimistically; a row inside a collapsed parent appears nowhere, and the tree only renders what is expanded.
+Cheap to reverse: yes
+
+## ASM-121 · P3-T01 · 2026-08-26
+Question: a title typed before the provider answered has no id to be saved under.
+Assumed: `PageTitle` holds it in a ref and commits it from an effect the moment the real id lands; the debounce timer fires through the `latest` ref, so a keystroke and its commit can be on either side of the swap.
+Why: docs/03 section 4.7 makes the first title the rename, and it must be the title the user actually typed - dropping it, or sending it under a temporary id, both lose the rename.
+Cheap to reverse: yes
+
+## ASM-120 · P3-T01 · 2026-08-26
+Question: docs/09 P3-T01 lists "palette action and `Shift+Enter`" as two entry points, and P2-T12 wired both to the same call, which passed the palette's query as the title.
+Assumed: the action row creates an untitled page; only `Shift+Enter` carries the query.
+Why: docs/07 section 2 defines `Shift+Enter` as the one that "creates a page titled with the query"; the action row is reached by typing its own name, so passing the query there names pages "New page".
+Cheap to reverse: yes
+
+## ASM-119 · P3-T01 · 2026-08-26
+Question: where does the navigation to a new page belong - in `useCreatePage` or in the callers that have the parent id?
+Assumed: in the mutation. `onMutate` patches the cache and navigates in the same tick; `onSuccess` replaces the temporary id with `{ replace: true }`; `onError` returns to the page the user came from.
+Why: `onMutate` is async (it awaits `cancelQueries`), so a caller that navigated first would put the shell on an id the tree does not hold yet and paint "This page no longer exists" on the way in.
+Cheap to reverse: no - every entry point would have to repeat the ordering.
+
+## ASM-118 · P3-T01 · 2026-08-26
+Question: the temporary id has to survive being replaced without remounting the editor (docs/04 section 4), and two things are keyed on the page id: `ShellContent`'s `<PageCanvas key>` and `usePlateEditor`'s dependency array.
+Assumed: `canvasKey(ns, id)` returns the id the page was created under for as long as the session lasts, and both places key on that instead of on the page id.
+Why: a React key alone would not have been enough - `usePlateEditor` rebuilds the editor from its deps, which would have thrown away the undo history and the caret without unmounting anything.
+Cheap to reverse: yes
+
+## ASM-117 · P3-T01 · 2026-08-26
+Question: where does the fresh-page flag live - React state, the zustand session store, or a module-level map?
+Assumed: a module-level map keyed by namespace (`data/fresh.ts`), holding the alias, the provider's id and whether the title has landed.
+Why: every reader asks inside a callback or inside a render that another change already scheduled; a store would re-render the whole shell on the very swap this exists to make invisible.
+Cheap to reverse: yes
+
 Format:
 
 ```

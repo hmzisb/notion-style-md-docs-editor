@@ -1,16 +1,22 @@
 import {
+  applyInsert,
   applyMeta,
+  applyRemove,
   buildIndex,
+  flatten,
   isProviderError,
   parseIcon,
   type NodeId,
   type PageDocument,
   type PageMetaPatch,
+  type TreeIndex,
   type TreeNode,
   type TreeSnapshot,
 } from '@docs/core';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useDocs } from './context.js';
+import { dropFresh, markFresh, namedFresh, settleFresh } from './fresh.js';
+import { pageQuery } from './queries.js';
 
 /**
  * docs/04 section 4: every mutation patches the cache with the pure `apply*` from core before
@@ -63,7 +69,7 @@ function patchPage(page: PageDocument, patch: PageMetaPatch): PageDocument {
 export function useUpdateMeta(
   rootId?: NodeId,
 ): UseMutationResult<TreeNode, Error, UpdateMetaVariables, MetaContext> {
-  const { keys, onEvent, provider } = useDocs();
+  const { keys, ns, onEvent, provider } = useDocs();
   const client = useQueryClient();
 
   return useMutation({
@@ -90,11 +96,139 @@ export function useUpdateMeta(
       if (context?.page !== undefined) client.setQueryData(keys.page(id), context.page);
       onEvent({ type: 'error', code: isProviderError(error) ? error.code : 'internal', id, error });
     },
-    onSuccess: (_node, { id, patch }) => {
+    onSuccess: (_node, { id, patch, renameFile }) => {
+      // Only now: a rename that failed leaves the file `untitled*.md`, so the next title still
+      // has to take it with it (docs/03 section 4.7).
+      if (renameFile === true) namedFresh(ns, id);
       if ('title' in patch) onEvent({ type: 'page:renamed', id });
     },
     onSettled: () => {
       void client.invalidateQueries({ queryKey: keys.tree(rootId) });
     },
   });
+}
+
+export interface CreatePageVariables {
+  parentId: NodeId | null;
+  /** `''` opens the page on its placeholder title; the palette passes what was typed. */
+  title: string;
+  /** The id the row is inserted under until the provider answers (docs/01 section 5.3). */
+  tempId: NodeId;
+}
+
+/** The tree before the insert, plus the page to go back to if the provider refuses. */
+interface CreateContext {
+  tree: TreeSnapshot | undefined;
+  from: NodeId | null;
+}
+
+/** The cache holds snapshots and the pure `apply*` work on an index, so the patch goes back. */
+function toSnapshot(index: TreeIndex): TreeSnapshot {
+  return {
+    version: index.version,
+    nodes: flatten(index)
+      .map((id) => index.byId[id])
+      .filter((node): node is TreeNode => node !== undefined),
+  };
+}
+
+/**
+ * docs/04 section 4. The row and the page appear under a temporary id and the editor opens on
+ * them; when the provider answers, the same page carries on under the id it gave.
+ *
+ * The navigation is the mutation's own rather than the caller's, because the order is the whole
+ * point: the cache patch and the navigation to the temporary id have to land in one tick, or
+ * the shell renders "this page no longer exists" on the way there.
+ */
+export function useCreatePage(
+  rootId?: NodeId,
+): UseMutationResult<TreeNode, Error, CreatePageVariables, CreateContext> {
+  const { keys, navigation, ns, onEvent, provider, strings } = useDocs();
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ parentId, title }: CreatePageVariables): Promise<TreeNode> =>
+      provider.createPage({ parentId, title }),
+
+    onMutate: async ({ parentId, title, tempId }): Promise<CreateContext> => {
+      const tree = keys.tree(rootId);
+      await client.cancelQueries({ queryKey: tree });
+      const context: CreateContext = {
+        tree: client.getQueryData<TreeSnapshot>(tree),
+        from: navigation.activePageId,
+      };
+
+      const index = context.tree === undefined ? undefined : buildIndex(context.tree);
+      const parent = parentId === null ? undefined : index?.byId[parentId];
+      const node: TreeNode = {
+        id: tempId,
+        kind: 'page',
+        title: title === '' ? strings['empty.page.title'] : title,
+        // The provider picks the slug, so until it answers this page is at no path at all and
+        // nothing resolves a link to it (docs/03 section 4.7).
+        path: '',
+        parentId: parent === undefined ? null : parentId,
+        childIds: [],
+      };
+      if (index !== undefined) {
+        const at = parent === undefined ? index.rootIds.length : parent.childIds.length;
+        client.setQueryData(tree, toSnapshot(applyInsert(index, node, node.parentId, at)));
+      }
+      client.setQueryData(keys.page(tempId), emptyPage(tempId, title));
+      markFresh(ns, tempId);
+
+      // docs/01 section 5.3: edit mode with the title focused, which `PageTitle` reads off the
+      // fresh flag. A real history entry: the new page is somewhere the back button returns from.
+      navigation.navigate({ pageId: tempId, mode: 'edit' });
+      return context;
+    },
+
+    onSuccess: async (node, { tempId }) => {
+      // Fetched before anything navigates onto it, so the session that is already open adopts a
+      // version the provider knows and the swap paints nothing. A read that fails changes
+      // nothing about the page having been created: the canvas fetches it again on the way in.
+      await client.query(pageQuery(provider, keys, node.id)).catch(() => undefined);
+      // Before the patch below, because that patch notifies: the render it causes is the first
+      // one that has to know the two ids are the same page (docs/04 section 4).
+      settleFresh(ns, tempId, node.id);
+      const snapshot = client.getQueryData<TreeSnapshot>(keys.tree(rootId));
+      if (snapshot !== undefined) {
+        const index = applyRemove(buildIndex(snapshot), tempId);
+        const parent = node.parentId === null ? undefined : index.byId[node.parentId];
+        const at = parent === undefined ? index.rootIds.length : parent.childIds.length;
+        client.setQueryData(keys.tree(rootId), toSnapshot(applyInsert(index, node, node.parentId, at)));
+      }
+      onEvent({ type: 'page:created', id: node.id });
+      // Replaces the temporary id in the host's history rather than stacking a second entry.
+      navigation.navigate({ pageId: node.id, mode: 'edit' }, { replace: true });
+    },
+
+    onError: (error, { tempId }, context) => {
+      dropFresh(ns, tempId);
+      if (context?.tree !== undefined) client.setQueryData(keys.tree(rootId), context.tree);
+      navigation.navigate({ pageId: context?.from ?? null, mode: 'read' }, { replace: true });
+      const code = isProviderError(error) ? error.code : 'internal';
+      onEvent({ type: 'error', code, id: tempId, error });
+    },
+
+    onSettled: (_node, _error, { tempId }) => {
+      // After the navigation above, so nothing is left observing a page that never existed.
+      client.removeQueries({ queryKey: keys.page(tempId) });
+      void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+    },
+  });
+}
+
+/** What the editor opens on while the provider is still writing the file. */
+function emptyPage(id: NodeId, title: string): PageDocument {
+  return {
+    id,
+    // Held even when it is empty: the row needs a placeholder title to read as a row, but the
+    // title field has to open on its own placeholder so the first keystroke names the page.
+    meta: { id, title },
+    body: '',
+    // No file, so no hash yet: the real version arrives with the provider's answer.
+    version: '',
+    updatedAt: new Date().toISOString(),
+  };
 }

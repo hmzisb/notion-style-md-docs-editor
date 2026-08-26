@@ -8,6 +8,7 @@ import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useHotkeys, type Hotkey } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
@@ -42,6 +43,8 @@ export interface PageTreeProps {
   onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void;
   /** Scopes the tree to one subtree; the scope node itself is the single root row. */
   rootId?: NodeId;
+  /** Absent on a read-only provider, and then so is every `+` on a row (docs/01 section 6). */
+  onCreate?: (parentId: NodeId) => void;
   className?: string;
 }
 
@@ -49,6 +52,7 @@ export function PageTree({
   activeId,
   onOpen,
   rootId,
+  onCreate,
   className,
 }: PageTreeProps): React.JSX.Element {
   const { strings } = useDocs();
@@ -77,13 +81,22 @@ export function PageTree({
     );
   }
 
-  return <TreeBody index={index} activeId={activeId} onOpen={onOpen} className={className} />;
+  return (
+    <TreeBody
+      index={index}
+      activeId={activeId}
+      onOpen={onOpen}
+      onCreate={onCreate}
+      className={className}
+    />
+  );
 }
 
 function TreeBody({
   index,
   activeId,
   onOpen,
+  onCreate,
   className,
 }: Omit<PageTreeProps, 'rootId'> & { index: TreeIndex }): React.JSX.Element {
   const { navigation, strings } = useDocs();
@@ -134,6 +147,8 @@ function TreeBody({
     features: [syncDataLoaderFeature, hotkeysCoreFeature, searchFeature],
   });
 
+  const create = onCreate;
+
   const toggle = useCallback(
     (id: NodeId) => {
       const item = tree.getItemInstance(id);
@@ -180,6 +195,24 @@ function TreeBody({
   useEffect(() => {
     tree.rebuildTree();
   }, [tree, index.version]);
+
+  // docs/07 section 2: the pointer has the `+` on the row; this is the same thing from the
+  // keyboard, on whichever row the roving tabindex is on.
+  useHotkeys(
+    create === undefined
+      ? []
+      : ([
+          {
+            keys: 'Mod+Shift+ArrowRight',
+            scopes: ['tree'],
+            run: () => {
+              const id = tree.getFocusedItem().getId();
+              if (latest.current.index.byId[id] !== undefined) create(id);
+            },
+          },
+        ] satisfies Hotkey[]),
+    scrollRef,
+  );
 
   const items = tree.getItems();
   const rowHeight = useIsMobile() ? ROW_HEIGHT_TOUCH : ROW_HEIGHT;
@@ -240,10 +273,12 @@ function TreeBody({
               expandLabel={format(strings[isExpanded ? 'tree.collapseRow' : 'tree.expandRow'], {
                 title: node.title,
               })}
+              addLabel={format(strings['tree.addInside'], { title: node.title })}
               register={registerFor(node.id)}
               onActivate={activate}
               onToggle={toggle}
               onFocus={focusItem}
+              onCreate={create}
             />
           );
         })}

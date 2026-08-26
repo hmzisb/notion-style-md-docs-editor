@@ -65,7 +65,7 @@ test('picking a file from the block uploads it and puts the path in the page', a
 
   const [chooser] = await Promise.all([
     page.waitForEvent('filechooser'),
-    page.getByRole('button', { name: 'Upload' }).click(),
+    page.getByRole('button', { name: 'Upload', exact: true }).click(),
   ]);
   await chooser.setFiles({
     name: 'Flow Diagram.PNG',

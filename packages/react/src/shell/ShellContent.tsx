@@ -9,6 +9,7 @@ import {
 import { FilePlus, FileText, FileX, Folder, TriangleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
+import { canvasKey, freshTwin } from '@/data/fresh.js';
 import { usePage, useTreeIndex } from '@/data/queries.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
@@ -28,6 +29,8 @@ export interface ShellContentProps {
   emptyState?: ReactNode;
   onOpen: (id: NodeId) => void;
   onHome: () => void;
+  /** Absent on a read-only provider, and then so is the card's action (docs/06 section 11). */
+  onCreate?: () => void;
 }
 
 /**
@@ -44,8 +47,9 @@ export function ShellContent({
   emptyState,
   onOpen,
   onHome,
+  onCreate,
 }: ShellContentProps): React.JSX.Element {
-  const { meta, strings } = useDocs();
+  const { meta, ns, strings } = useDocs();
   const tree = useTreeIndex(rootId);
   const found = pageId === null ? null : (tree.data?.byId[pageId] ?? null);
   // A folder has no page behind it (docs/03 section 4.1), so there is nothing to fetch.
@@ -92,6 +96,11 @@ export function ShellContent({
           icon={FilePlus}
           title={strings['empty.noPages.title']}
           body={strings['empty.noPages.body']}
+          action={
+            onCreate === undefined
+              ? undefined
+              : { label: strings['empty.noPages.action'], onClick: onCreate }
+          }
         />
       );
     }
@@ -101,11 +110,19 @@ export function ShellContent({
         icon={FileText}
         title={strings['empty.noSelection.title']}
         body={strings['empty.noSelection.body']}
+        action={
+          onCreate === undefined
+            ? undefined
+            : { label: strings['empty.noSelection.action'], onClick: onCreate }
+        }
       />
     );
   }
 
-  const node = index.byId[pageId] ?? null;
+  // A page created here answers to both of its ids for as long as the swap takes (docs/04
+  // section 4): the row going over to the provider's id is not the page having been deleted.
+  const twin = freshTwin(ns, pageId);
+  const node = index.byId[pageId] ?? (twin === null ? null : (index.byId[twin] ?? null));
   if (node === null) {
     return (
       <EmptyState
@@ -152,9 +169,11 @@ export function ShellContent({
   }
 
   return (
-    // The page id is the session (docs/05 section 8): a new page opens in read mode again.
+    // The page id is the session (docs/05 section 8): a new page opens in read mode again. A
+    // page created in this session keeps the id it was created under, so the provider's id
+    // landing a moment later does not remount the canvas around it (docs/04 section 4).
     <PageCanvas
-      key={node.id}
+      key={canvasKey(ns, node.id)}
       page={page.data}
       node={node}
       rootId={rootId}

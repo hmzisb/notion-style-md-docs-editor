@@ -2,6 +2,7 @@ import type { NodeId, PageMode } from '@docs/core';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
+import { isFresh, isTempId } from '@/data/fresh.js';
 import { useUpdateMeta } from '@/data/mutations.js';
 import { useStructuralGate } from '@/data/online.js';
 import { format } from '@/data/strings.js';
@@ -41,7 +42,7 @@ export function PageTitle({
   onModeChange,
   onGoToContent,
 }: PageTitleProps): React.JSX.Element {
-  const { strings } = useDocs();
+  const { ns, strings } = useDocs();
   const update = useUpdateMeta(rootId);
   // A rename is structural (D-05): offline the field still reads and scrolls, it just cannot
   // be typed into. `readOnly` rather than `disabled`, so the text stays selectable.
@@ -52,28 +53,53 @@ export function PageTitle({
   /** The last title the provider was asked for, so a flush after a commit is a no-op. */
   const sent = useRef(title);
   // A click in read mode both switches the mode and asks for the caret, and the textarea it
-  // asks for does not exist until the mode has changed.
-  const wanted = useRef(false);
+  // asks for does not exist until the mode has changed. A page created a moment ago asks for it
+  // without a click: it opens in edit mode with the title focused (docs/01 section 5.3).
+  const wanted = useRef(isFresh(ns, pageId));
+  /** The latest `commit`: a page can close, or gain its real id, between a timer and its shot. */
+  const latest = useRef<(next: string) => void>(() => undefined);
+  /** A title typed before the provider answered, waiting for the id to send it under. */
+  const deferred = useRef<string | null>(null);
 
   const commit = useCallback(
     (next: string) => {
       if (timer.current !== null) clearTimeout(timer.current);
       timer.current = null;
       if (next === sent.current) return;
+      // docs/01 section 5.3: the page is open before the provider has given it an id. A title
+      // typed in that moment is held until the real one lands rather than naming a page that
+      // has none; the effect below is what sends it.
+      if (isTempId(pageId)) {
+        deferred.current = next;
+        return;
+      }
       sent.current = next;
-      // ponytail: a fresh page's first commit passes `renameFile` (docs/07 section 5); the
-      // "fresh" flag is created by `useCreatePage`, which lands with the tree writes in P3-T02.
       update.mutate(
-        { id: pageId, patch: { title: next } },
-        { onError: () => toast(format(strings['error.rename'], { title })) },
+        // docs/03 section 4.7: the first title on a page created here renames `untitled*.md`.
+        { id: pageId, patch: { title: next }, renameFile: isFresh(ns, pageId) },
+        {
+          onError: () => {
+            // The patch was rolled back, so this title was not written after all: leaving it as
+            // sent would make retyping the same one a no-op.
+            sent.current = title;
+            toast(format(strings['error.rename'], { title }));
+          },
+        },
       );
     },
-    [pageId, strings, title, update],
+    [ns, pageId, strings, title, update],
   );
 
   // Whatever is pending when the page closes is still the user's title.
-  const latest = useRef(commit);
   latest.current = commit;
+
+  // The provider's id arrived: the title that was waiting for it goes now (docs/04 section 4).
+  useEffect(() => {
+    const held = deferred.current;
+    if (held === null || isTempId(pageId)) return;
+    deferred.current = null;
+    commit(held);
+  }, [commit, pageId]);
   const pending = useRef(value);
   pending.current = value;
   useEffect(
@@ -137,8 +163,10 @@ export function PageTitle({
         const next = event.target.value.replace(/\n/g, '');
         setValue(next);
         if (timer.current !== null) clearTimeout(timer.current);
+        // Through the ref: the page can have gained its real id between the keystroke and
+        // this shot, and the title belongs to whichever id it has by then.
         timer.current = setTimeout(() => {
-          commit(next);
+          latest.current(next);
         }, COMMIT_DELAY);
       }}
       onBlur={() => {

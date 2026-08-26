@@ -10,7 +10,7 @@ import {
 } from '@docs/core';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Value } from 'platejs';
-import { useCallback, useEffect, useMemo, useRef } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { cancelIdle, requestIdle } from '@/lib/idle.js';
 import { sameValue } from '@/lib/same-value.js';
 import { createLru, valueCache, valueCacheKey, type Lru } from './cache/value-cache.js';
@@ -18,6 +18,7 @@ import { resolvePersist } from './cache/persister.js';
 import { useCodec } from './codec.js';
 import { useDocs } from './context.js';
 import { draftStoreFor, type Draft, type DraftStore } from './drafts.js';
+import { isTempId } from './fresh.js';
 import { usePageValue } from './use-page-value.js';
 import {
   cleanSession,
@@ -161,6 +162,17 @@ export function useDocumentSession(page: PageDocument): DocumentSession {
   now.current = { codec, id, initial, page, provider, onEvent, keys, client, drafts, store };
 
   const api = useMemo(() => createSession(live, now, ns), [ns]);
+
+  // docs/04 section 4: a page created in this session swaps its temporary id for the provider's
+  // while the editor stays mounted. Everything the session holds is the user's and carries over;
+  // only the id it saves under and the version it saves against are new. A layout effect, so it
+  // lands before the passive effects below re-register and re-read against the new id.
+  const previousId = useRef(id);
+  useLayoutEffect(() => {
+    const from = previousId.current;
+    previousId.current = id;
+    if (from !== id && isTempId(from)) api.rekey(from, page.version);
+  }, [api, id, page.version]);
 
   // A new namespace re-keys the whole provider, so this only unmounts with the page: flush what
   // the user typed, then let the timers go (docs/04 section 3.1, "unmount").
@@ -534,6 +546,22 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
       }
       live.current.base = version;
       reset(value);
+    },
+
+    /**
+     * docs/04 section 4: the page the provider just created is the page already open. The value,
+     * the dirty flag and the timers stay where they are; the version to save against, the draft
+     * and the status entry move over to the id the rest of the module uses from now on.
+     */
+    rekey: (from: NodeId, version: string): void => {
+      live.current.base = version;
+      live.current.seen = version;
+      void now.current.drafts.remove(from);
+      const store = now.current.store.getState();
+      const state = store.sessions[from];
+      if (state === undefined) return;
+      store.reset(from);
+      store.patch(now.current.id, state);
     },
 
     /** The window-level flush and retry triggers of docs/04 sections 3.1 and 3.4. */

@@ -144,7 +144,6 @@ export const defaultStrings = {
   'palette.empty': 'No results',
   'palette.retry': 'Retry',
   'palette.newPage': 'New page',
-  'palette.createUnavailable': 'Creating pages is not available yet',
   'palette.toggleSidebar': 'Toggle sidebar',
   'palette.expandAll': 'Expand all',
   'palette.collapseAll': 'Collapse all',

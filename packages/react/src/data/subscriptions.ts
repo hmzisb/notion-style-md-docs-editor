@@ -17,7 +17,11 @@ export function useProviderEvents({ capabilities, keys, ns, provider }: DocsCont
     if (!watches) return;
     return provider.subscribe?.((event) => {
       if (event.type === 'tree') {
-        void client.invalidateQueries({ queryKey: [ns, 'tree'] });
+        // A write of ours, reported back to us while its own optimistic patch is still the
+        // only place the new row exists: refetching now would take that row off the screen
+        // the user is already typing into (docs/04 section 4). Nothing is lost by waiting -
+        // every mutation invalidates the tree on settle, which is a moment later.
+        if (client.isMutating() === 0) void client.invalidateQueries({ queryKey: [ns, 'tree'] });
         return;
       }
       // The watcher reporting our own save back to us: the cache already has that version,

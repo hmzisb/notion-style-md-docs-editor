@@ -1,5 +1,5 @@
 import type { NodeId, NodeKind, PageIcon } from '@docs/core';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Plus } from 'lucide-react';
 import { memo } from 'react';
 import { cn } from '@/lib/utils';
 import { IconGlyph } from './IconGlyph.js';
@@ -27,10 +27,14 @@ export interface PageTreeRowProps {
   top: number;
   height: number;
   expandLabel: string;
+  /** `Add a page inside {title}`, already formatted: the row keeps every string it renders. */
+  addLabel: string;
   register: (element: HTMLDivElement | null) => void;
   onActivate: (id: NodeId) => void;
   onToggle: (id: NodeId) => void;
   onFocus: (id: NodeId) => void;
+  /** Absent on a read-only provider, and then so is the button (docs/01 section 6). */
+  onCreate?: (parentId: NodeId) => void;
 }
 
 function Row({
@@ -49,10 +53,12 @@ function Row({
   top,
   height,
   expandLabel,
+  addLabel,
   register,
   onActivate,
   onToggle,
   onFocus,
+  onCreate,
 }: PageTreeRowProps): React.JSX.Element {
   return (
     <div
@@ -130,11 +136,32 @@ function Row({
         </a>
       )}
 
-      {/* Reserved for the row actions that arrive with the mutations (docs/06 section 5). */}
+      {/* docs/06 section 5. In flow while hidden, so revealing it moves no text; touch has no
+          hover, so there it is the open row that shows its actions. */}
       <span
         data-slot="tree-row-actions"
-        className="flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100"
-      />
+        className={cn(
+          'flex shrink-0 items-center gap-0.5 opacity-0 group-hover:opacity-100 focus-within:opacity-100',
+          'max-md:group-data-[active]:opacity-100',
+        )}
+      >
+        {onCreate !== undefined && (
+          <button
+            type="button"
+            // Not a tab stop: the row owns the roving tabindex, and `Cmd+Shift+Right` is the
+            // keyboard's way in (docs/07 sections 2 and 9).
+            tabIndex={-1}
+            aria-label={addLabel}
+            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:bg-accent max-md:size-11"
+            onClick={(event) => {
+              event.stopPropagation();
+              onCreate(id);
+            }}
+          >
+            <Plus aria-hidden="true" className="size-4" />
+          </button>
+        )}
+      </span>
     </div>
   );
 }
