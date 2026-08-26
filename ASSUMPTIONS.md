@@ -14,6 +14,12 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-116 · Gate 2 · 2026-08-26
+Question: the gutter controls (`+`, drag handle) are `opacity-0` until the block is hovered, and were also in the tab order - so `Tab` out of a paragraph landed on an invisible button, twice per block.
+Assumed: `tabIndex={-1}` on both. They stay pointer affordances; `Enter` opens a block below and docs/07 section 3 moves one with `Cmd+Shift+Up/Down`, so no function is keyboard-only reachable through them.
+Why: the alternative - revealing them on focus - puts two stops per block between a writer and the next real control, on a page that can have hundreds.
+Cheap to reverse: yes
+
 ## ASM-115 · Gate 2 · 2026-08-26
 Question: docs/06 section 7 puts a `FileText` icon on an internal link that resolves to a page, without saying whether the editor draws one too.
 Assumed: it does. `DocumentEditor` now takes `rootId` and resolves links against the same tree index the read view uses, and `LinkElement` draws the icon inside a `contentEditable={false}` span.

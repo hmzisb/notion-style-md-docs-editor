@@ -79,7 +79,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P2-T12** Image caption rule (stretch)
 - [x] **P2-T13** Asset upload
 - [x] **P2-T14** Edit round-trip e2e
-- [ ] **Gate 2** green, `docs/execution/PHASE-2-REPORT.md` written
+- [x] **Gate 2** green, `docs/execution/PHASE-2-REPORT.md` written
 
 ## Phase 3: Page operations, polish, packaging
 
@@ -112,7 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: Gate 2
-- Open at Gate 2: `./shell` measures 98.08 kB gz against the 60 kB budget in docs/02 section 7, capped at 100 kB; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left (DEV-012, ASM-063).
-- Open at Gate 2: the mode swap moves the page. In edit mode the title block renders the hover-only "Add icon" button (docs/06 section 7) invisible but in flow, so the canvas starts 38 px lower than in read - `apps/playground/e2e/edit-mode.spec.ts:30` fails on it at HEAD, and docs/05 section 8 asks for no jump at all. The button belongs out of flow (absolutely positioned in the 88 px above the title), and the read/edit article heights want re-measuring after that (read 28205 px against edit 29404 px on the Large page).
-- Last gate passed: Gate 1 (2026-08-26)
+- Current task: P3-T01
+- Open at Gate 3: `./shell` measures 98.29 kB gz against the 60 kB budget in docs/02 section 7, capped at 100 kB; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left, and P3's row menus share it (DEV-012, ASM-063).
+- Last gate passed: Gate 2 (2026-08-26)

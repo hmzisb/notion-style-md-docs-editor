@@ -224,6 +224,11 @@ function InsertButton() {
           variant="ghost"
           className={gutterButton}
           aria-label={label}
+          // A pointer affordance in the page margin, hidden until the block is hovered: in the
+          // tab order it is two invisible stops per block between the writer and the next real
+          // control. `Enter` already opens a block below, and docs/07 section 3 moves one with
+          // `Cmd+Shift+Up/Down`, so the keyboard loses nothing (docs/06 sections 7 and 15).
+          tabIndex={-1}
           // The button is in the editable, so taking the focus would drop the caret with it.
           onMouseDown={(event) => {
             event.preventDefault();
@@ -282,6 +287,8 @@ const DragHandle = React.memo(function DragHandle({
           variant="ghost"
           className={gutterButton}
           aria-label={label}
+          // Out of the tab order for the same reason as the `+` above.
+          tabIndex={-1}
           onClick={(e) => {
             e.preventDefault();
             editor.getApi(BlockSelectionPlugin).blockSelection.focus();
