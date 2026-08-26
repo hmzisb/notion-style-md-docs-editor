@@ -20,6 +20,7 @@ import { ShortcutsKit } from './shortcuts-kit.js';
 import { SlashKit } from './slash-kit.js';
 import { TableKit } from './table-kit.js';
 import { ToggleKit } from './toggle-kit.js';
+import { UploadPlugin } from './upload-kit.js';
 
 /**
  * docs/05 section 1: the React half of the two kits. Every node type the codec parses has a
@@ -62,6 +63,8 @@ const EDITOR_ONLY: EditorPlugin[] = [
   ...ExitBreakKit,
   ...BlockSelectionKit,
   ...DndKit,
+  // Paste and drop of image files; inert until `DocumentEditor` hands it the page's upload.
+  UploadPlugin,
   TrailingBlockPlugin,
 ];
 

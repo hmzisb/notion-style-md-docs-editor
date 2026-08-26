@@ -96,6 +96,9 @@ describe('the slash menu block set (docs/05 section 2)', () => {
       const block = editor.api.block();
       // A void block has no text to type into; what it writes is the block itself.
       if (block && !editor.api.isVoid(block[0])) editor.tf.insertText('Words');
+      // The image is inserted with no URL and asks for one in place (docs/05 section 6); an
+      // image still waiting for one is not written to the file, so give it what it asked for.
+      if (type === KEYS.img && block) editor.tf.setNodes({ url: 'shot.png' }, { at: block[1] });
       expect(markdown(editor)).not.toBe('');
     },
   );

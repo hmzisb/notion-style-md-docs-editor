@@ -14,6 +14,36 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-108 · P2-T13 · 2026-08-26
+Question: docs/03 section 10 wants an optional provider method present exactly when its flag is on, and the file-store provider now has `uploadAsset`; a writable store can always take one.
+Assumed: `capabilities.upload` is `!store.readOnly`, and `uploadAsset` is attached to the provider only when that flag survives the `capabilities` override - the same shape `subscribe` already uses.
+Why: a read-only store advertising an upload method would break the conformance invariant every caller trusts, and a host that overrides the flag off gets a provider with no method to call rather than one that rejects halfway through a write.
+Cheap to reverse: yes
+
+## ASM-107 · P2-T13 · 2026-08-26
+Question: `@platejs/media` ships a `PlaceholderPlugin` with its own upload flow (`insertMedia`, `uploadConfig`, `UploadError`); docs/05 section 6 only asks for paste, drop and a picker.
+Assumed: a small `docsUpload` plugin of our own - `onPaste`/`onDrop` handlers plus two transforms - and the image node carries the upload on transient props (`uploadId`, `uploadName`, `uploadFailed`).
+Why: the placeholder plugin inserts a `placeholder` node type the codec has no rule for, so an interrupted upload or an unlucky autosave would write a block the file cannot represent; transient props on the image node the codec already knows cost ~1.5 kB and cannot leak into Markdown.
+Cheap to reverse: yes
+
+## ASM-106 · P2-T13 · 2026-08-26
+Question: an image block exists before it has a URL - the slash item inserts it empty, and an upload fills it in later. What should a save that lands in between write?
+Assumed: the codec drops every image whose `url` is `''` on the way out (`withoutPending`), and the transient upload props are cleared with `setNodes({ prop: null })` when the upload settles.
+Why: docs/05 section 3 says the file is the source of truth, and `![]()` is a broken image nobody typed; the autosave is a debounce behind the caret, so this case is reached by doing nothing at all.
+Cheap to reverse: yes
+
+## ASM-105 · P2-T13 · 2026-08-26
+Question: where does a pasted or dropped image go, and what does the block show while it is being written?
+Assumed: paste inserts under the block the caret is in; a drop lands after the block under the pointer (`editor.api.findEventRange`), each file getting its own block; the block shows a dashed row with a spinner and the file name, `aria-live="polite"`, and a failed upload leaves the block asking for a URL with a `role="alert"` line under it.
+Why: docs/05 section 6 asks for progress "where the picture will be" and a way back for a failure; keeping the writer's place is the one thing a failed upload must not cost them.
+Cheap to reverse: yes
+
+## ASM-104 · P2-T13 · 2026-08-26
+Question: the multipart path of the http adapter cannot be exercised end to end - jsdom cannot send a `FormData` body through `fetch`, so the request hangs before msw ever sees it.
+Assumed: that one test injects `fetch` and reads the request where it is made: the URL, the method, a `FormData` body carrying the file, and no content type of ours.
+Why: the boundary is what the runtime adds, so "we set no content type" is the actual requirement, and it is the assertion that would catch the regression; the wire itself is covered by the OPFS e2e and by the handler tests.
+Cheap to reverse: yes
+
 ## ASM-103 · P2-T12 · 2026-08-26
 Question: `preloadEditor()` is fired and forgotten from the shell's idle preload and from every hover; docs/05 section 8 says nothing about what a load that fails should do.
 Assumed: a failed import clears the cached promise so the next call tries again, and the three fire-and-forget callers swallow the rejection.

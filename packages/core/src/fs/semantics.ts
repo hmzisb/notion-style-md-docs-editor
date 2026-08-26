@@ -90,6 +90,9 @@ interface LoadedTree {
   entries: readonly FileEntry[];
 }
 
+/** Where an uploaded file goes, next to the page that took it. */
+const ASSET_DIR = 'assets';
+
 const MIME: Record<string, string> = {
   '.avif': 'image/avif',
   '.gif': 'image/gif',
@@ -103,6 +106,13 @@ const MIME: Record<string, string> = {
 
 function mimeFor(path: string): string {
   return MIME[extname(path).toLowerCase()] ?? 'application/octet-stream';
+}
+
+/** A file dropped from a screenshot tool often has a type and no extension of its own. */
+function extensionFor(name: string, type: string): string {
+  const own = extname(name).toLowerCase();
+  if (own !== '') return own;
+  return Object.entries(MIME).find(([, mime]) => mime === type)?.[0] ?? '';
 }
 
 /** Frontmatter `updatedAt` wins, then the store's mtime, then the clock. */
@@ -133,9 +143,9 @@ export function createFileStoreProvider(
     write: writable,
     move: writable,
     delete: writable,
-    // `uploadAsset` and `search` arrive in later phases; advertising a capability with
-    // no method behind it is what breaks the callers that trust the flag.
-    upload: false,
+    upload: writable,
+    // `search` arrives in a later phase; advertising a capability with no method behind it
+    // is what breaks the callers that trust the flag.
     search: false,
     subscribe: typeof store.watch === 'function',
     ...opts.capabilities,
@@ -653,6 +663,32 @@ export function createFileStoreProvider(
       unwatch?.();
     },
   };
+
+  /**
+   * docs/03 section 4.10, docs/05 section 6: the file lands in `assets/` next to the page
+   * and the path handed back is relative to it, which is what goes in the Markdown.
+   */
+  async function uploadAsset(pageId: NodeId, file: File): Promise<{ path: string; url: string }> {
+    requireWrite('uploadAsset');
+    const page = await nodeById(pageId);
+    const dir = joinPath(assetBaseFor(page.path), ASSET_DIR);
+    const ext = extensionFor(file.name, file.type);
+    const base = slugify(stem(file.name) === '' ? file.name : stem(file.name));
+
+    // The name is taken one at a time rather than from a listing: another window may have
+    // written between the two, and the loop costs one `exists` per collision.
+    let name = `${base}${ext}`;
+    for (let n = 2; await store.exists(joinPath(dir, name)); n += 1) {
+      name = `${base}-${String(n)}${ext}`;
+    }
+
+    await store.writeBinary(joinPath(dir, name), file);
+    const relative = `${ASSET_DIR}/${name}`;
+    return { path: relative, url: await provider.assetUrl(relative, page) };
+  }
+
+  // docs/03 section 10: an optional method is here exactly when its flag is on.
+  if (capabilities.upload) provider.uploadAsset = uploadAsset;
 
   if (capabilities.subscribe) {
     provider.subscribe = (listener: (event: ChangeEvent) => void): (() => void) => {

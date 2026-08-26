@@ -278,6 +278,45 @@ describe('createHttpProvider', () => {
       expect(await codeOf(provider.assetUrl('../../../etc/passwd', node))).toBe('validation');
     });
 
+    /**
+     * The body is a `FormData`, which the runtime serializes with a boundary of its own - so
+     * the request must carry no content type of ours, or that boundary is lost. jsdom cannot
+     * send a multipart body through `fetch`, so the request is read where it is made.
+     */
+    it('posts the file as multipart and gets back the path that goes in the Markdown', async () => {
+      let sent: [string, RequestInit | undefined] | undefined;
+      const urlOf = (input: URL | RequestInfo): string =>
+        typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+      const provider = client({
+        fetch: (input, init) => {
+          if (urlOf(input).endsWith('/meta')) return fetch(input, init);
+          sent = [urlOf(input), init];
+          return Promise.resolve(
+            HttpResponse.json(
+              { path: 'assets/flow.png', url: `${BASE}/assets/guides/assets/flow.png` },
+              { status: 201 },
+            ),
+          );
+        },
+      });
+      // The capability arrives with the meta, and the method with the capability.
+      await provider.getMeta();
+
+      const uploaded = await provider.uploadAsset?.('p_auth', new File(['bytes'], 'Flow.png'));
+
+      expect(uploaded).toEqual({
+        path: 'assets/flow.png',
+        url: `${BASE}/assets/guides/assets/flow.png`,
+      });
+      expect(sent?.[0]).toBe(`${BASE}/pages/p_auth/assets`);
+      expect(sent?.[1]?.method).toBe('POST');
+      expect(new Headers(sent?.[1]?.headers).get('content-type')).toBeNull();
+
+      const body = sent?.[1]?.body;
+      const file = body instanceof FormData ? body.get('file') : null;
+      expect(file instanceof File ? file.name : null).toBe('Flow.png');
+    });
+
     it('escapes each segment, and leaves an external href alone', async () => {
       const provider = client();
       const node = (await provider.getTree()).nodes.find(

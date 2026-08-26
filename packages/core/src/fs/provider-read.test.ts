@@ -48,7 +48,7 @@ describe('identity and capabilities', () => {
       write: true,
       move: true,
       delete: true,
-      upload: false,
+      upload: true,
       search: false,
       subscribe: true,
     });

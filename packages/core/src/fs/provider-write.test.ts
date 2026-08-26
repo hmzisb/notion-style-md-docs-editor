@@ -440,6 +440,65 @@ describe('deletePage', () => {
   });
 });
 
+describe('uploadAsset (docs/03 section 4.10, docs/05 section 6)', () => {
+  const png = (name: string, type = 'image/png'): File => new File(['bytes'], name, { type });
+  /** The method is here exactly when the flag is (docs/03 section 10), which the harness has. */
+  const upload = async (
+    h: ReturnType<typeof harness>,
+    pageId: NodeId,
+    file: File,
+  ): Promise<{ path: string; url: string }> => {
+    const uploadAsset = h.provider.uploadAsset?.bind(h.provider);
+    if (uploadAsset === undefined) throw new Error('the store takes uploads');
+    return uploadAsset(pageId, file);
+  };
+
+  it('writes next to the page and hands back the path that goes in the Markdown', async () => {
+    const h = harness({ 'index.md': '# Home\n', 'guides/auth/index.md': '# Auth\n' });
+    const page = await h.at('guides/auth/index.md');
+
+    const uploaded = await upload(h, page.id, png('Flow Diagram.PNG'));
+
+    expect(uploaded.path).toBe('assets/flow-diagram.png');
+    expect(await h.paths()).toContain('guides/auth/assets/flow-diagram.png');
+    // The path is relative to the page, so the same string resolves back to the file.
+    expect(await h.provider.assetUrl(uploaded.path, page)).toBe(uploaded.url);
+  });
+
+  it('puts the assets of a page that owns no directory beside it', async () => {
+    const h = harness({ 'index.md': '# Home\n', 'guides/auth.md': '# Auth\n' });
+    const page = await h.at('guides/auth.md');
+
+    await upload(h, page.id, png('shot.png'));
+
+    expect(await h.paths()).toContain('guides/assets/shot.png');
+  });
+
+  it('keeps both files when a name is taken', async () => {
+    const h = harness({ 'index.md': '# Home\n' });
+    const page = await h.at('index.md');
+
+    const first = await upload(h, page.id, png('shot.png'));
+    const second = await upload(h, page.id, png('shot.png'));
+
+    expect([first.path, second.path]).toEqual(['assets/shot.png', 'assets/shot-2.png']);
+  });
+
+  it('takes the extension from the type when the file has none', async () => {
+    const h = harness({ 'index.md': '# Home\n' });
+    const page = await h.at('index.md');
+
+    const uploaded = await upload(h, page.id, png('Pasted image', 'image/webp'));
+
+    expect(uploaded.path).toBe('assets/pasted-image.webp');
+  });
+
+  it('is advertised, so a caller can trust the flag', () => {
+    const h = harness({ 'index.md': '# Home\n' });
+    expect(h.provider.capabilities.upload).toBe(true);
+  });
+});
+
 describe('a read-only store', () => {
   it('rejects every write with unsupported and changes nothing', async () => {
     const store = new MemoryFileStore({ 'a.md': '# A\n' }, { readOnly: true });
@@ -458,5 +517,8 @@ describe('a read-only store', () => {
       );
     }
     expect(await store.readText('a.md')).toBe('# A\n');
+    // docs/03 section 10: no upload flag, no upload method to call.
+    expect(provider.capabilities.upload).toBe(false);
+    expect('uploadAsset' in provider).toBe(false);
   });
 });

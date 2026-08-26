@@ -9,6 +9,7 @@ import { cn } from '@/lib/utils';
 import { TooltipProvider } from '@/ui/tooltip';
 import { EditorContext, type EditorContextValue } from './context.js';
 import { createEditorKit } from './kits/editor-kit.js';
+import { UploadPlugin } from './kits/upload-kit.js';
 import { Editor, EditorContainer } from './ui/editor';
 import { FloatingToolbarButtons } from './ui/floating-toolbar-buttons';
 import { Toolbar } from './ui/toolbar';
@@ -54,7 +55,7 @@ export function DocumentEditor({
   autoFocus = false,
   className,
 }: DocumentEditorProps): React.JSX.Element {
-  const { strings } = useDocs();
+  const { capabilities, provider, strings } = useDocs();
 
   const plugins = useMemo(() => createEditorKit({ strings, toolbar }), [strings, toolbar]);
   const context = useMemo<EditorContextValue>(() => ({ node: page }), [page]);
@@ -78,6 +79,21 @@ export function DocumentEditor({
   useEffect(() => {
     ready?.(editor);
   }, [editor, ready]);
+
+  // docs/05 section 6: paste and drop upload only where the backend takes uploads, and the
+  // page they belong to is this editor's. Set rather than baked into the plugin, because
+  // `getMeta` can turn the capability on after the editor is built (docs/03 section 10).
+  const upload = useMemo(
+    () => (capabilities.upload ? provider.uploadAsset?.bind(provider) : undefined),
+    [capabilities.upload, provider],
+  );
+  useEffect(() => {
+    editor.setOption(
+      UploadPlugin,
+      'upload',
+      upload === undefined ? null : (file: File) => upload(pageId, file),
+    );
+  }, [editor, pageId, upload]);
 
   // docs/05 section 6: a click inside the text is one of the ways into edit mode. The region
   // wrapper and its `Enter` are the shell's (docs/07 section 2); this is the click half.

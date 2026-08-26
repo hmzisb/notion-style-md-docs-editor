@@ -54,7 +54,12 @@ export function createCodec(opts: CodecOptions = {}): Codec {
     // Captions first, or a captioned image inside a toggle would leave its caption outside.
     toMarkdown: (value) =>
       serializeMd(ready(), {
-        value: marked(foldToggles(unfoldCaptions(withoutTrailingBlanks(value)), codec.toMarkdown)),
+        value: marked(
+          foldToggles(
+            unfoldCaptions(withoutPending(withoutTrailingBlanks(value))),
+            codec.toMarkdown,
+          ),
+        ),
       }),
     toAst: (body) => markdownToAstProcessor(ready(), body, { withoutMdx: true }),
   };
@@ -94,6 +99,18 @@ const withoutTrailingBlanks = (value: Value): Value => {
   }
   return end === value.length ? value : value.slice(0, end);
 };
+
+/**
+ * An image the writer has not finished asking for - the URL field is still open, or the file
+ * is still uploading (docs/05 section 6) - has no bytes to write yet: left in, it saves as
+ * `![]()`, which is a line the writer never typed and the next save would take away again.
+ */
+const withoutPending = (value: Value): Value =>
+  value.some((node) => ElementApi.isElement(node) && node.type === KEYS.img && node.url === '')
+    ? value.filter(
+        (node) => !(ElementApi.isElement(node) && node.type === KEYS.img && node.url === ''),
+      )
+    : value;
 
 /**
  * The comparison behind `exact` (docs/05 section 4): same text, ignoring line endings,
