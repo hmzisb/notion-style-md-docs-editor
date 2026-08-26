@@ -153,6 +153,8 @@ export async function openOpfs(settings: WorkspaceSettings): Promise<DocumentPro
     key: `opfs:${OPFS_DIR}:${String(settings.opfsEpoch)}`,
     title: 'Browser storage',
     indexCache: true,
+    // Another tab writes to the same OPFS folder, and an import writes to it from this one.
+    watch: true,
   });
 }
 

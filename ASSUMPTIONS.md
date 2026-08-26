@@ -2,6 +2,18 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-154 · P4-T01 · 2026-08-27
+Question: docs/04 section 5 suppresses a save echo by comparing the event version with `session.lastSavedVersion`, which is a React-side check - but a store that reports its writes synchronously (the memory store, and any future one) calls the watcher from inside `writeText`, before the save has resolved and before the session knows the version.
+Assumed: the provider suppresses its own echo as well, by remembering the version of every page it has read or written (`seenVersions`) and emitting a `page` event only for a version it has not seen. The session-level check stays exactly as the spec has it.
+Why: without it, the watcher can invalidate the page query while the save that caused it is still in flight; the refetch lands under a dirty editor and `refreshed` turns that into a conflict banner for a change the user made themselves. Two cheap checks at two layers, and the provider's is the one that cannot race.
+Cheap to reverse: yes
+
+## ASM-155 · P4-T01 · 2026-08-27
+Question: the playground opened its OPFS workspace without `watch`, so nothing in the default e2e run exercised subscriptions.
+Assumed: OPFS opens with `watch: true`, like the folder workspace.
+Why: another tab writing to the same OPFS folder is a real case for a browser workspace, and it is the only mode a test can write behind the app's back. Cost is one listing per 5 s while a workspace is open.
+Cheap to reverse: yes
+
 ## ASM-153 · P3-T14 · 2026-08-27
 Question: `toHaveScreenshot` baselines are per-renderer, and a pixel written by this machine's Chromium on macOS is not what a Linux CI or a WebKit run produces.
 Assumed: the baselines are the darwin Chromium OPFS run only - `snapshotPathTemplate` carries `{platform}` and `{projectName}`, and the spec skips every project but `opfs`.

@@ -2,6 +2,13 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-032 · P4-T01 · 2026-08-27
+Spec said: docs/04 section 5 - "the filesystem adapter emits events by polling `stat` on the open page every 5 s and the tree every 30 s when `subscribe: true` is requested (cheap: mtime only)".
+Reality: the store is a `FileStore` (docs/03 section 3) and sits below the provider, so it does not know which page is open, and the File System Access API has no `stat`: the size and mtime of a file come from `getFile()`, one handle at a time. Two cadences would mean two walks with different depths, and the 30 s tree walk is the expensive one either way.
+Decision: one poll every 5 s over the listing the store already builds, diffed against the last one by `size:mtime` - no file is read to detect a change. What the walk found is then turned into events by the provider: a `page` event per file whose bytes changed, and a `tree` event only when the snapshot version came out different. The open page therefore hears about a change within one poll, which is the number the spec's page cadence names.
+Impact: `packages/react/src/adapters/filesystem-store.ts` (default poll 2 s -> 5 s), `packages/core/src/fs/semantics.ts` (`announce`, `seenVersions`); a listing of the 5,000-file fixture costs ~30 ms and runs once per 5 s while a workspace is open with `watch: true`.
+Reverse when: the handle API gains change events (`FileSystemObserver` is shipping behind a flag), which removes the poll entirely.
+
 ## DEV-031 · P3-T11 · 2026-08-26
 Spec said: docs/10 section 5 - keystroke to paint under 16 ms p95 on a 3,000-block page, asserted with the 20% tolerance (19.2 ms).
 Reality: 34.1 ms p95, 28.6 ms median, measured against the production build after DEV-029 and DEV-030. The same keystroke on the same build is 10.1 ms p95 at 500 blocks and 16.3 ms at 1,000, so pages of the size a reader writes are inside the budget and the 3k stress fixture is not. A CPU profile of one keystroke there is ~8.5 ms of JavaScript against ~16 ms of browser-internal work; layout and style recalc are a rounding error, and the idle frame cadence is 8.3 ms at every page size, so the cost is per-edit work rather than a slow frame. Both halves grow with the number of blocks in the document, not with what changed.

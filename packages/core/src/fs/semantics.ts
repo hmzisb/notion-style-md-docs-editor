@@ -155,6 +155,14 @@ export function createFileStoreProvider(
 
   let cached: Promise<LoadedTree> | null = null;
   let warnings: readonly WalkWarning[] = [];
+  /** Version of the last tree this provider built, so the watcher can skip an unchanged walk. */
+  let loadedVersion: string | undefined;
+  /**
+   * The version of every page this provider has read or written, keyed by path. It is what
+   * tells an external write from the echo of our own save (docs/04 section 5): the watcher
+   * reports both, and only the first is news to anyone.
+   */
+  const seenVersions = new Map<string, string>();
   /** Sibling files rewritten since the consumer last asked (docs/03 section 4.4). */
   let renumbered = 0;
   const assetCache = new Map<string, string>();
@@ -195,6 +203,7 @@ export function createFileStoreProvider(
       const entries = await store.list();
       const walked = await buildSnapshotFromEntries(entries, readPageInfo);
       warnings = walked.warnings;
+      loadedVersion = walked.snapshot.version;
       return {
         snapshot: walked.snapshot,
         index: buildIndex(walked.snapshot),
@@ -255,10 +264,15 @@ export function createFileStoreProvider(
   }
 
   async function writeFile(path: string, raw: string): Promise<SaveResult> {
+    // Before the write: a store that reports changes synchronously calls the watcher from
+    // inside `writeText`, and an echo recognised a microtask too late is a refetch of a page
+    // the user is still typing into.
+    const version = await pageVersion(raw);
+    seenVersions.set(path, version);
     await store.writeText(path, raw);
     touch(path);
     const stat = await store.stat?.(path);
-    return { version: await pageVersion(raw), updatedAt: toIso(stat?.mtime, now()) };
+    return { version, updatedAt: toIso(stat?.mtime, now()) };
   }
 
   /** The file as it is now, or an empty document when it does not exist yet. */
@@ -406,18 +420,40 @@ export function createFileStoreProvider(
     opts.onRenumber?.(ordered.length);
   }
 
+  const emit = (event: ChangeEvent): void => {
+    for (const listener of listeners) listener(event);
+  };
+
+  /**
+   * docs/04 section 5: a `page` event for each page whose bytes changed, and a `tree` event
+   * when the walk came out different. A save of ours changes bytes too, so every version is
+   * checked against {@link seenVersions} first - what this provider wrote is not news.
+   */
+  async function announce(changed: readonly string[]): Promise<void> {
+    const before = loadedVersion;
+    const { index, snapshot } = await load();
+
+    if (snapshot.version !== before) emit({ type: 'tree', version: snapshot.version });
+
+    const byPath = new Map(Object.values(index.byId).map((node) => [node.path, node]));
+    for (const path of changed) {
+      const node = byPath.get(path);
+      if (node?.kind !== 'page') continue;
+      const version = await pageVersion(await store.readText(path));
+      if (seenVersions.get(path) === version) continue;
+      seenVersions.set(path, version);
+      emit({ type: 'page', id: node.id, version });
+    }
+  }
+
   const unwatch = store.watch?.((paths) => {
     // An external write is the one case where the page cache cannot be trusted.
     if (paths.length === 0) infoCache.clear();
     else touch(...paths);
-    void load().then(
-      ({ snapshot }) => {
-        for (const listener of listeners) listener({ type: 'tree', version: snapshot.version });
-      },
-      // The cache is already dropped; a failed re-walk must not become an unhandled
-      // rejection in a watcher callback nobody can catch. The next read reports it.
-      () => undefined,
-    );
+    // The cache is already dropped; a failed re-walk or a file removed between the poll and
+    // the read must not become an unhandled rejection in a callback nobody can catch. The
+    // next read reports it.
+    void announce(paths).catch(() => undefined);
   });
 
   const provider: FileStoreProvider = {
@@ -456,11 +492,13 @@ export function createFileStoreProvider(
       const raw = await store.readText(node.path);
       const split = splitFrontmatter(raw);
       const stat = await store.stat?.(node.path);
+      const version = await pageVersion(raw);
+      seenVersions.set(node.path, version);
       const document: PageDocument = {
         id,
         meta: split.meta,
         body: split.body,
-        version: await pageVersion(raw),
+        version,
         updatedAt: toIso(split.meta.updatedAt ?? stat?.mtime, now()),
       };
       if (split.eol === 'crlf') document.eol = 'crlf';

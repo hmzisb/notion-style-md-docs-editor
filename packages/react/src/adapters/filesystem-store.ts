@@ -36,7 +36,8 @@ export interface FileSystemStoreOptions {
   pollIntervalMs?: number;
 }
 
-const DEFAULT_POLL_MS = 2000;
+/** docs/04 section 5 polls the open page every 5 s; one listing covers every page at once. */
+const DEFAULT_POLL_MS = 5000;
 
 /** A `FileEntry` reduced to what decides whether a cached read is still good. */
 export function stampOf(entry: FileEntry | undefined): string | undefined {
