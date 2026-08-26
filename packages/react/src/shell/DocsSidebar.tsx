@@ -1,8 +1,17 @@
 import type { NodeId, PageMode } from '@docs/core';
-import { House, PanelLeftClose, Plus, Search, SquarePen } from 'lucide-react';
-import type { ReactNode } from 'react';
+import {
+  ChevronsDownUp,
+  ChevronsUpDown,
+  House,
+  PanelLeftClose,
+  Plus,
+  Search,
+  SquarePen,
+} from 'lucide-react';
+import { useMemo, type ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';
-import { DEFAULT_SIDEBAR_WIDTH, useSidebarStore } from '@/data/sidebar-store.js';
+import { useTreeIndex } from '@/data/queries.js';
+import { DEFAULT_SIDEBAR_WIDTH, expandableIds, useSidebarStore } from '@/data/sidebar-store.js';
 import { formatKeys } from '@/lib/hotkeys';
 import { cn } from '@/lib/utils';
 import { PageTree } from '@/tree/PageTree.js';
@@ -62,6 +71,7 @@ export function DocsSidebar({
             {meta?.title ?? strings['tree.workspace']}
           </span>
           <span className="flex shrink-0 items-center gap-1">
+            <ExpandToggle rootId={rootId} />
             {collapsible && (
               <Button
                 variant="ghost"
@@ -163,6 +173,53 @@ export function DocsSidebar({
         }}
       />
     </div>
+  );
+}
+
+/**
+ * One control for both halves of docs/09 P3-T08: the tree is either open somewhere, and this
+ * shuts it, or it is closed everywhere, and this opens it. A component of its own so the index
+ * it reads re-renders a button and not the sidebar around it. The copy is the palette's, which
+ * is the other way to run the same two actions.
+ */
+function ExpandToggle({ rootId }: { rootId?: NodeId }): React.JSX.Element | null {
+  const { strings } = useDocs();
+  const { data: index } = useTreeIndex(rootId);
+  const anyExpanded = useSidebarStore((state) => Object.keys(state.expanded).length > 0);
+  const expandAll = useSidebarStore((state) => state.expandAll);
+  const collapseAll = useSidebarStore((state) => state.collapseAll);
+
+  const ids = useMemo(
+    () => (index === undefined ? [] : expandableIds(Object.values(index.byId))),
+    [index],
+  );
+  // A flat workspace has nothing to expand, and the button would do nothing on either press.
+  if (ids.length === 0) return null;
+
+  const label = strings[anyExpanded ? 'palette.collapseAll' : 'palette.expandAll'];
+  const Icon = anyExpanded ? ChevronsDownUp : ChevronsUpDown;
+
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={label}
+            onClick={() => {
+              // 5k nodes are one `set` either way (docs/09 P3-T08).
+              if (anyExpanded) collapseAll();
+              else expandAll(ids);
+            }}
+            className="opacity-0 transition-opacity focus-visible:opacity-100 group-hover/docs-sidebar:opacity-100 max-md:size-11 max-md:opacity-100"
+          >
+            <Icon aria-hidden="true" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>{label}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
 

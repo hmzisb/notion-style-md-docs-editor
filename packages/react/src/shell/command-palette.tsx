@@ -14,7 +14,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
 import { useTreeIndex } from '@/data/queries.js';
-import { useSidebarStore } from '@/data/sidebar-store.js';
+import { expandableIds, useSidebarStore } from '@/data/sidebar-store.js';
 import { formatKeys } from '@/lib/hotkeys';
 import { relativeTime } from '@/lib/relative-time.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
@@ -135,7 +135,7 @@ export function CommandPaletteDialog({
       icon: ChevronsUpDown,
       run: () => {
         close();
-        expandAll(nodes.filter((node) => node.childIds.length > 0).map((node) => node.id));
+        expandAll(expandableIds(nodes));
       },
     },
     {

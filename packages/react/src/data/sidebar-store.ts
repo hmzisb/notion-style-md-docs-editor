@@ -1,7 +1,11 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId, TreeNode } from '@docs/core';
 import { useStore, type StoreApi } from 'zustand';
 import { useDocs } from './context.js';
 import { perNamespace } from './local-store.js';
+
+/** The rows an expand-all has anything to do to: the ones with something under them. */
+export const expandableIds = (nodes: readonly TreeNode[]): NodeId[] =>
+  nodes.filter((node) => node.childIds.length > 0).map((node) => node.id);
 
 /** docs/06 section 4: `--docs-sidebar-width` starts at 240 px. */
 export const DEFAULT_SIDEBAR_WIDTH = 240;

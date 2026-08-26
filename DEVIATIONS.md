@@ -2,6 +2,13 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-026 · P3-T08 · 2026-08-26
+Spec said: docs/06 section 5 enumerates the sidebar header - workspace title on the left, and on the right "collapse button ... and New page (`SquarePen` ...) when `write`". Nothing else.
+Reality: docs/09 P3-T08 requires a "sidebar footer or header control for expand-all/collapse-all", and the footer already holds the New page row plus the host's `sidebarFooter` slot, where a control the host did not put there would read as the host's.
+Decision: a third header button, left of the collapse button, on the same hover-reveal as it (`focus-visible` and touch keep it visible). One control for both directions - `ChevronsDownUp` "Collapse all" while anything is open, `ChevronsUpDown` "Expand all" otherwise - and it is absent entirely in a workspace with no expandable row. The copy is the palette's `palette.expandAll` / `palette.collapseAll`, so a host that renames the action renames it in both places.
+Impact: `shell/DocsSidebar.tsx` (`ExpandToggle`); `data/sidebar-store.ts` (`expandableIds`, shared with the palette); `shell/shell.test.tsx`; no public API change, +0.26 kB on the shell chunk.
+Reverse when: docs/06 section 5 gains its own header inventory for this, or the control moves into an overflow menu.
+
 ## DEV-025 · P3-T07 · 2026-08-26
 Spec said: docs/05 section 2 - the emoji inline picker (`:`) through `@platejs/emoji` (`EmojiKit`), with shortcodes when Plate's Markdown kit registers `remark-emoji`. Marked "P3 optional".
 Reality: neither `@platejs/emoji` nor an emoji dataset is installed, and the registry's `emoji-kit` pulls `@emoji-mart/data` - a single JSON of every emoji, ~120 kB gz - into the editor chunk, which measures 213.65 kB against a 260 kB budget. `remark-emoji` is not installed either, so the codec would carry the shortcodes through as literal text.

@@ -75,6 +75,23 @@ describe('sidebar store (L5)', () => {
     expect(result.current.expanded).toEqual({});
   });
 
+  it('expands a 5,000 node workspace in one state update (docs/09 P3-T08)', () => {
+    const ids = Array.from({ length: 5000 }, (_, index) => `f_${String(index)}`);
+    const store = sidebarStoreFor(nsFor('bulk'));
+    const listener = vi.fn();
+    const unsubscribe = store.subscribe(listener);
+
+    store.getState().expandAll(ids);
+
+    expect(listener).toHaveBeenCalledTimes(1);
+    expect(Object.keys(store.getState().expanded)).toHaveLength(5000);
+
+    store.getState().collapseAll();
+    expect(listener).toHaveBeenCalledTimes(2);
+    expect(store.getState().expanded).toEqual({});
+    unsubscribe();
+  });
+
   it('writes preferences to localStorage under the instance namespace', () => {
     const { result } = mount('persisted');
 

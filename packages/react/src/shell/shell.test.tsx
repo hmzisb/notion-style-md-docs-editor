@@ -141,6 +141,33 @@ describe('DocsShell', () => {
     });
   });
 
+  describe('expand all (docs/09 P3-T08)', () => {
+    it('opens every folder from the header, and shuts them all again', async () => {
+      const user = userEvent.setup();
+      mount();
+      await ready();
+
+      // Nothing is open, so the deepest page in the trail has no row yet.
+      expect(screen.queryByRole('treeitem', { name: /Echo/ })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Expand all' }));
+      expect(await screen.findByRole('treeitem', { name: /Echo/ })).toBeInTheDocument();
+
+      await user.click(screen.getByRole('button', { name: 'Collapse all' }));
+      await waitFor(() => {
+        expect(screen.queryByRole('treeitem', { name: /Echo/ })).not.toBeInTheDocument();
+      });
+      expect(screen.getByRole('treeitem', { name: /Alpha/ })).toBeInTheDocument();
+    });
+
+    it('stays out of a workspace with nothing to expand', async () => {
+      mount({}, { 'home.md': page('p_home', 'Home') });
+      await ready();
+
+      expect(screen.queryByRole('button', { name: 'Expand all' })).not.toBeInTheDocument();
+    });
+  });
+
   describe('resize (docs/07 section 9)', () => {
     const handle = (): HTMLElement => screen.getByRole('separator', { name: 'Resize sidebar' });
 
