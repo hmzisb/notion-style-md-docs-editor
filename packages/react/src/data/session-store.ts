@@ -66,6 +66,7 @@ export function sessionStoreFor(ns: string): UseBoundStore<StoreApi<SessionsStat
         });
       },
       reset: (id) => {
+        offsets.get(ns)?.delete(id);
         set((state) => {
           const { [id]: _dropped, ...rest } = state.sessions;
           return { sessions: rest };
@@ -75,6 +76,27 @@ export function sessionStoreFor(ns: string): UseBoundStore<StoreApi<SessionsStat
     stores.set(ns, store);
   }
   return store;
+}
+
+/**
+ * Where the reader was on each page (docs/09 P4-T08). Beside the sessions rather than inside
+ * them: an offset changes on every frame of a flick, and the status pill, the banners and the
+ * unload guard all subscribe to the session state - none of them wants a render for a scroll.
+ */
+const offsets = new Map<string, Map<NodeId, number>>();
+
+export function rememberScroll(ns: string, id: NodeId, top: number): void {
+  let byId = offsets.get(ns);
+  if (byId === undefined) {
+    byId = new Map();
+    offsets.set(ns, byId);
+  }
+  byId.set(id, top);
+}
+
+/** Zero for a page this session has not scrolled, so opening one lands at the top. */
+export function recallScroll(ns: string, id: NodeId): number {
+  return offsets.get(ns)?.get(id) ?? 0;
 }
 
 /** Statuses that mean the file on disk is behind what the user typed. */

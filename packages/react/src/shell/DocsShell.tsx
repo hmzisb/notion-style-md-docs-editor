@@ -7,6 +7,7 @@ import { useDocs } from '@/data/context.js';
 import { newTempId } from '@/data/fresh.js';
 import { useCreatePage } from '@/data/mutations.js';
 import { useTreeIndex } from '@/data/queries.js';
+import { rememberScroll } from '@/data/session-store.js';
 import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import { seedSidebar, useSidebarStore } from '@/data/sidebar-store.js';
 import { format } from '@/data/strings.js';
@@ -154,7 +155,7 @@ function ShellBody({
   rootRef,
   onThemeChange,
 }: ShellBodyProps): React.JSX.Element {
-  const { navigation, strings, capabilities } = useDocs();
+  const { navigation, ns, strings, capabilities } = useDocs();
   const { isMobile, open, openMobile, setOpenMobile, toggleSidebar } = useSidebar();
   const { data: index } = useTreeIndex(rootId);
   const [scrolled, setScrolled] = useState(false);
@@ -337,7 +338,10 @@ function ShellBody({
         tabIndex={-1}
         className="flex h-full min-h-0 flex-col overflow-y-auto overscroll-contain outline-none"
         onScroll={(event) => {
-          setScrolled(event.currentTarget.scrollTop > 0);
+          const top = event.currentTarget.scrollTop;
+          setScrolled(top > 0);
+          // docs/09 P4-T08: where this page is left is where it opens again this session.
+          if (pageId !== null) rememberScroll(ns, pageId, top);
         }}
         onPointerEnter={warm}
         onFocus={warm}

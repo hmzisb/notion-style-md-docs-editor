@@ -107,12 +107,12 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P4-T04** Large page path; `large.spec.ts` proves a 5,200-block page opens read-only behind the banner and that `Edit anyway` is what gets past it, `perf.spec.ts` records what opting in costs (16.2 s, 25 s tripwire, ASM-160)
 - [x] **P4-T05** Doctor polish and `ids` migration; `NodeFileStore` (a `FileStore` over `node:fs`, not published) plus `pnpm doctor <folder> --write-ids`, one pass that assigns a frontmatter `id` per page and hoists a leading H1 into `title` (ASM-161, ASM-162), unit tested on a temp copy of the corpus
 - [x] **P4-T07** Local content search; `createFileStoreProvider` answers `search` - titles first, then page bodies ranked by hit count, ±60-char snippets, capped at 2,000 files and 4 MB a query, bodies cached beside the frontmatter and dropped with it; `capabilities.search` is true for the memory and filesystem providers
-- [ ] **P4-T08** Scroll restoration (optional)
+- [x] **P4-T08** Scroll restoration; per-page `scrollTop` remembered beside the sessions (no render for a scroll) and put back when the page opens again this session, `scroll.spec.ts` covers back, forward and that a reload starts at the top
 - [ ] **P4-T09** Final report
 
 ## Notes
 
-- Current task: P4-T08
+- Current task: P4-T09
 - Open at Gate 3: keystroke to paint is 34.1 ms p95 on the 3,000-block fixture against a 16 ms budget; 10.1 ms at 500 blocks and 16.3 at 1,000 (DEV-031).
 - Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
 - Last gate passed: Gate 3 (2026-08-27) — 19 pass, 0 skip, 0 fail

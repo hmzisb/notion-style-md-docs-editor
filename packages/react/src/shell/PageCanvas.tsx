@@ -2,6 +2,7 @@ import type { NodeId, PageDocument, PageMode, TreeNode } from '@docs/core';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDocs } from '@/data/context.js';
+import { recallScroll } from '@/data/session-store.js';
 import { useDocumentSession } from '@/data/session.js';
 import { preloadEditor, useEditorChunk } from '@/editor-chunk.js';
 import type { PlateEditor } from '@/editor/index.js';
@@ -56,7 +57,7 @@ export function PageCanvas({
   toolbar,
   onModeChange,
 }: PageCanvasProps): React.JSX.Element {
-  const { capabilities, onEvent, strings } = useDocs();
+  const { capabilities, ns, onEvent, strings } = useDocs();
   const chunk = useEditorChunk();
   const session = useDocumentSession(page);
   const [swapped, setSwapped] = useState(false);
@@ -66,6 +67,8 @@ export function PageCanvas({
   const pending = useRef<PendingFocus | null>(null);
   const offset = useRef<number | null>(null);
   const pointerDown = useRef<{ x: number; y: number } | null>(null);
+  /** Read once: the page's id can change under a canvas that was created here (docs/04 §4). */
+  const opened = useRef(recallScroll(ns, page.id));
 
   // The guard is lifted for the rest of the page session, not for the mode: a reader who asked
   // for the editor once keeps it when they go back to read and in again (docs/05 section 8).
@@ -88,6 +91,16 @@ export function PageCanvas({
   useEffect(() => {
     if (showEditor) setSwapped(true);
   }, [showEditor]);
+
+  /**
+   * docs/09 P4-T08: a page opened again in this session lands where the reader left it, and a
+   * page opened for the first time lands at the top - the scroll container belongs to the shell,
+   * and it would otherwise still be at the offset of the page before this one.
+   */
+  useLayoutEffect(() => {
+    const region = regionRef.current;
+    if (region !== null) region.scrollTop = opened.current;
+  }, [regionRef]);
 
   // The swap replaces the page's DOM in one commit; a shorter first paint would otherwise clamp
   // the container's scroll to the new height and drop the reader somewhere else.
