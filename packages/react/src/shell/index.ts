@@ -19,5 +19,6 @@ export { IconPicker, type IconPickerProps } from '@/tree/IconPicker.js';
 export { ModeToggle, type ModeToggleProps } from './ModeToggle.js';
 export { PageHeader, type PageHeaderProps } from './PageHeader.js';
 export { PageIcon, type PageIconProps } from './PageIcon.js';
+export { PageMenu, type PageMenuProps } from './PageMenu.js';
 export { PageTitle, type PageTitleProps } from './PageTitle.js';
 export { SaveStatus, type SaveStatusProps } from './SaveStatus.js';

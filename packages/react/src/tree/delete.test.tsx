@@ -5,7 +5,7 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { DocsProvider } from '@/data/DocsProvider.js';
 import type { DocsNavigation } from '@/data/types.js';
-import { Toaster } from '@/ui/sonner';
+import { ToastSurface } from '@/ui/toast-surface.js';
 import { PageTree } from './PageTree.js';
 
 /**
@@ -41,7 +41,7 @@ function mount(activePageId: string | null = null) {
       persist={false}
     >
       <PageTree activeId={activePageId} onOpen={() => undefined} onCreate={() => undefined} />
-      <Toaster />
+      <ToastSurface />
     </DocsProvider>,
   );
   return { deletePage, navigate };

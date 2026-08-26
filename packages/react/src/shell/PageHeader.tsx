@@ -10,6 +10,7 @@ import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
 import { Breadcrumbs } from './Breadcrumbs.js';
 import { ModeToggle } from './ModeToggle.js';
+import { PageMenu } from './PageMenu.js';
 import { SaveStatus } from './SaveStatus.js';
 
 export interface PageHeaderProps {
@@ -119,6 +120,11 @@ export function PageHeader({
             {actions}
           </div>
         )}
+        {/* docs/06 section 6: last on the right, and only on a page - a folder node has no
+            page to copy, download, count or rename (docs/03 section 4.1). */}
+        {pageId !== null &&
+          index?.byId[pageId] !== undefined &&
+          index.byId[pageId].kind !== 'folder' && <PageMenu id={pageId} rootId={rootId} />}
       </div>
     </header>
   );

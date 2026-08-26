@@ -1,7 +1,7 @@
 import type { NodeId, PageIcon as PageIconValue, PageMode, TreeNode } from '@docs/core';
 import { Smile } from 'lucide-react';
 import { useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast.js';
 import { useDocs } from '@/data/context.js';
 import { useUpdateMeta } from '@/data/mutations.js';
 import { useStructuralGate } from '@/data/online.js';
@@ -46,7 +46,11 @@ export function PageIcon({
     setOpen(false);
     update.mutate(
       { id: pageId, patch: { icon: next } },
-      { onError: () => toast(strings['error.generic']) },
+      {
+        onError: () => {
+          toast(strings['error.generic']);
+        },
+      },
     );
   };
 

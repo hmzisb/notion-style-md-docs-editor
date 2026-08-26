@@ -77,7 +77,7 @@
   {
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "105 kB",
+    "limit": "98 kB",
     "ignore": [
       "./editor/index.js",
       "./tree/icon-picker-grid.js",
@@ -85,6 +85,8 @@
       "./tree/move-to-dialog.js",
       "./tree/delete-dialog.js",
       "./command-palette.js",
+      "./shell/page-menu-surface.js",
+      "../ui/toast-surface.js",
       "@docs/core",
       "lucide-react/dynamic",
       "@tanstack/react-query",

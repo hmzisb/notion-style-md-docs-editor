@@ -2,6 +2,27 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-145 · P3-T06 · 2026-08-26
+Question: `useHotkeys` calls `preventDefault()` on every match before it runs, so the `Enter` binding of docs/07 section 7 (content scope) swallowed `Enter` on every button inside the content region - the page menu, the icon button, the banner actions - and the button never saw a click.
+Assumed: a bare `Enter` or `Space` on a control that activates on it (`button`, `a[href]`, `summary`, `role=button|link|menuitem|option|treeitem`) never reaches a hotkey, and the guard lives in `useHotkeys` rather than in the one binding that hit it.
+Why: docs/07 section 1 gives the focused control the keys it answers for; fixing it at the dispatcher covers every binding, and the region itself (`role=region`, activates on nothing) still takes `Enter` into edit mode.
+Cheap to reverse: yes
+
+## ASM-144 · P3-T06 · 2026-08-26
+Question: docs/07 section 10 says a delete toasts, but the page menu that starts one is inside the header of the page being deleted - and TanStack Query drops the per-call `onSuccess`/`onError` of a mutation whose caller unmounted, which is exactly what deleting the open page does.
+Assumed: `useDeletePage` says both toasts itself, from the mutation's own callbacks, and neither the tree nor the page menu says them any more.
+Why: the toast is the operation's, not the caller's - the two call sites were already saying the same two strings, and a message the user only gets when they deleted from the sidebar is worse than one place owning it.
+
+## ASM-143 · P3-T06 · 2026-08-26
+Question: docs/06 section 8 has "Download .md" and never says what the file is called.
+Assumed: the page title, stripped of anything a file name cannot hold, and `page.md` when that leaves nothing.
+Why: half the pages in a workspace are `index.md`, so the path would hand the reader a folder of files with the same name; the title is what they asked for by name.
+
+## ASM-142 · P3-T06 · 2026-08-26
+Question: docs/06 section 8 defines the page menu against a page and says nothing about a folder node, which the header can also be showing (docs/03 section 4.1).
+Assumed: no `⋯` on a folder - it has no file to copy, download or count, and its title and place in the tree are the row menu's business.
+Why: five of the eight items would be dead, and the three that are not are already on the row the folder has in the sidebar. See [[asm-141]] for the same node's card.
+
 ## ASM-141 · P3-T05 · 2026-08-26
 Question: docs/06 section 11 gives the folder card an action for a host that can write and a child list for one that cannot, and does not say which a writing host gets.
 Assumed: a writing host gets both - the "Create page" action and the child list under it.

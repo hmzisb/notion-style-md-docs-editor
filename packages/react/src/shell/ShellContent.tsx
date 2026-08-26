@@ -8,7 +8,7 @@ import {
 } from '@docs/core';
 import { FilePlus, FileText, FileX, Folder, TriangleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast.js';
 import { useDocs } from '@/data/context.js';
 import { canvasKey, freshTwin } from '@/data/fresh.js';
 import { useSavePage } from '@/data/mutations.js';

@@ -1,7 +1,7 @@
 import type { NodeId, PageMode } from '@docs/core';
 import { PanelLeftOpen } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast.js';
 import { useRecents } from '@/data/cache/recents.js';
 import { useDocs } from '@/data/context.js';
 import { newTempId } from '@/data/fresh.js';
@@ -15,11 +15,11 @@ import { cancelIdle, requestIdle } from '@/lib/idle';
 import { cn } from '@/lib/utils';
 import { Button } from '@/ui/button';
 import { SidebarProvider, useSidebar } from '@/ui/sidebar';
-import { Toaster } from '@/ui/sonner';
 import { CommandPalette } from './CommandPalette.js';
 import { DocsSidebar } from './DocsSidebar.js';
 import { PageHeader } from './PageHeader.js';
 import { ShellContent } from './ShellContent.js';
+import { Toasts } from './Toasts.js';
 
 /** `--docs-sidebar-min` and `--docs-sidebar-max` from docs/06 section 2. */
 const MIN_WIDTH = 200;
@@ -372,7 +372,7 @@ function ShellBody({
         out of the flow, and the list inside it is fixed to the viewport anyway.
       */}
       <div className="fixed">
-        <Toaster position="bottom-right" duration={4000} />
+        <Toasts />
       </div>
       <OpenedAnnouncer pageId={pageId} rootId={rootId} />
     </>

@@ -15,7 +15,7 @@ import {
 import { AssistiveTreeDescription, useTree } from '@headless-tree/react';
 import { useVirtualizer } from '@tanstack/react-virtual';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast.js';
 import { useDocs } from '@/data/context.js';
 import { useDeletePage, useMovePage, useUpdateMeta } from '@/data/mutations.js';
 import { useStructuralGate } from '@/data/online.js';
@@ -367,19 +367,10 @@ function TreeBody({
       const siblings = childIdsFor(latest.current.index, node.parentId ?? ROOT);
       const at = siblings.indexOf(id);
       refocus.current = siblings[at + 1] ?? siblings[at - 1] ?? node.parentId;
-      del.mutate(
-        { id },
-        {
-          onSuccess: () => {
-            toast(format(strings['menu.deleted'], { title: node.title }));
-          },
-          onError: () => {
-            toast(format(strings['error.delete'], { title: node.title }));
-          },
-        },
-      );
+      // The toasts are the mutation's own (docs/07 section 10).
+      del.mutate({ id });
     },
-    [del, strings],
+    [del],
   );
 
   /** docs/06 section 8: the host's own URL when it has one, and the id it would be built from. */
@@ -572,9 +563,7 @@ function TreeBody({
   }, [virtualizer, rowHeight]);
 
   /** docs/06 section 5: the row being dragged is dimmed where it still is. */
-  const dragging = new Set(
-    (tree.getState().dnd?.draggedItems ?? []).map((item) => item.getId()),
-  );
+  const dragging = new Set((tree.getState().dnd?.draggedItems ?? []).map((item) => item.getId()));
 
   const endDrag = useCallback(() => {
     edge.stop();

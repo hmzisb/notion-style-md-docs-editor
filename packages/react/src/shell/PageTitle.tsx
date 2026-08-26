@@ -1,6 +1,6 @@
 import type { NodeId, PageMode } from '@docs/core';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { toast } from 'sonner';
+import { toast } from '@/lib/toast.js';
 import { useDocs } from '@/data/context.js';
 import { isFresh, isTempId } from '@/data/fresh.js';
 import { useUpdateMeta } from '@/data/mutations.js';
@@ -8,6 +8,7 @@ import { useStructuralGate } from '@/data/online.js';
 import { format } from '@/data/strings.js';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/tooltip';
+import { onTitleFocus } from './title-focus.js';
 
 /** docs/06 section 7: the title is one size below 768 px and the full one above it. */
 const TITLE = 'text-[32px] leading-tight font-bold md:text-[40px]';
@@ -117,6 +118,27 @@ export function PageTitle({
     element.style.height = 'auto';
     element.style.height = `${String(element.scrollHeight)}px`;
   }, [value, mode]);
+
+  // docs/06 section 8: the page menu renames by asking for the caret here. In read mode there
+  // is no field to put it in yet, so the mode swap is the request and the effect below is what
+  // answers it - the same path a page created a moment ago takes.
+  useEffect(
+    () =>
+      onTitleFocus(ns, (id) => {
+        if (id !== pageId) return;
+        wanted.current = true;
+        if (mode !== 'edit') {
+          onModeChange('edit');
+          return;
+        }
+        const element = field.current;
+        if (element === null) return;
+        wanted.current = false;
+        element.focus();
+        element.setSelectionRange(element.value.length, element.value.length);
+      }),
+    [mode, ns, onModeChange, pageId],
+  );
 
   useEffect(() => {
     if (mode !== 'edit' || !wanted.current) return;

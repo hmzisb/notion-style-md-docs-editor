@@ -19,6 +19,10 @@ export default defineConfig({
     'tree/delete-dialog': 'src/tree/delete-dialog.tsx',
     // Same reason, for the palette cmdk lives in (DEV-012).
     'shell/command-palette': 'src/shell/command-palette.tsx',
+    // Same reason, for the header menu and the picker and dialogs it opens (docs/06 §8).
+    'shell/page-menu-surface': 'src/shell/page-menu-surface.tsx',
+    // Same reason, for `sonner` and the one toaster the shell mounts for it (DEV-012).
+    'ui/toast-surface': 'src/ui/toast-surface.tsx',
     'adapters/http': 'src/adapters/http.ts',
     'adapters/filesystem': 'src/adapters/filesystem.ts',
     'adapters/memory': 'src/adapters/memory.ts',

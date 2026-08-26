@@ -18,11 +18,13 @@ import {
 } from '@docs/core';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
+import { toast } from '@/lib/toast.js';
 import { resolvePersist } from './cache/persister.js';
 import { useDocs } from './context.js';
 import { draftStoreFor } from './drafts.js';
 import { dropFresh, markFresh, namedFresh, settleFresh } from './fresh.js';
 import { pageQuery } from './queries.js';
+import { format } from './strings.js';
 import { forgetPage } from './session.js';
 
 /**
@@ -291,6 +293,8 @@ export interface DeletePageVariables {
 interface DeleteContext {
   tree: TreeSnapshot | undefined;
   ids: readonly NodeId[];
+  /** The title the toasts name, taken while the node was still in the tree. */
+  title?: string;
   /** Set only when the delete navigated off the open page, and then it is where from. */
   from?: NodeId | null;
 }
@@ -303,7 +307,7 @@ interface DeleteContext {
 export function useDeletePage(
   rootId?: NodeId,
 ): UseMutationResult<void, Error, DeletePageVariables, DeleteContext> {
-  const { keys, navigation, ns, onEvent, options, provider } = useDocs();
+  const { keys, navigation, ns, onEvent, options, provider, strings } = useDocs();
   const client = useQueryClient();
   const drafts = useMemo(
     () => draftStoreFor({ ns, enabled: resolvePersist(options.persist).drafts }),
@@ -320,7 +324,11 @@ export function useDeletePage(
       if (snapshot === undefined) return { tree: undefined, ids: [id] };
       const index = buildIndex(snapshot);
       // Taken before the patch: after it the subtree is no longer in the tree to be walked.
-      const context: DeleteContext = { tree: snapshot, ids: subtreeIds(index, id) };
+      const context: DeleteContext = {
+        tree: snapshot,
+        ids: subtreeIds(index, id),
+        title: index.byId[id]?.title,
+      };
       const open = navigation.activePageId;
       client.setQueryData(tree, toSnapshot(applyRemove(index, id)));
 
@@ -340,6 +348,9 @@ export function useDeletePage(
         forgetPage(ns, gone, drafts);
       }
       onEvent({ type: 'page:deleted', id });
+      // docs/07 section 10: said here rather than at the call site, because deleting the open
+      // page unmounts whatever asked for it - the page menu goes with the page.
+      toast(format(strings['menu.deleted'], { title: context.title ?? '' }));
     },
 
     onError: (error, { id }, context) => {
@@ -351,6 +362,7 @@ export function useDeletePage(
       }
       const code = isProviderError(error) ? error.code : 'internal';
       onEvent({ type: 'error', code, id, error });
+      toast(format(strings['error.delete'], { title: context?.title ?? '' }));
     },
 
     onSettled: () => {

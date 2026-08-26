@@ -100,6 +100,21 @@ export function scopeOf(target: EventTarget | null): HotkeyScope {
   return 'global';
 }
 
+/** What a bare `Enter` or `Space` presses, rather than travelling on as a shortcut. */
+const ACTIVATES =
+  'button, a[href], summary, [role="button"], [role="link"], [role="treeitem"], [role="option"], [role="menuitem"]';
+
+/**
+ * docs/07 section 1: a key the focused control answers for is the control's. `Enter` on the
+ * page menu opens the menu; only the region itself, which activates on nothing, leaves it to
+ * the `Enter` binding of docs/07 section 7.
+ */
+function activatesFocus(event: KeyboardEvent): boolean {
+  if (event.key !== 'Enter' && event.key !== ' ') return false;
+  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return false;
+  return event.target instanceof Element && event.target.closest(ACTIVATES) !== null;
+}
+
 /**
  * Binds `hotkeys` for as long as the caller is mounted. The array is read through a ref, so a
  * host that rebuilds it every render does not rebind the listener.
@@ -119,6 +134,8 @@ export function useHotkeys(hotkeys: readonly Hotkey[], root?: RefObject<HTMLElem
         target === document.body ||
         root.current.contains(target);
       if (!inside) return;
+
+      if (activatesFocus(event)) return;
 
       const scope = scopeOf(target);
       for (const hotkey of latest.current) {
