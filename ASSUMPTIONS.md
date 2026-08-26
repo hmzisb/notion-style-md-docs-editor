@@ -2,6 +2,18 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-162 · P4-T05 · 2026-08-27
+Question: docs/03 section 4.3 says a page's title falls back to the first `# H1` in the body "not stripped", so what should `--write-ids` do with that heading once it has copied it into frontmatter `title`?
+Assumed: take it out of the body. The migration writes `title: <the H1>` and removes that line, and only when the H1 is the page's first content line.
+Why: after the migration the shell renders the title above the page, so leaving the H1 would show it twice - the read-time rule is about pages nobody has migrated, not about the file this tool has just rewritten. A heading further down is a section of the page, and hoisting it would change what the page says, so it is left alone.
+Cheap to reverse: no - it rewrites files. Run it on a copy, or on a clean checkout.
+
+## ASM-161 · P4-T05 · 2026-08-27
+Question: docs/09 asks for the `--write-ids` pass to go through a Node `FileStore`; the store can be driven directly or through `createFileStoreProvider`.
+Assumed: the migration reads and writes through `NodeFileStore` directly, and the provider is used only in the test, to prove the tree the module builds is the same one before and after.
+Why: the pass is per-file text work - split, patch, join - and the provider's page API would parse each page to a value and serialize it back, which is the one thing a migration must not do to a file the user did not edit. `store.list()` already applies the walk's exclusions, so the file set is the same either way.
+Cheap to reverse: yes
+
 ## ASM-160 · P4-T04 · 2026-08-27
 Question: docs/09 asks that `Edit anyway` on a page past the 5,000-block threshold work "within budget", and docs/10 section 5 has no budget for that path.
 Assumed: measure it rather than invent a budget. On the reference machine, opting past the guard on a 5,200-block page takes 16.2 s against a real build; `perf.spec.ts` asserts a 25 s tripwire, so a change that makes it worse is not silent, and the number is recorded on every run.

@@ -74,7 +74,7 @@ export function classifyFidelity(body: string, value: Value, codec?): Fidelity
 3. No lossy reasons and `deepEqual(mdastA, mdastB)` → `reformat`, else `lossy`.
 4. Cost: one serialize + two parses per open, cached in L3 with the value. Runs in idle time after the first paint.
 
-`docs doctor` (a Vitest-driven script, `pnpm doctor <folder>`) runs the same function over a folder and prints a table; run it on any corpus before adoption.
+`docs doctor` (a Vitest-driven script, `pnpm doctor <folder>`) runs the same function over a folder and prints a table; run it on any corpus before adoption. `--allow-lossy` keeps the exit code at zero. `--write-ids` migrates the folder in place first (docs/03 sections 4.2 and 4.3): a frontmatter `id` for every page that lacks one, and a leading `# H1` hoisted into `title` and removed from the body. It rewrites files, so run it on a clean checkout; a page that already declares both is not written at all.
 
 ## 5. Custom serialization rules (`@docs/core/src/codec/rules/`)
 

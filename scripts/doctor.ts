@@ -1,45 +1,62 @@
 /**
- * `pnpm doctor <folder> [--allow-lossy]` (docs/05 section 4).
+ * `pnpm doctor <folder> [--allow-lossy] [--write-ids]` (docs/05 section 4).
  *
  * Runs the fidelity classifier over every Markdown file in a folder and prints what
  * opening and saving each page would do to it. Exits non-zero if any page is `lossy`,
  * so a host can put this in CI before adopting the module on a corpus.
+ *
+ * `--write-ids` first migrates the folder in place (docs/03 sections 4.2 and 4.3): a
+ * frontmatter `id` per page, and a leading `# H1` hoisted into `title`.
  */
-import { readFile, readdir } from 'node:fs/promises';
-import { resolve, sep } from 'node:path';
+import { resolve } from 'node:path';
 import {
   classifyFidelity,
   defaultCodec,
-  isHidden,
+  isMarkdown,
   splitFrontmatter,
   type Fidelity,
 } from '@docs/core';
+import { NodeFileStore } from './node-store.js';
+import { writeIds } from './write-ids.js';
 
 const args = process.argv.slice(2);
 const allowLossy = args.includes('--allow-lossy');
+const migrate = args.includes('--write-ids');
 const folder = args.find((arg) => !arg.startsWith('-'));
 
 if (folder === undefined) {
-  console.error('usage: pnpm doctor <folder> [--allow-lossy]');
+  console.error('usage: pnpm doctor <folder> [--allow-lossy] [--write-ids]');
   process.exit(2);
 }
 
-const root = resolve(folder);
-const entries = await readdir(root, { recursive: true }).catch((error: unknown) => {
+const store = new NodeFileStore(resolve(folder));
+// The store walks the folder the way the provider does, so the table lists the pages the
+// module would show: no dot-directories, no `node_modules`, no non-Markdown.
+const entries = await store.list().catch((error: unknown) => {
   const { code, message } = error as NodeJS.ErrnoException;
   console.error(`doctor: cannot read ${folder}: ${code ?? message}`);
   process.exit(2);
 });
 
-// Same exclusions as the provider walk, so the table lists the pages the module would show.
 const paths = entries
-  .map((path) => path.split(sep).join('/'))
-  .filter((path) => path.endsWith('.md') && !isHidden(path))
+  .filter((entry) => entry.kind === 'file' && isMarkdown(entry.path))
+  .map((entry) => entry.path)
   .sort();
+
+if (migrate) {
+  const written = await writeIds(store);
+  for (const path of written.ids) console.log(`id       ${path}`);
+  for (const path of written.titles) console.log(`title    ${path}`);
+  console.log(
+    `\n--write-ids: ${String(written.ids.length)} id(s) assigned, ` +
+      `${String(written.titles.length)} title(s) hoisted out of the body, ` +
+      `${String(written.scanned)} pages seen.\n`,
+  );
+}
 
 const rows: { path: string; fidelity: Fidelity }[] = [];
 for (const path of paths) {
-  const { body } = splitFrontmatter(await readFile(resolve(root, path), 'utf8'));
+  const { body } = splitFrontmatter(await store.readText(path));
   const errors: Error[] = [];
   const value = defaultCodec.toValue(body, (error) => errors.push(error));
   const fidelity = classifyFidelity(body, value);
