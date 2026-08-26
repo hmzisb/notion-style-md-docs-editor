@@ -9,6 +9,8 @@ export interface SessionState {
   status: SessionStatus;
   /** Epoch ms of the last successful save, for the "Saved {time}" tooltip (docs/06 section 9). */
   lastSavedAt: number | null;
+  /** The version that save produced, so the watcher's echo of it is not a change (docs/04 section 5). */
+  lastSavedVersion: string | null;
   /** Epoch ms the next offline retry is due, for "Next retry {time}". */
   retryAt: number | null;
   /** The value in the editor came from a draft, so the page opens with the draft banner. */
@@ -25,6 +27,7 @@ export interface SessionState {
 export const cleanSession: SessionState = {
   status: 'clean',
   lastSavedAt: null,
+  lastSavedVersion: null,
   retryAt: null,
   draftRestored: false,
   draftMismatch: false,

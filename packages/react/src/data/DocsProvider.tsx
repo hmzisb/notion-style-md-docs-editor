@@ -7,6 +7,7 @@ import { createEmitter, type DocsEventHandler } from './events.js';
 import { createKeys, createNamespace } from './keys.js';
 import { metaQuery } from './queries.js';
 import { defaultStrings } from './strings.js';
+import { useProviderEvents } from './subscriptions.js';
 import type { DocsContextValue, DocsOptions, DocsProviderProps } from './types.js';
 
 export { useDocs };
@@ -123,6 +124,8 @@ function DocsRoot({ ns, ...props }: DocsProviderProps & { ns: string }): React.J
     }),
     [provider, navigation, ns, keys, strings, onEvent, meta.data, options, persister],
   );
+
+  useProviderEvents(value);
 
   return <DocsContext.Provider value={value}>{children}</DocsContext.Provider>;
 }

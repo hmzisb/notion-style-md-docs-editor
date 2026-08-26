@@ -304,6 +304,7 @@ function createSession(live: React.RefObject<Live>, now: Now, ns: string) {
     patch({
       status: live.current.dirty ? 'dirty' : 'saved',
       lastSavedAt: Number.isNaN(saved) ? Date.now() : saved,
+      lastSavedVersion: result.version,
       retryAt: null,
       error: null,
       draftRestored: false,

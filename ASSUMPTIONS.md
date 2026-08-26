@@ -26,6 +26,18 @@ Assumed: `useStructuralGate` in `data/online.ts` is the one place that answers i
 Why: one hook is smaller than the same `useOnline` comparison in six components and keeps the message identical everywhere. Content edits stay ungated - the draft store and the save retry already carry them (docs/04 section 3.4).
 Cheap to reverse: yes
 
+## ASM-090 · P2-T09 · 2026-08-26
+Question: docs/04 section 5 has a tree event invalidate "the tree", and the tree query is keyed per `rootId`.
+Assumed: a tree event invalidates the `[ns, 'tree']` prefix, so every root a host has mounted refetches.
+Why: the event says the storage changed, not which subtree; a scoped host and an unscoped one can be mounted at once (docs/04 section 7) and both are stale. Query dedupes the refetch of anything that is not mounted.
+Cheap to reverse: yes
+
+## ASM-089 · P2-T09 · 2026-08-26
+Question: echo suppression needs the version the session last wrote, which lived only inside the session's own ref.
+Assumed: `lastSavedVersion` is part of `SessionState`, next to `lastSavedAt`, and `useProviderEvents` reads it from the namespace's store.
+Why: the store is already the place where everything outside the editor reads a page's save state, so nothing new has to exist and nothing has to be cleaned up when a page closes.
+Cheap to reverse: yes
+
 ## ASM-086 · P2-T08 · 2026-08-26
 Question: Query's default `networkMode` pauses every fetch while `navigator.onLine` is false, and a provider may be a directory on this machine.
 Assumed: the module's own `QueryClient` sets `networkMode: 'offlineFirst'` for queries and mutations; the provider is what decides whether it is reachable.
