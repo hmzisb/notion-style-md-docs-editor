@@ -1,0 +1,11 @@
+/* docs/08 section 1, the Tailwind v4 host: the module's classes are compiled from its own
+   `dist`, which is what `@source` is for; `styles.css` carries the scoped rules Tailwind
+   cannot infer, and `theme.css` the shadcn variables this host does not define itself. */
+@import 'tailwindcss';
+@source '../node_modules/@docs/react/dist';
+@import '@docs/react/styles.css';
+@import '@docs/react/theme.css';
+
+body {
+  margin: 0;
+}
