@@ -1,5 +1,5 @@
 import type { Locator, Page } from '@playwright/test';
-import { expect, freshVisit, openWorkspace, test } from './fixtures.js';
+import { expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
 
 /**
  * docs/09 P2-T05: the block set, driven the way a user drives it - slash menu, floating
@@ -17,16 +17,7 @@ test.beforeEach(async ({ page, mode }) => {
   test.skip(mode !== 'opfs', 'reads the saved file back out of OPFS');
 
   await freshVisit(page);
-  await page.evaluate(
-    async (seed) => {
-      const root = await navigator.storage.getDirectory();
-      const dir = await root.getDirectoryHandle('workspace', { create: true });
-      const writable = await (await dir.getFileHandle(seed.name, { create: true })).createWritable();
-      await writable.write(seed.body);
-      await writable.close();
-    },
-    { name: FILE, body: '# Blocks\n' },
-  );
+  await seedFile(page, FILE, '# Blocks\n');
 
   await openWorkspace(page, 'opfs');
   await page.getByRole('link', { name: 'Blocks' }).click();
@@ -45,19 +36,8 @@ async function done(page: Page): Promise<void> {
   await expect(page.locator(EDITOR)).toHaveAttribute('contenteditable', 'false');
 }
 
-/**
- * The bytes on disk. Polled, because the save is a debounce behind the last keystroke - and a
- * read that lands mid-write throws `NotReadableError`, which is a retry, not a failure.
- */
-const saved = (page: Page): Promise<string> =>
-  page.evaluate(async (name) => {
-    try {
-      const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace');
-      return await (await (await dir.getFileHandle(name)).getFile()).text();
-    } catch {
-      return '';
-    }
-  }, FILE);
+/** The bytes on disk, polled by the caller: the save is a debounce behind the last keystroke. */
+const saved = (page: Page): Promise<string> => savedFile(page, FILE);
 
 /** The slash menu, scoped: the page has another listbox in the theme control. */
 const menu = (page: Page): Locator => page.getByRole('listbox');

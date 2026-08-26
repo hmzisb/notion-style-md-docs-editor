@@ -1,5 +1,5 @@
 import { BaseKit } from '@docs/core';
-import { TrailingBlockPlugin, type AnySlatePlugin } from 'platejs';
+import { NodeIdPlugin, TrailingBlockPlugin, type AnySlatePlugin } from 'platejs';
 import type { AnyPlatePlugin } from 'platejs/react';
 import type { DocsStrings } from '@/data/strings.js';
 import { AutoformatKit } from './autoformat-kit.js';
@@ -54,6 +54,9 @@ const REACT_KITS: EditorPlugin[] = [
 
 /** Behavior with no headless twin: none of it changes what a page serializes to. */
 const EDITOR_ONLY: EditorPlugin[] = [
+  // Block selection and DnD both address a block by its `id`, and a page parsed from Markdown
+  // has none - the ids live in the editor's value only, and Markdown never sees them (D-02).
+  NodeIdPlugin.configure({ options: { initialValueIds: 'always' } }),
   ...AutoformatKit,
   ...ShortcutsKit,
   ...ExitBreakKit,

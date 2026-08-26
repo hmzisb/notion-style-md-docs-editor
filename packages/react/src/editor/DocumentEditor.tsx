@@ -117,7 +117,13 @@ export function DocumentEditor({
             {/* The canvas column and its padding belong to the host page (docs/06 section 4);
                 the body type is docs/06 section 3, set here as `DocumentView` sets it, so the
                 swap between the two does not reflow a line (docs/05 section 8). */}
-            <Editor variant="none" className="px-0 pb-0 text-base leading-[1.65]" />
+            {/* The gutter controls hang in the page's left margin (docs/06 section 7), which
+                is outside this box: Plate's own editor clips there, and it can afford to
+                because its text carries the padding they sit in. Ours does not. */}
+            <Editor
+              variant="none"
+              className="overflow-x-visible px-0 pb-0 text-base leading-[1.65]"
+            />
           </EditorContainer>
         </Plate>
       </TooltipProvider>

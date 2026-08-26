@@ -87,3 +87,33 @@ export async function runAction(page: Page, name: string): Promise<void> {
   await page.keyboard.press('Enter');
   await expect(dialog).toBeHidden();
 }
+
+/**
+ * The bytes of a file in the OPFS workspace. Polled by the caller, because the save is a
+ * debounce behind the last keystroke - and a read that lands mid-write throws
+ * `NotReadableError`, which is a retry, not a failure.
+ */
+export const savedFile = (page: Page, name: string): Promise<string> =>
+  page.evaluate(async (file) => {
+    try {
+      const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace');
+      return await (await (await dir.getFileHandle(file)).getFile()).text();
+    } catch {
+      return '';
+    }
+  }, name);
+
+/** Seeds one Markdown file into the OPFS workspace before it is opened. */
+export async function seedFile(page: Page, name: string, body: string): Promise<void> {
+  await page.evaluate(
+    async (seed) => {
+      const root = await navigator.storage.getDirectory();
+      const dir = await root.getDirectoryHandle('workspace', { create: true });
+      const handle = await dir.getFileHandle(seed.name, { create: true });
+      const writable = await handle.createWritable();
+      await writable.write(seed.body);
+      await writable.close();
+    },
+    { name, body },
+  );
+}

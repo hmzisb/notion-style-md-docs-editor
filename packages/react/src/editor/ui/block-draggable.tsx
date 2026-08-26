@@ -5,8 +5,8 @@ import * as React from 'react';
 import { DndPlugin, useDraggable, useDropLine } from '@platejs/dnd';
 import { expandListItemsWithChildren } from '@platejs/list';
 import { BlockSelectionPlugin } from '@platejs/selection/react';
-import { GripVertical } from 'lucide-react';
-import { type TElement, getPluginByType, isType, KEYS } from 'platejs';
+import { GripVertical, Plus } from 'lucide-react';
+import { type TElement, getPluginByType, isType, KEYS, PathApi } from 'platejs';
 import {
   type PlateEditor,
   type PlateElementProps,
@@ -16,8 +16,8 @@ import {
   useElement,
   usePluginOption,
 } from 'platejs/react';
-import { useSelected } from 'platejs/react';
 
+import { useDocs } from '@/data/context.js';
 import { Button } from '@/ui/button';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/ui/tooltip';
 import { cn } from '@/lib/utils';
@@ -125,29 +125,24 @@ function Draggable(props: PlateElementProps) {
     >
       {!isInTable && (
         <Gutter>
-          <div className={cn('slate-blockToolbarWrapper', 'flex h-[1.5em]', isInColumn && 'h-4')}>
-            <div
-              className={cn(
-                'slate-blockToolbar relative w-4.5',
-                'pointer-events-auto mr-1 flex items-center',
-                isInColumn && 'mr-1.5',
-              )}
-            >
-              <Button
-                ref={handleRef}
-                variant="ghost"
-                className="-left-0 absolute h-6 w-full p-0"
-                style={{ top: `${dragButtonTop + 3}px` }}
-                data-plate-prevent-deselect
-              >
-                <DragHandle
-                  isDragging={isDragging}
-                  previewRef={previewRef}
-                  resetPreview={resetPreview}
-                  setPreviewTop={setPreviewTop}
-                />
-              </Button>
-            </div>
+          {/* docs/06 section 7: the two gutter controls, on the block's first line - which is
+              where the block's own top margin puts them. */}
+          <div
+            className={cn(
+              'slate-blockToolbar',
+              'pointer-events-auto absolute right-1 flex items-center gap-0.5',
+              isInColumn && 'right-1.5',
+            )}
+            style={{ top: `${dragButtonTop + 3}px` }}
+          >
+            <InsertButton />
+            <DragHandle
+              handleRef={handleRef}
+              isDragging={isDragging}
+              previewRef={previewRef}
+              resetPreview={resetPreview}
+              setPreviewTop={setPreviewTop}
+            />
           </div>
         </Gutter>
       )}
@@ -173,23 +168,32 @@ function Draggable(props: PlateElementProps) {
   );
 }
 
+/**
+ * docs/06 section 7: the gutter hangs in the page's left margin, so the controls cost the text
+ * no width and appearing shifts nothing. Below 768 px that margin is `px-4` (docs/06 section
+ * 4), which is less than the controls need, and a page that scrolls sideways is a defect
+ * (docs/06 section 13) - so there they are not drawn. The HTML5 drag backend has nothing to
+ * offer a touch pointer anyway, and every one of these actions has a keyboard or slash-menu
+ * route (docs/07 section 2).
+ */
 function Gutter({ children, className, ...props }: React.ComponentProps<'div'>) {
   const editor = useEditorRef();
   const element = useElement();
   const isSelectionAreaVisible = usePluginOption(BlockSelectionPlugin, 'isSelectionAreaVisible');
-  const selected = useSelected();
 
   return (
     <div
       {...props}
       className={cn(
         'slate-gutterLeft',
-        '-translate-x-full absolute top-0 z-50 flex h-full cursor-text hover:opacity-100 sm:opacity-0',
+        '-translate-x-full absolute top-0 z-50 flex h-full w-[calc(var(--docs-gutter)*2)] cursor-text',
+        'opacity-0 transition-opacity duration-100 hover:opacity-100 max-md:hidden',
+        // A control that takes the focus has to be visible while it holds it (docs/06 s13).
+        'focus-within:opacity-100',
         getPluginByType(editor, element.type)?.node.isContainer
           ? 'group-hover/container:opacity-100'
           : 'group-hover:opacity-100',
         isSelectionAreaVisible && 'hidden',
-        !selected && 'opacity-0',
         className,
       )}
       contentEditable={false}
@@ -199,12 +203,65 @@ function Gutter({ children, className, ...props }: React.ComponentProps<'div'>) 
   );
 }
 
+/** docs/06 section 7: `size-6 rounded-sm text-muted-foreground hover:bg-accent`, for both. */
+const gutterButton = 'size-6 rounded-sm p-0 text-muted-foreground hover:bg-accent';
+
+/**
+ * docs/05 section 6: the `+` inserts an empty paragraph below the block and opens the slash
+ * menu in it. Typing the trigger is what opens that menu - the combobox plugin overrides
+ * `insertText` - so this runs the same path a user's `/` runs, rather than a second one.
+ */
+function InsertButton() {
+  const editor = useEditorRef();
+  const element = useElement();
+  const { strings } = useDocs();
+  const label = strings['editor.addBlock'];
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button
+          variant="ghost"
+          className={gutterButton}
+          aria-label={label}
+          // The button is in the editable, so taking the focus would drop the caret with it.
+          onMouseDown={(event) => {
+            event.preventDefault();
+          }}
+          onClick={() => {
+            const path = editor.api.findPath(element);
+            if (path === undefined) return;
+            editor.tf.insertNodes(editor.api.create.block(), {
+              at: PathApi.next(path),
+              select: true,
+            });
+            // A tick later, both of them: the block was just inserted, so React has not drawn
+            // it yet, and focusing a node Slate cannot resolve to a DOM one throws. Typing the
+            // trigger is what opens the slash menu - the combobox plugin overrides
+            // `insertText` - so this runs the path a user's `/` runs, rather than a second one.
+            setTimeout(() => {
+              editor.tf.focus();
+              editor.tf.insertText('/');
+            }, 0);
+          }}
+          data-plate-prevent-deselect
+        >
+          <Plus />
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
+  );
+}
+
 const DragHandle = React.memo(function DragHandle({
+  handleRef,
   isDragging,
   previewRef,
   resetPreview,
   setPreviewTop,
 }: {
+  handleRef: (element: Element | React.RefObject<unknown> | null) => void;
   isDragging: boolean;
   previewRef: React.RefObject<HTMLDivElement | null>;
   resetPreview: () => void;
@@ -212,12 +269,19 @@ const DragHandle = React.memo(function DragHandle({
 }) {
   const editor = useEditorRef();
   const element = useElement();
+  const { strings } = useDocs();
+  const label = strings['editor.dragHandle'];
 
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div
-          className="flex size-full items-center justify-center"
+        {/* The button is the drag source itself: a `role="button"` inside one would be two
+            controls to a screen reader, and only one of them named (docs/06 section 13). */}
+        <Button
+          ref={handleRef}
+          variant="ghost"
+          className={gutterButton}
+          aria-label={label}
           onClick={(e) => {
             e.preventDefault();
             editor.getApi(BlockSelectionPlugin).blockSelection.focus();
@@ -293,12 +357,11 @@ const DragHandle = React.memo(function DragHandle({
             resetPreview();
           }}
           data-plate-prevent-deselect
-          role="button"
         >
-          <GripVertical className="text-muted-foreground" />
-        </div>
+          <GripVertical />
+        </Button>
       </TooltipTrigger>
-      <TooltipContent>Drag to move</TooltipContent>
+      <TooltipContent>{label}</TooltipContent>
     </Tooltip>
   );
 });

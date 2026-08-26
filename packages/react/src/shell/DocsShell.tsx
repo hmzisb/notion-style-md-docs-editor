@@ -230,12 +230,14 @@ function ShellBody({
             },
           ] satisfies Hotkey[])
         : []),
-      // Read mode leaves `Esc` to the tree and to whatever dialog is open.
+      // Read mode leaves `Esc` to the tree and to whatever dialog is open. In edit mode the
+      // default scopes are the point: inside the editable, `Esc` is Plate's - it selects the
+      // block the caret is in (docs/07 section 7), and `PageCanvas` takes the second press
+      // from there. Elsewhere in the shell there is no block selection to make, so it leaves.
       ...(mode === 'edit'
         ? ([
             {
               keys: 'Escape',
-              scopes: ALL_SCOPES,
               run: () => {
                 setMode('read');
               },

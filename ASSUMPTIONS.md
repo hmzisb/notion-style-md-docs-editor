@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-080 · P2-T06 · 2026-08-26
+Question: docs/07 section 7 gives the editor's first `Escape` to the block selection and the second to leaving edit mode, but the shell's `Escape` hotkey ran in every scope and took the first one.
+Assumed: the shell's edit-mode `Escape` keeps the default scopes (global, tree, content), so inside the editable and inside a text input it does not fire; `PageCanvas` still takes the press that has a block selection up.
+Why: docs/07 section 1 is what scopes are for - `Esc` inside the editor belongs to the editor. Elsewhere in the shell there is no block to select, so leaving edit mode is still the only sensible answer.
+Cheap to reverse: yes
+
+## ASM-079 · P2-T06 · 2026-08-26
+Question: docs/06 section 7 hangs the gutter controls in the page's left margin, and docs/06 section 4 shrinks that margin to `px-4` below 768 px - less than the two 24 px controls need.
+Assumed: the gutter is not drawn below 768 px (`max-md:hidden`), and the editable is `overflow-x-visible` above it so the controls are not clipped.
+Why: the alternative is a page that scrolls sideways on a phone, which docs/06 section 13 calls a defect. Every gutter action has a keyboard or slash-menu route (docs/07 section 2), and the HTML5 drag backend has nothing to offer a touch pointer anyway. The editable clips nothing of its own: every wide block (code, tables) carries its own `overflow-x-auto`.
+Cheap to reverse: yes
+
+## ASM-078 · P2-T06 · 2026-08-26
+Question: `@platejs/selection` and `@platejs/dnd` address a block by its `id`, and a page parsed from Markdown has none - so nothing was selectable or draggable.
+Assumed: `NodeIdPlugin` in the editor kit with `initialValueIds: 'always'`, which stamps an id on every block of a parsed page.
+Why: the ids live in the editor's value only - the codec neither reads nor writes them, so no page's bytes change (D-02). `'if-needed'`, the default, only fills gaps in a value that already has ids, which a parsed page never does.
+Cheap to reverse: yes
+
 ## ASM-077 · P2-T05 · 2026-08-26
 Question: the slash menu's popover is an Ariakit `Portal`, which mounts on `document.body` - outside `.docs-root`, where none of the module's variables reach (docs/11 section 4).
 Assumed: it renders into `portalRoot()`, the same container every Radix portal in `ui/` uses.
