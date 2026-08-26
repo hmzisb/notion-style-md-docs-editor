@@ -45,12 +45,16 @@
   },
   {
     "name": "@docs/react ./tree + ./view",
-    "path": ["packages/react/dist/tree/index.js", "packages/react/dist/view/index.js"],
+    "path": [
+      "packages/react/dist/tree/index.js",
+      "packages/react/dist/view/index.js"
+    ],
     "limit": "80 kB",
     "ignore": [
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
       "./tree/move-to-dialog.js",
+      "./tree/delete-dialog.js",
       "@docs/core",
       "lucide-react/dynamic",
       "@tanstack/react-query",
@@ -79,6 +83,7 @@
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
       "./tree/move-to-dialog.js",
+      "./tree/delete-dialog.js",
       "./command-palette.js",
       "@docs/core",
       "lucide-react/dynamic",

@@ -1,10 +1,11 @@
-import { CornerUpRight, Ellipsis, Link2, PenLine, Plus, Smile } from 'lucide-react';
+import { CornerUpRight, Ellipsis, Link2, PenLine, Plus, Smile, Trash2 } from 'lucide-react';
 import { useRef, useState } from 'react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/ui/dropdown-menu';
 import { Popover, PopoverAnchor, PopoverContent } from '@/ui/popover';
@@ -27,6 +28,7 @@ export function RowMenuSurface({
   onIcon,
   onCopyLink,
   onMoveTo,
+  onDelete,
 }: PageTreeRowMenuProps): React.JSX.Element {
   // It arrives because the button was pressed, so the press is what it opens on.
   const [open, setOpen] = useState(true);
@@ -133,6 +135,24 @@ export function RowMenuSurface({
               <CornerUpRight aria-hidden="true" />
               {labels.moveTo}
             </DropdownMenuItem>
+          )}
+          {onDelete !== undefined && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                variant="destructive"
+                disabled={gated}
+                onSelect={() => {
+                  // The confirmation is a dialog, so it opens from the teardown too.
+                  pending.current = () => {
+                    onDelete(id);
+                  };
+                }}
+              >
+                <Trash2 aria-hidden="true" />
+                {labels.delete}
+              </DropdownMenuItem>
+            </>
           )}
         </DropdownMenuContent>
       </DropdownMenu>

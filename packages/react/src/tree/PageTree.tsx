@@ -17,7 +17,7 @@ import { useVirtualizer } from '@tanstack/react-virtual';
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
-import { useMovePage, useUpdateMeta } from '@/data/mutations.js';
+import { useDeletePage, useMovePage, useUpdateMeta } from '@/data/mutations.js';
 import { useStructuralGate } from '@/data/online.js';
 import { useTreeIndex } from '@/data/queries.js';
 import { useSidebarStore } from '@/data/sidebar-store.js';
@@ -67,6 +67,11 @@ const ROOT = 'docs-root';
 const MoveTo = lazy(async () => {
   const { MoveToDialog } = await import('./move-to-dialog.js');
   return { default: MoveToDialog };
+});
+
+const Delete = lazy(async () => {
+  const { DeleteDialog } = await import('./delete-dialog.js');
+  return { default: DeleteDialog };
 });
 
 export interface PageTreeProps {
@@ -135,14 +140,17 @@ function TreeBody({
   const { capabilities, navigation, strings } = useDocs();
   const update = useUpdateMeta(rootId);
   const move = useMovePage(rootId);
+  const del = useDeletePage(rootId);
   // D-05: a rename, an icon and a new page all need the provider, and offline they are the
   // same controls with the reason on them.
   const { offline, reason } = useStructuralGate();
   const [renaming, setRenaming] = useState<NodeId | null>(null);
   const [moving, setMoving] = useState<NodeId | null>(null);
+  const [deleting, setDeleting] = useState<NodeId | null>(null);
   const isMobile = useIsMobile();
   // docs/07 section 3: a drag is a pointer gesture, and below 768 px the pointer is a finger.
   const movable = capabilities.move && !offline;
+  const deletable = capabilities.delete && !offline;
   const draggable = movable && !isMobile;
   const expanded = useSidebarStore((state) => state.expanded);
   const setExpandedIds = useSidebarStore((state) => state.setExpandedIds);
@@ -158,6 +166,8 @@ function TreeBody({
   latest.current = { index, expandedItems, draggable };
   const scrollRef = useRef<HTMLDivElement>(null);
   const scrollToIndex = useRef<((rowIndex: number) => void) | null>(null);
+  /** Where the keyboard goes once the delete dialog is off the screen, one way or the other. */
+  const refocus = useRef<NodeId | null>(null);
   const edge = useEdgeScroll(scrollRef);
   /**
    * docs/07 section 3: over a target it cannot take, the tree draws nothing. headless-tree
@@ -345,6 +355,33 @@ function TreeBody({
     [moveTo, tree],
   );
 
+  /**
+   * docs/04 section 4: the subtree goes from the tree on confirm, and the page queries, drafts
+   * and parsed values it left behind go once the provider agrees. Where the keyboard lands is
+   * this side's business: the row it was on is one of the rows that just went.
+   */
+  const remove = useCallback(
+    (id: NodeId) => {
+      const node = latest.current.index.byId[id];
+      if (node === undefined) return;
+      const siblings = childIdsFor(latest.current.index, node.parentId ?? ROOT);
+      const at = siblings.indexOf(id);
+      refocus.current = siblings[at + 1] ?? siblings[at - 1] ?? node.parentId;
+      del.mutate(
+        { id },
+        {
+          onSuccess: () => {
+            toast(format(strings['menu.deleted'], { title: node.title }));
+          },
+          onError: () => {
+            toast(format(strings['error.delete'], { title: node.title }));
+          },
+        },
+      );
+    },
+    [del, strings],
+  );
+
   /** docs/06 section 8: the host's own URL when it has one, and the id it would be built from. */
   const copyLink = useCallback(
     (id: NodeId) => {
@@ -365,6 +402,7 @@ function TreeBody({
         changeIcon: strings['menu.changeIcon'],
         copyLink: strings['menu.copyLink'],
         moveTo: strings['menu.moveTo'],
+        delete: strings['menu.delete'],
       },
       offline: offline ? reason : null,
       onCreate,
@@ -374,8 +412,18 @@ function TreeBody({
       // Both: a provider that cannot move has nowhere to put the page, and a host that gave
       // the tree no way to add one did not ask for a way to rearrange it either.
       onMoveTo: onCreate === undefined || !capabilities.move ? undefined : setMoving,
+      onDelete: onCreate === undefined || !capabilities.delete ? undefined : setDeleting,
     }),
-    [capabilities.move, changeIcon, copyLink, offline, onCreate, reason, strings],
+    [
+      capabilities.delete,
+      capabilities.move,
+      changeIcon,
+      copyLink,
+      offline,
+      onCreate,
+      reason,
+      strings,
+    ],
   );
 
   /**
@@ -426,6 +474,20 @@ function TreeBody({
     tree.rebuildTree();
   }, [tree, index.version]);
 
+  /**
+   * The delete dialog is gone by the time this runs, and Radix's own restore aims at whatever
+   * had the focus when it opened - which after a delete is a row that went with the page. So
+   * the keyboard is placed from here: back on the row when nothing happened, and on whatever
+   * took its place when something did.
+   */
+  useEffect(() => {
+    if (deleting !== null) return;
+    const next = refocus.current;
+    if (next === null) return;
+    refocus.current = null;
+    focusRow(next);
+  }, [deleting, focusRow]);
+
   // docs/07 section 2: the pointer has the `+` on the row; this is the same thing from the
   // keyboard, on whichever row the roving tabindex is on.
   useHotkeys(
@@ -472,6 +534,22 @@ function TreeBody({
             },
           },
         ]
+      : []) satisfies Hotkey[],
+    scrollRef,
+  );
+
+  // docs/07 section 3: both keys, and neither of them deletes anything on its own - what they
+  // open is the dialog the menu's own Delete opens.
+  useHotkeys(
+    (deletable
+      ? (['Delete', 'Backspace'] as const).map((keys) => ({
+          keys,
+          scopes: ['tree'] as const,
+          run: () => {
+            const id = tree.getFocusedItem().getId();
+            if (latest.current.index.byId[id] !== undefined) setDeleting(id);
+          },
+        }))
       : []) satisfies Hotkey[],
     scrollRef,
   );
@@ -602,6 +680,22 @@ function TreeBody({
             onClose={() => {
               setMoving(null);
               focusRow(moving);
+            }}
+          />
+        </Suspense>
+      )}
+      {deleting === null ? null : (
+        <Suspense fallback={null}>
+          <Delete
+            index={index}
+            id={deleting}
+            onConfirm={() => {
+              setDeleting(null);
+              remove(deleting);
+            }}
+            onClose={() => {
+              setDeleting(null);
+              refocus.current = deleting;
             }}
           />
         </Suspense>

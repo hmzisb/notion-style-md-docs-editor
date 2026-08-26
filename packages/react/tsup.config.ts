@@ -15,6 +15,8 @@ export default defineConfig({
     'tree/row-menu-surface': 'src/tree/row-menu-surface.tsx',
     // Same reason, for the reparenting dialog that only the menu's `Move to` opens.
     'tree/move-to-dialog': 'src/tree/move-to-dialog.tsx',
+    // Same reason, for the confirmation `Delete` opens and nothing else mounts.
+    'tree/delete-dialog': 'src/tree/delete-dialog.tsx',
     // Same reason, for the palette cmdk lives in (DEV-012).
     'shell/command-palette': 'src/shell/command-palette.tsx',
     'adapters/http': 'src/adapters/http.ts',

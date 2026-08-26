@@ -2,6 +2,26 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-140 · P3-T04 · 2026-08-26
+Question: docs/04 section 4 puts "navigate to parent or home" in the delete's optimistic column but says nothing about a delete the provider then refuses, which leaves the reader on the parent of a page that still exists.
+Assumed: the mutation records where it navigated from and navigates back on error, the way `useCreatePage` returns to the page the create was started from.
+Why: the rollback is meant to leave nothing behind; a reader stranded one level up from a page that came back is half a delete, and it is the only part of it the toast cannot explain.
+
+## ASM-139 · P3-T04 · 2026-08-26
+Question: the delete dialog is opened from a row menu item or from a row's own `Delete` key, and both of those go away with the page. Radix restores focus to whatever had it when the dialog opened, which after a confirmed delete is a row that no longer exists.
+Assumed: the tree places the keyboard itself once the dialog has gone - on the next sibling, else the previous one, else the parent after a delete, and back on the row after a cancel - from an effect that runs after Radix's focus scope has torn down.
+Why: docs/07 section 9 has the keyboard land somewhere real after every dialog; doing it from the close handler instead puts the focus back while the dialog's focus trap is still up, and the trap takes it straight back.
+
+## ASM-138 · P3-T04 · 2026-08-26
+Question: docs/07 section 10 lists what toasts are for and a successful delete is not on the list, while docs/06 section 14 gives "Delete" -> "Deleted 'Auth'" as the example of a button's verb matching its toast.
+Assumed: a confirmed delete toasts `menu.deleted`; a refused one toasts `error.delete`.
+Why: docs/06 names this exact toast and the string is already in `strings.ts`; the section 10 list reads as the shape of the rule ("never for save success") rather than a closed set.
+
+## ASM-137 · P3-T04 · 2026-08-26
+Question: docs/01 section 6 hides what a provider cannot do, and `capabilities.delete` says whether it can delete - but the tree also has no `Delete` for a host that passed no `onCreate`.
+Assumed: the row menu's `Delete` and the `Delete`/`Backspace` hotkeys are both gated on `capabilities.delete`, and the menu item additionally on the host having given the tree an `onCreate`, the same pair `Move to` uses. Offline, the item is disabled with the D-05 reason on it rather than hidden.
+Why: a read-only host asked for a tree that shows pages, not one that removes them; the capability and the host's own intent are two different refusals and both have to hold.
+
 ## ASM-136 · P3-T03 · 2026-08-26
 Question: docs/07 section 3 wants no indicator drawn over a target the guard refuses. headless-tree's `onDragOver` returns before it updates `dnd.dragTarget` when `canDrop` is false, so the last target it did accept stays in state - and the line and the ring stay drawn where the pointer no longer is.
 Assumed: `canDrop` records its verdict in a `blocked` state, and the line and the row ring render nothing while it is set; the drag ending clears it.

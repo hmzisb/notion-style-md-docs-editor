@@ -23,8 +23,9 @@ import {
   type SessionState,
   type SessionStatus,
 } from './session-store.js';
+import { valueCache, valueCacheKey } from './cache/value-cache.js';
 import type { DocsStorage } from './cache/idb.js';
-import { useDocumentSession, type DocumentSession, type SessionEditor } from './session.js';
+import { forgetPage, useDocumentSession, type DocumentSession, type SessionEditor } from './session.js';
 import type { DocsEvent } from './events.js';
 import type { DocsNavigation } from './types.js';
 
@@ -666,5 +667,24 @@ describe('useDocumentSession: discard', () => {
     await tick(5000);
     expect(h.savePage).not.toHaveBeenCalled();
     expect(await h.draft()).toBeNull();
+  });
+});
+
+describe('forgetPage (docs/04 section 4)', () => {
+  it('takes the draft, the status and the parsed value of a page that was deleted', async () => {
+    const h = await setup();
+    type(h);
+    await tick(600);
+    expect(await h.draft()).not.toBeNull();
+    expect(h.status()).not.toBe('clean');
+    expect(valueCache.get(valueCacheKey(h.ns, page.id, page.version))).toBeDefined();
+
+    forgetPage(h.ns, page.id, draftStoreFor({ ns: h.ns }));
+    await tick(0);
+
+    // Nothing of the page is left to be found by a later page that lands on the same id.
+    expect(await h.draft()).toBeNull();
+    expect(h.status()).toBe('clean');
+    expect(valueCache.get(valueCacheKey(h.ns, page.id, page.version))).toBeUndefined();
   });
 });

@@ -16,6 +16,7 @@ export interface PageTreeRowMenuProps {
     changeIcon: string;
     copyLink: string;
     moveTo: string;
+    delete: string;
   };
   /** D-05: the reason structural items are off, or `null` when the provider is reachable. */
   offline: string | null;
@@ -26,6 +27,8 @@ export interface PageTreeRowMenuProps {
   onCopyLink: (id: NodeId) => void;
   /** Absent on a provider that cannot move a page (docs/01 section 6). */
   onMoveTo?: (id: NodeId) => void;
+  /** Absent on a provider that cannot delete one (docs/01 section 6). */
+  onDelete?: (id: NodeId) => void;
 }
 
 const Surface = lazy(async () => {

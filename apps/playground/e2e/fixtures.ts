@@ -94,22 +94,28 @@ export async function runAction(page: Page, name: string): Promise<void> {
  * `NotReadableError`, which is a retry, not a failure.
  */
 export const savedFile = (page: Page, name: string): Promise<string> =>
-  page.evaluate(async (file) => {
+  page.evaluate(async (path) => {
     try {
-      const dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace');
+      let dir = await (await navigator.storage.getDirectory()).getDirectoryHandle('workspace');
+      const segments = path.split('/');
+      const file = segments.pop() ?? '';
+      for (const segment of segments) dir = await dir.getDirectoryHandle(segment);
       return await (await (await dir.getFileHandle(file)).getFile()).text();
     } catch {
       return '';
     }
   }, name);
 
-/** Seeds one Markdown file into the OPFS workspace before it is opened. */
+/** Seeds one Markdown file into the OPFS workspace before it is opened; `a/b.md` nests. */
 export async function seedFile(page: Page, name: string, body: string): Promise<void> {
   await page.evaluate(
     async (seed) => {
       const root = await navigator.storage.getDirectory();
-      const dir = await root.getDirectoryHandle('workspace', { create: true });
-      const handle = await dir.getFileHandle(seed.name, { create: true });
+      let dir = await root.getDirectoryHandle('workspace', { create: true });
+      const segments = seed.name.split('/');
+      const file = segments.pop() ?? '';
+      for (const segment of segments) dir = await dir.getDirectoryHandle(segment, { create: true });
+      const handle = await dir.getFileHandle(file, { create: true });
       const writable = await handle.createWritable();
       await writable.write(seed.body);
       await writable.close();

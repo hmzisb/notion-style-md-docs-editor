@@ -89,6 +89,20 @@ describe('value cache (L3)', () => {
     expect(lru.has('b')).toBe(false);
   });
 
+  it('drops every version of one page and leaves the rest', () => {
+    const lru = createLru<number>(VALUE_CACHE_SIZE);
+    lru.set(valueCacheKey(NS, 'a', 'sha256:1'), 1);
+    lru.set(valueCacheKey(NS, 'a', 'sha256:2'), 2);
+    lru.set(valueCacheKey(NS, 'ab', 'sha256:1'), 3);
+
+    // docs/04 section 4: a deleted page has no versions left, and `ab` is not `a`.
+    lru.deletePrefix(valueCacheKey(NS, 'a', ''));
+
+    expect(lru.get(valueCacheKey(NS, 'a', 'sha256:1'))).toBeUndefined();
+    expect(lru.get(valueCacheKey(NS, 'a', 'sha256:2'))).toBeUndefined();
+    expect(lru.get(valueCacheKey(NS, 'ab', 'sha256:1'))).toBe(3);
+  });
+
   it('getOrCreate builds once and reuses the same object', () => {
     const lru = createLru<{ v: number }>();
     const create = vi.fn(() => ({ v: 1 }));

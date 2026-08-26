@@ -116,6 +116,19 @@ export function registerSession(ns: string, id: NodeId, flush: () => Promise<voi
 }
 
 /**
+ * docs/04 section 4: everything a deleted page leaves behind. The parsed value and its fidelity
+ * are keyed by version, so both go by prefix; the draft and the save status go by id. The draft
+ * store is the caller's, because whether drafts are stored at all is the host's option.
+ */
+export function forgetPage(ns: string, id: NodeId, drafts: DraftStore): void {
+  const prefix = valueCacheKey(ns, id, '');
+  valueCache.deletePrefix(prefix);
+  fidelityCache.deletePrefix(prefix);
+  sessionStoreFor(ns).getState().reset(id);
+  void drafts.remove(id);
+}
+
+/**
  * The write path (docs/04 section 3): one session per open page, driving the draft and save
  * timers, the retry schedule, the conflict and draft decisions, and the `beforeunload` guard.
  * Status lives in the namespace's session store, which outlives this hook, so the header and

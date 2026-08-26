@@ -17,6 +17,8 @@ export interface Lru<T> {
   getOrCreate: (key: string, create: () => T) => T;
   has: (key: string) => boolean;
   delete: (key: string) => void;
+  /** Every version of one page: the key carries the version, and a deleted page has no versions. */
+  deletePrefix: (prefix: string) => void;
   clear: () => void;
   readonly size: number;
 }
@@ -53,6 +55,11 @@ export function createLru<T>(max: number = VALUE_CACHE_SIZE): Lru<T> {
     has: (key) => entries.has(key),
     delete: (key) => {
       entries.delete(key);
+    },
+    deletePrefix: (prefix) => {
+      for (const key of [...entries.keys()]) {
+        if (key.startsWith(prefix)) entries.delete(key);
+      }
     },
     clear: () => {
       entries.clear();

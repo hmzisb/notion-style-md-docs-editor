@@ -7,6 +7,7 @@ import {
   flatten,
   isProviderError,
   parseIcon,
+  subtreeIds,
   type NodeId,
   type PageDocument,
   type PageMetaPatch,
@@ -15,9 +16,13 @@ import {
   type TreeSnapshot,
 } from '@docs/core';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
+import { useMemo } from 'react';
+import { resolvePersist } from './cache/persister.js';
 import { useDocs } from './context.js';
+import { draftStoreFor } from './drafts.js';
 import { dropFresh, markFresh, namedFresh, settleFresh } from './fresh.js';
 import { pageQuery } from './queries.js';
+import { forgetPage } from './session.js';
 
 /**
  * docs/04 section 4: every mutation patches the cache with the pure `apply*` from core before
@@ -267,6 +272,82 @@ export function useMovePage(
 
     onError: (error, { id }, context) => {
       if (context?.tree !== undefined) client.setQueryData(keys.tree(rootId), context.tree);
+      const code = isProviderError(error) ? error.code : 'internal';
+      onEvent({ type: 'error', code, id, error });
+    },
+
+    onSettled: () => {
+      void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+    },
+  });
+}
+
+export interface DeletePageVariables {
+  id: NodeId;
+}
+
+/** The tree as it was, the ids that went with the row, and the page that was open. */
+interface DeleteContext {
+  tree: TreeSnapshot | undefined;
+  ids: readonly NodeId[];
+  /** Set only when the delete navigated off the open page, and then it is where from. */
+  from?: NodeId | null;
+}
+
+/**
+ * docs/04 section 4: the row goes on confirm and the provider is told afterwards. What the
+ * subtree left in the caches goes with it once the provider agrees - page queries, L3 values,
+ * L4 drafts and save status - because a failed delete has to be able to put all of it back.
+ */
+export function useDeletePage(
+  rootId?: NodeId,
+): UseMutationResult<void, Error, DeletePageVariables, DeleteContext> {
+  const { keys, navigation, ns, onEvent, options, provider } = useDocs();
+  const client = useQueryClient();
+  const drafts = useMemo(
+    () => draftStoreFor({ ns, enabled: resolvePersist(options.persist).drafts }),
+    [ns, options.persist],
+  );
+
+  return useMutation({
+    mutationFn: ({ id }: DeletePageVariables): Promise<void> => provider.deletePage(id),
+
+    onMutate: async ({ id }): Promise<DeleteContext> => {
+      const tree = keys.tree(rootId);
+      await client.cancelQueries({ queryKey: tree });
+      const snapshot = client.getQueryData<TreeSnapshot>(tree);
+      if (snapshot === undefined) return { tree: undefined, ids: [id] };
+      const index = buildIndex(snapshot);
+      // Taken before the patch: after it the subtree is no longer in the tree to be walked.
+      const context: DeleteContext = { tree: snapshot, ids: subtreeIds(index, id) };
+      const open = navigation.activePageId;
+      client.setQueryData(tree, toSnapshot(applyRemove(index, id)));
+
+      // docs/04 section 4: a page that is going cannot stay open. The parent is the nearest
+      // page still there; a root page leaves nothing above it, so that is home. `replace`,
+      // because the entry it swaps is one the back button would return to a deleted page from.
+      if (open !== null && context.ids.includes(open)) {
+        context.from = open;
+        navigation.navigate({ pageId: index.byId[id]?.parentId ?? null }, { replace: true });
+      }
+      return context;
+    },
+
+    onSuccess: (_void, { id }, context) => {
+      for (const gone of context.ids) {
+        client.removeQueries({ queryKey: keys.page(gone) });
+        forgetPage(ns, gone, drafts);
+      }
+      onEvent({ type: 'page:deleted', id });
+    },
+
+    onError: (error, { id }, context) => {
+      if (context?.tree !== undefined) client.setQueryData(keys.tree(rootId), context.tree);
+      // The page is still there, so leaving the reader on its parent would be half a delete:
+      // the row comes back, and the page it belongs to is one the reader was thrown out of.
+      if (context?.from !== undefined) {
+        navigation.navigate({ pageId: context.from }, { replace: true });
+      }
       const code = isProviderError(error) ? error.code : 'internal';
       onEvent({ type: 'error', code, id, error });
     },
