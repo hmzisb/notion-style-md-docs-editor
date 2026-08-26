@@ -87,7 +87,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P3-T02** Rename, change icon, row menu
 - [x] **P3-T03** Tree drag and drop, keyboard move, Move to
 - [x] **P3-T04** Delete
-- [ ] **P3-T05** Folder nodes
+- [x] **P3-T05** Folder nodes
 - [ ] **P3-T06** Page menu
 - [ ] **P3-T07** Block menu and emoji combobox (optional)
 - [ ] **P3-T08** Expand/collapse all, palette actions, theme
@@ -112,6 +112,6 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P3-T05
-- Open at Gate 3: `./shell` measures 104.75 kB gz against the 60 kB budget in docs/02 section 7, capped at 105 kB with no headroom left; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left, and P3's row menus share it (DEV-012, ASM-063).
+- Current task: P3-T06
+- Open at Gate 3: `./shell` measures 104.95 kB gz against the 60 kB budget in docs/02 section 7, capped at 105 kB with no headroom left; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left, and P3's row menus share it (DEV-012, ASM-063).
 - Last gate passed: Gate 2 (2026-08-26)

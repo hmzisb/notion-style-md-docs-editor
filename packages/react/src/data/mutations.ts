@@ -10,6 +10,7 @@ import {
   subtreeIds,
   type NodeId,
   type PageDocument,
+  type SaveResult,
   type PageMetaPatch,
   type TreeIndex,
   type TreeNode,
@@ -354,6 +355,47 @@ export function useDeletePage(
 
     onSettled: () => {
       void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+    },
+  });
+}
+
+export interface SavePageVariables {
+  id: NodeId;
+  body: string;
+  /**
+   * The version the body was edited from, and `null` for a page that has no file yet - which
+   * is what turns a folder into the page of the same name, id and all (docs/03 section 4.1).
+   */
+  baseVersion: string | null;
+}
+
+/**
+ * The one-shot save, for a write that no editor session is behind: the open page saves through
+ * `useDocumentSession` instead (docs/04 section 3), which owns the drafts, the retries and the
+ * conflict decision this has none of.
+ */
+export function useSavePage(
+  rootId?: NodeId,
+): UseMutationResult<SaveResult, Error, SavePageVariables> {
+  const { keys, onEvent, provider } = useDocs();
+  const client = useQueryClient();
+
+  return useMutation({
+    mutationFn: ({ id, body, baseVersion }: SavePageVariables): Promise<SaveResult> =>
+      provider.savePage(id, { body, baseVersion }),
+
+    onSuccess: (_result, { id, baseVersion }) => {
+      // A save off a null base is a page that did not exist a moment ago, whatever the tree
+      // called the node before it (docs/03 section 10). A save off a version is the editor's
+      // business, and `page:saved` carries numbers only the session has.
+      if (baseVersion === null) onEvent({ type: 'page:created', id });
+      void client.invalidateQueries({ queryKey: keys.page(id) });
+      void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+    },
+
+    onError: (error, { id }) => {
+      const code = isProviderError(error) ? error.code : 'internal';
+      onEvent({ type: 'error', code, id, error });
     },
   });
 }

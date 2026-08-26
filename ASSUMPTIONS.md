@@ -2,6 +2,11 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-141 · P3-T05 · 2026-08-26
+Question: docs/06 section 11 gives the folder card an action for a host that can write and a child list for one that cannot, and does not say which a writing host gets.
+Assumed: a writing host gets both - the "Create page" action and the child list under it.
+Why: the list is the only way into the pages the folder holds, and hiding it behind the host's capabilities would make a folder's own children unreachable for the host that can do more, not less.
+
 ## ASM-140 · P3-T04 · 2026-08-26
 Question: docs/04 section 4 puts "navigate to parent or home" in the delete's optimistic column but says nothing about a delete the provider then refuses, which leaves the reader on the parent of a page that still exists.
 Assumed: the mutation records where it navigated from and navigates back on error, the way `useCreatePage` returns to the page the create was started from.

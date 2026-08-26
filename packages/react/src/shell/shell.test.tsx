@@ -267,6 +267,45 @@ describe('DocsShell', () => {
       await user.click(screen.getByRole('button', { name: 'Notes 2024' }));
       expect(view.navigate).toHaveBeenCalledWith({ pageId: 'p_2024', mode: 'read' });
     });
+
+    it('turns a folder into the page it is missing, and opens it to be written', async () => {
+      const user = userEvent.setup();
+      const base = createFileStoreProvider(new MemoryFileStore(seed));
+      const savePage = vi.spyOn(base, 'savePage');
+      const snapshot = await base.getTree();
+      const folder = snapshot.nodes.find((node) => node.kind === 'folder');
+
+      const view = mount({ pageId: folder?.id ?? '' }, seed, base);
+      await ready();
+      // A folder has no page behind it, so the header has nothing to offer to edit.
+      expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+      await user.click(await screen.findByRole('button', { name: 'Create page' }));
+
+      // docs/03 section 4.1: the node keeps its id, and a null base is what writes the file
+      // it never had.
+      expect(savePage).toHaveBeenCalledWith(folder?.id, { body: '', baseVersion: null });
+      await waitFor(() => {
+        expect(view.navigate).toHaveBeenCalledWith({ pageId: folder?.id, mode: 'edit' });
+      });
+    });
+
+    it('offers a read-only host the children rather than the page it cannot write', async () => {
+      const base = createFileStoreProvider(new MemoryFileStore(seed));
+      const capabilities = { ...base.capabilities, write: false };
+      const snapshot = await base.getTree();
+      const folder = snapshot.nodes.find((node) => node.kind === 'folder');
+
+      mount({ pageId: folder?.id ?? '' }, seed, {
+        ...base,
+        capabilities,
+        getMeta: async () => ({ ...(await base.getMeta()), capabilities }),
+      });
+      await ready();
+
+      expect(await screen.findByText('This folder has no page yet')).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Create page' })).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Notes 2024' })).toBeInTheDocument();
+    });
   });
 });
 

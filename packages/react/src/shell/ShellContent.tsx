@@ -8,9 +8,13 @@ import {
 } from '@docs/core';
 import { FilePlus, FileText, FileX, Folder, TriangleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
+import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
 import { canvasKey, freshTwin } from '@/data/fresh.js';
+import { useSavePage } from '@/data/mutations.js';
+import { useStructuralGate } from '@/data/online.js';
 import { usePage, useTreeIndex } from '@/data/queries.js';
+import { format } from '@/data/strings.js';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
 import { Skeleton } from '@/ui/skeleton';
@@ -27,7 +31,8 @@ export interface ShellContentProps {
   onModeChange: (mode: PageMode) => void;
   /** Replaces the "Select a page" card only: every other card reports a real failure. */
   emptyState?: ReactNode;
-  onOpen: (id: NodeId) => void;
+  /** The mode matters here: a folder that has just become a page opens on its empty body. */
+  onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void;
   onHome: () => void;
   /** Absent on a read-only provider, and then so is the card's action (docs/06 section 11). */
   onCreate?: () => void;
@@ -135,15 +140,7 @@ export function ShellContent({
   }
 
   if (node.kind === 'folder') {
-    return (
-      <EmptyState
-        icon={Folder}
-        title={strings['empty.folder.title']}
-        body={strings['empty.folder.body']}
-      >
-        <ChildList index={index} node={node} onOpen={onOpen} />
-      </EmptyState>
-    );
+    return <FolderCard index={index} node={node} rootId={rootId} onOpen={onOpen} />;
   }
 
   if (page.isPending)
@@ -258,6 +255,63 @@ function OfflineCard({ onRetry }: { onRetry: () => void }): React.JSX.Element {
       body={strings['empty.offline.body']}
       action={{ label: strings['empty.offline.action'], onClick: onRetry }}
     />
+  );
+}
+
+/**
+ * docs/06 section 11: a directory with no `index.md` behind it. A host that can write is
+ * offered the page that would fill it - the same node, the same id, a file where there was
+ * none (docs/03 section 4.1). Either way the card lists what is under the folder, which is all
+ * a host that cannot write has to offer.
+ */
+function FolderCard({
+  index,
+  node,
+  rootId,
+  onOpen,
+}: {
+  index: TreeIndex;
+  node: TreeNode;
+  rootId?: NodeId;
+  onOpen: (id: NodeId, opts?: { mode?: PageMode }) => void;
+}): React.JSX.Element {
+  const { capabilities, strings } = useDocs();
+  // D-05: the conversion is a write, and offline there is nothing to write to.
+  const { offline } = useStructuralGate();
+  const save = useSavePage(rootId);
+  const convertible = capabilities.write && !offline;
+
+  return (
+    <EmptyState
+      icon={Folder}
+      title={strings['empty.folder.title']}
+      body={strings['empty.folder.body']}
+      action={
+        convertible
+          ? {
+              label: strings['empty.folder.action'],
+              onClick: () => {
+                save.mutate(
+                  { id: node.id, body: '', baseVersion: null },
+                  {
+                    // The row is a page now, so the page is what opens: empty, in edit mode,
+                    // the way a page created from anywhere else does (docs/01 section 5.3).
+                    onSuccess: () => {
+                      onOpen(node.id, { mode: 'edit' });
+                    },
+                    onError: () => {
+                      toast(format(strings['error.save'], { title: node.title }));
+                    },
+                  },
+                );
+              },
+            }
+          : undefined
+      }
+    >
+      {/* Kept for a host that can write too: the card is the page's own place in the tree. */}
+      <ChildList index={index} node={node} onOpen={onOpen} />
+    </EmptyState>
   );
 }
 

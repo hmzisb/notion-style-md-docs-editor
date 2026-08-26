@@ -84,14 +84,21 @@ export function PageHeader({
         >
           <SaveStatus pageId={pageId} />
         </div>
-        {pageId !== null && onModeChange !== undefined && capabilities.write && (
-          <ModeToggle
-            mode={mode}
-            onChange={onModeChange}
-            loading={editorLoading}
-            savedAt={session?.status === 'clean' ? session.lastSavedAt : null}
-          />
-        )}
+        {/*
+         * A folder node has no page behind it (docs/03 section 4.1), so there is nothing for
+         * "Edit" to open: the card it would leave on the screen is the same one.
+         */}
+        {pageId !== null &&
+          onModeChange !== undefined &&
+          capabilities.write &&
+          index?.byId[pageId]?.kind !== 'folder' && (
+            <ModeToggle
+              mode={mode}
+              onChange={onModeChange}
+              loading={editorLoading}
+              savedAt={session?.status === 'clean' ? session.lastSavedAt : null}
+            />
+          )}
         {isMobile && onSearch !== undefined && (
           <Button
             variant="ghost"
