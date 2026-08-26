@@ -4,6 +4,7 @@ import { createPlateEditor, type PlateEditor } from 'platejs/react';
 import { describe, expect, it } from 'vitest';
 import { defaultStrings } from '@/data/strings.js';
 import { createEditorKit } from './kits/editor-kit.js';
+import { SLASH_GROUPS } from './ui/slash-node.js';
 import { insertBlock, setBlockType } from './transforms.js';
 
 /**
@@ -45,6 +46,8 @@ describe('the slash menu block set (docs/05 section 2)', () => {
     [KEYS.listTodo, 'Task', '- [ ] Task\n'],
     [KEYS.codeBlock, 'const a = 1;', '```\nconst a = 1;\n```\n'],
     [KEYS.callout, 'Heads up', '> [!NOTE]\n> Heads up\n'],
+    // The blocks a toggle holds are the ones after it, so on its own it writes an empty one.
+    [KEYS.toggle, 'Summary', '<details>\n<summary>Summary</summary>\n\n</details>\n'],
   ])('saves %s as its Markdown', (type, text, expected) => {
     expect(markdown(insert(type, text))).toBe(expected);
   });
@@ -81,14 +84,21 @@ describe('the slash menu block set (docs/05 section 2)', () => {
     expect(markdown(editor)).toBe('Words\n');
   });
 
-  it('leaves no block in the menu that the codec cannot write', () => {
-    // Toggle is drawn but not serialized yet (P2-T11): its words do not survive a save, which
-    // is why docs/05 section 5 keeps it out of the menu until its rule lands.
-    const editor = open();
-    editor.tf.insertText('Words');
-    editor.tf.setNodes({ type: KEYS.toggle }, { at: [0] });
-    expect(markdown(editor)).toBe('');
-  });
+  /**
+   * docs/05 section 5: a block earns its place in the menu by round-tripping, so the menu
+   * itself is the list under test - an item added with no rule behind it fails here.
+   */
+  it.each(SLASH_GROUPS.flatMap((group) => group.items).filter((item) => item.inline !== true))(
+    'writes the $value the menu offers',
+    ({ value: type }) => {
+      const editor = open();
+      insertBlock(editor, type, { upsert: true });
+      const block = editor.api.block();
+      // A void block has no text to type into; what it writes is the block itself.
+      if (block && !editor.api.isVoid(block[0])) editor.tf.insertText('Words');
+      expect(markdown(editor)).not.toBe('');
+    },
+  );
 });
 
 /** docs/05 section 5 and docs/07 section 2: the three ways into a callout, and one way out. */

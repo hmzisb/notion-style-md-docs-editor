@@ -1,6 +1,7 @@
 'use client';
 
 import {
+  ChevronRight,
   Code2,
   Heading1Icon,
   Heading2Icon,
@@ -52,11 +53,10 @@ interface SlashGroup {
 /**
  * docs/06 section 8, over the v1 block set (docs/05 section 2): the registry item's AI group
  * and its advanced blocks - TOC, columns, equations, excalidraw, dates and footnotes - have
- * no plugin in this module, so they are not offered. Toggle has a plugin but no
- * serialization rule yet (P2-T11), and docs/05 section 5 keeps a block out of this menu
- * until its rule round-trips.
+ * no plugin in this module, so they are not offered. Exported for the codec test that holds
+ * this menu to docs/05 section 5: a block belongs here only once it round-trips.
  */
-const GROUPS: SlashGroup[] = [
+export const SLASH_GROUPS: SlashGroup[] = [
   {
     label: 'editor.slash.basic',
     items: [
@@ -101,6 +101,13 @@ const GROUPS: SlashGroup[] = [
         name: 'editor.block.callout',
         description: 'editor.blockDesc.callout',
         keywords: ['note', 'warning', 'alert', 'aside', '[!'],
+      },
+      {
+        icon: <ChevronRight />,
+        value: KEYS.toggle,
+        name: 'editor.block.toggle',
+        description: 'editor.blockDesc.toggle',
+        keywords: ['collapse', 'details', 'summary', 'accordion', '<details'],
       },
       {
         icon: <Minus />,
@@ -198,7 +205,7 @@ export function SlashInputElement(
         <InlineComboboxContent className="max-h-80 w-72 rounded-lg border border-border p-1 text-popover-foreground">
           <InlineComboboxEmpty>{strings['editor.slash.empty']}</InlineComboboxEmpty>
 
-          {GROUPS.map((group) => (
+          {SLASH_GROUPS.map((group) => (
             <InlineComboboxGroup key={group.label}>
               <InlineComboboxGroupLabel className="mt-0 mb-0 px-2 py-1.5">
                 {strings[group.label]}

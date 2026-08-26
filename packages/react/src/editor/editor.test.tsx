@@ -152,6 +152,43 @@ describe('the callout variant picker (docs/05 section 5)', () => {
   });
 });
 
+/** docs/05 section 5: the blocks a toggle holds are the indented ones after it. */
+describe('the toggle block', () => {
+  const toggle = (body: boolean): Value => [
+    { children: [{ text: 'Summary' }], type: 'toggle', id: 'summary' },
+    ...(body ? [{ children: [{ text: 'Inside' }], type: 'p', indent: 1, id: 'body' }] : []),
+  ];
+
+  it('hides what it holds until the chevron opens it', async () => {
+    const user = userEvent.setup();
+    const opened = await open('index.md');
+    mount(opened, { value: toggle(true) });
+
+    // Slate needs the nodes in the DOM, so a closed toggle hides its body rather than
+    // dropping it - which is the difference from the read view, where it is dropped.
+    expect(await screen.findByText('Inside')).not.toBeVisible();
+    const chevron = screen.getByRole('button', { name: 'Show or hide the blocks inside' });
+    expect(chevron).toHaveAttribute('aria-expanded', 'false');
+
+    await user.click(chevron);
+    await waitFor(() => {
+      expect(screen.getByText('Inside')).toBeVisible();
+    });
+    expect(chevron).toHaveAttribute('aria-expanded', 'true');
+  });
+
+  it('says it is empty while it holds nothing, and only to a writer (docs/06 section 7)', async () => {
+    const opened = await open('index.md');
+    const { update } = mount(opened, { value: toggle(false) });
+
+    expect(await screen.findByText('Empty toggle. Click or drop blocks inside.')).toBeVisible();
+    update({ readOnly: true });
+    await waitFor(() => {
+      expect(screen.queryByText('Empty toggle. Click or drop blocks inside.')).toBeNull();
+    });
+  });
+});
+
 describe('DocumentEditor (docs/05 section 6)', () => {
   let errors: string[];
   let spy: ReturnType<typeof vi.spyOn>;

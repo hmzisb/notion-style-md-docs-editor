@@ -18,6 +18,9 @@ export const blockStyles = {
   image: 'my-2',
   p: 'py-[3px]',
   table: 'my-2 overflow-x-auto',
+  /** The summary line of a toggle; the blocks inside it are indented siblings. */
+  toggle: 'flex items-start gap-1 py-[3px] font-medium',
+  toggleChevron: 'size-4 shrink-0 text-muted-foreground transition-transform',
   td: 'border border-border px-2 py-1 align-top',
   th: 'border border-border bg-muted/50 px-2 py-1 text-start align-top font-medium',
 } as const;

@@ -14,6 +14,30 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-097 · P2-T11 · 2026-08-26
+Question: `packages/react/src/styles/styles.css` compiles the fallback sheet from `@source '../**/*.tsx'`, but `lib/block-styles.ts` - the one place both renderers take their block classes from - is a `.ts` file.
+Assumed: widen the glob to `'../**/*.{ts,tsx}'`.
+Why: the built sheet only carried those classes because the Tailwind CLI also scans the package directory it runs in; anything compiling this sheet from a different base (the playground's Vite plugin, and any host that does the same) dropped every one of them, which is why `h1` measured 16 px in both modes in the dev server. The glob is the source of truth for what the sheet is compiled from, so it has to name the files the classes are actually in.
+Cheap to reverse: yes
+
+## ASM-096 · P2-T11 · 2026-08-26
+Question: docs/05 section 7 asks the read view to fold a toggle, but a static render has no editor to keep the open set in.
+Assumed: `DocumentView` holds the open set as React state keyed by the block's index in the top-level value, and hides a block by rendering nothing for it.
+Why: the value is the only identity a static render shares with its own previous render - `id` is not on every block of every page - and filtering the value instead would shift the indices of the blocks after a folded one, which is the key itself. State resets derived from the value (`folds.value === value`) rather than an effect, so a page change cannot show one stale frame.
+Cheap to reverse: yes
+
+## ASM-095 · P2-T11 · 2026-08-26
+Question: docs/07 section 2 gives `Tab` to indent, and docs/05 section 5 makes indenting under a toggle what puts a block inside it - but a closed toggle hides what it holds, caret and all.
+Assumed: `Tab` opens every toggle enclosing the block it just moved, through an `overrideEditor` on the shared `tab` transform.
+Why: Plate's own turn-into button does the same thing (`openNextToggles`) for the same reason, and a hidden block is not just invisible - typing into one reverses the characters, so the alternative is corrupt bytes. Overriding the transform covers every path that indents, not the one key this was found through.
+Cheap to reverse: yes
+
+## ASM-094 · P2-T11 · 2026-08-26
+Question: DEV-012 made the palette cut a precondition for any further shell growth, and P2-T11's strings took the entry past its 105 kB cap.
+Assumed: split the palette into its own tsup entry (`shell/command-palette`) behind `React.lazy`, keep `CommandPalette` as the wrapper that mounts it, and weigh the chunk under the `ignore` rule ASM-063 set for the editor and the icon picker.
+Why: nothing renders the palette until a key is pressed, so it is the cheapest of the three cuts DEV-012 lists, and it is the only one whose surface is a single component. The wrapper keeps the dialog mounted once loaded so closing still runs its own animation.
+Cheap to reverse: yes
+
 ## ASM-093 · P2-T10 · 2026-08-26
 Question: docs/05 section 5 names the five alert variants but not what happens to `> [!NOTE] text`, where the marker shares its line with prose.
 Assumed: only a marker that owns its line makes a callout; anything else stays a blockquote and keeps its bytes.

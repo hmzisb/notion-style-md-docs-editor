@@ -70,10 +70,11 @@
   {
     "name": "@docs/react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "105 kB",
+    "limit": "100 kB",
     "ignore": [
       "./editor/index.js",
       "./icon-picker-grid.js",
+      "./command-palette.js",
       "@docs/core",
       "lucide-react/dynamic",
       "@tanstack/react-query",

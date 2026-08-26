@@ -8,9 +8,6 @@ import { setBlockType } from '@/editor/transforms';
  * docs/07 section 2: the Notion mapping. The block plugins carry the shortcuts they own
  * (`Cmd+Alt+1-3`, `Cmd+Alt+8`, `Cmd+Shift+.`); what is left needs a transform of its own, or
  * belongs to no single plugin, so it lives here in one place.
- *
- * `Cmd+Alt+7` (toggle) is not bound: the block does not serialize yet (P2-T11), and docs/05
- * section 5 keeps a block unreachable until its rule lands.
  */
 
 interface Context {
@@ -77,6 +74,7 @@ export const ShortcutsKit = [
       turnIntoTodo: { keys: 'mod+alt+4', handler: turnInto(KEYS.listTodo) },
       turnIntoBulleted: { keys: 'mod+alt+5', handler: turnInto(KEYS.ul) },
       turnIntoNumbered: { keys: 'mod+alt+6', handler: turnInto(KEYS.ol) },
+      turnIntoToggle: { keys: 'mod+alt+7', handler: turnInto(KEYS.toggle) },
       turnIntoCallout: { keys: 'mod+alt+9', handler: turnInto(KEYS.callout) },
       moveBlockUp: { keys: 'mod+shift+up', handler: moveBlock(-1) },
       moveBlockDown: { keys: 'mod+shift+down', handler: moveBlock(1) },

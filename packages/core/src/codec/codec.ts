@@ -9,6 +9,7 @@ import {
   type Value,
 } from 'platejs';
 import { createBaseKit, type BaseKitOptions } from './base-kit.js';
+import { foldToggles } from './rules/toggle.js';
 
 /**
  * Markdown <-> Plate value (docs/05 section 3). Markdown is canonical (D-02): the value is
@@ -43,12 +44,18 @@ export function createCodec(opts: CodecOptions = {}): Codec {
   let editor: SlateEditor | undefined;
   const ready = (): SlateEditor => (editor ??= createSlateEditor({ plugins: createBaseKit(opts) }));
 
-  return {
+  const codec: Codec = {
     toValue: (body, onError) =>
       deserializeMd(ready(), body, { onError, preserveEmptyParagraphs: true, withoutMdx: true }),
-    toMarkdown: (value) => serializeMd(ready(), { value: marked(withoutTrailingBlanks(value)) }),
+    // A toggle carries the blocks after it, not under it (docs/05 section 5), so the value is
+    // folded into raw `<details>` blocks before the serializer sees one node at a time.
+    toMarkdown: (value) =>
+      serializeMd(ready(), {
+        value: marked(foldToggles(withoutTrailingBlanks(value), codec.toMarkdown)),
+      }),
     toAst: (body) => markdownToAstProcessor(ready(), body, { withoutMdx: true }),
   };
+  return codec;
 }
 
 /** An empty paragraph, which is what the editor's trailing block and a blank line both are. */

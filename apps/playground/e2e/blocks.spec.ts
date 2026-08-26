@@ -109,6 +109,31 @@ test('the alert marker turns the block into a callout as it is typed', async ({ 
   await expect.poll(() => saved(page)).toContain('> [!TIP]\n> Handy\n');
 });
 
+/** docs/05 section 5: the toggle keeps its blocks after it, indented, inside `<details>`. */
+test('a toggle saves as a details block, and Tab moves a block into it', async ({ page }) => {
+  await slash(page, 'Toggle');
+  await page.keyboard.type('More');
+  // `Enter` in a closed toggle starts the next toggle, so the block that goes inside it is
+  // turned back into text first (docs/07 section 2), and `Tab` is what moves it in.
+  await page.keyboard.press('Enter');
+  await page.keyboard.press('ControlOrMeta+Alt+0');
+  await page.keyboard.press('Tab');
+  await page.keyboard.type('Inside');
+
+  await done(page);
+  await expect
+    .poll(() => saved(page))
+    .toContain('<details>\n<summary>More</summary>\n\nInside\n\n</details>\n');
+
+  // The toggle `Tab` moved the block into is open, and it still folds in read mode, where
+  // the editor is the one drawing it (docs/05 sections 7 and 8).
+  const chevron = page.getByRole('button', { name: 'Show or hide the blocks inside' });
+  await expect(chevron).toHaveAttribute('aria-expanded', 'true');
+  await expect(page.getByText('Inside')).toBeVisible();
+  await chevron.click();
+  await expect(page.getByText('Inside')).toBeHidden();
+});
+
 test('the slash menu groups its blocks and says when nothing matches', async ({ page }) => {
   await page.keyboard.type('/');
   await expect(menu(page).getByRole('option', { name: 'Heading 1' })).toBeVisible();

@@ -75,7 +75,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 - [x] **P2-T08** Offline handling
 - [x] **P2-T09** Conflicts end to end
 - [x] **P2-T10** Callout rule and kit (stretch, D-17)
-- [ ] **P2-T11** Toggle rule and kit (stretch, D-17)
+- [x] **P2-T11** Toggle rule and kit (stretch, D-17)
 - [ ] **P2-T12** Image caption rule (stretch)
 - [ ] **P2-T13** Asset upload
 - [ ] **P2-T14** Edit round-trip e2e
@@ -112,6 +112,7 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 ## Notes
 
-- Current task: P2-T11
-- Open at Gate 2: `./shell` measures 104 kB gz against the 60 kB budget in docs/02 section 7, capped at 105 kB as a ratchet; the cut is due once `PageMenu` exists, and `size-limit`'s `ignore` now makes a lazy palette/toaster/menu chunk measurable (DEV-012, ASM-063).
+- Current task: P2-T12
+- Open at Gate 2: `./shell` measures 98.08 kB gz against the 60 kB budget in docs/02 section 7, capped at 100 kB; P2-T11 cut the palette into its own lazy chunk, the toaster and the Radix menu stack are what is left (DEV-012, ASM-063).
+- Open at Gate 2: the mode swap moves the page. In edit mode the title block renders the hover-only "Add icon" button (docs/06 section 7) invisible but in flow, so the canvas starts 38 px lower than in read - `apps/playground/e2e/edit-mode.spec.ts:30` fails on it at HEAD, and docs/05 section 8 asks for no jump at all. The button belongs out of flow (absolutely positioned in the 88 px above the title), and the read/edit article heights want re-measuring after that (read 28205 px against edit 29404 px on the Large page).
 - Last gate passed: Gate 1 (2026-08-26)

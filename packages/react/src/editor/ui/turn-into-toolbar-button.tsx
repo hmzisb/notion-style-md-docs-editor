@@ -7,6 +7,7 @@ import type { TElement } from 'platejs';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import {
   CheckIcon,
+  ChevronRightIcon,
   FileCodeIcon,
   Heading1Icon,
   Heading2Icon,
@@ -42,8 +43,7 @@ interface TurnIntoItem {
 
 /**
  * docs/06 section 8. Trimmed to the blocks the module ships (docs/05 section 2): H4-H6 clamp
- * to H3 in the codec, code drawings and columns have no plugin here, and toggle waits for
- * the serialization rule of P2-T11 (docs/05 section 5).
+ * to H3 in the codec, and code drawings and columns have no plugin here.
  */
 export const turnIntoItems: TurnIntoItem[] = [
   { icon: <PilcrowIcon />, name: 'editor.block.p', value: KEYS.p },
@@ -56,6 +56,7 @@ export const turnIntoItems: TurnIntoItem[] = [
   { icon: <FileCodeIcon />, name: 'editor.block.codeBlock', value: KEYS.codeBlock },
   { icon: <QuoteIcon />, name: 'editor.block.blockquote', value: KEYS.blockquote },
   { icon: <InfoIcon />, name: 'editor.block.callout', value: KEYS.callout },
+  { icon: <ChevronRightIcon />, name: 'editor.block.toggle', value: KEYS.toggle },
 ];
 
 type DropdownMenuProps = React.ComponentProps<typeof DropdownMenuPrimitive.Root>;

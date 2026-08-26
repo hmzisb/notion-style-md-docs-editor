@@ -122,6 +122,28 @@ describe('DocumentView', () => {
       expect(nested).toHaveStyle({ marginLeft: '48px' });
     });
 
+    it('folds a toggle, and the blocks it holds with it (docs/05 section 7)', async () => {
+      const user = userEvent.setup();
+      await mount(
+        ['<details>', '<summary>More</summary>', '', 'Inside.', '', '</details>', '', 'After'].join(
+          '\n',
+        ),
+      );
+
+      // Closed is what `<details>` means without `open`, so the body is not drawn at all.
+      expect(screen.getByText('More')).toBeInTheDocument();
+      expect(screen.queryByText('Inside.')).toBeNull();
+      expect(screen.getByText('After')).toBeInTheDocument();
+
+      const chevron = screen.getByRole('button', { name: 'Show or hide the blocks inside' });
+      expect(chevron).toHaveAttribute('aria-expanded', 'false');
+      await user.click(chevron);
+
+      expect(screen.getByText('Inside.')).toBeInTheDocument();
+      expect(chevron).toHaveAttribute('aria-expanded', 'true');
+      expect(screen.getByText('After')).toBeInTheDocument();
+    });
+
     it('never renders raw HTML, in any form (docs/05 section 11)', async () => {
       await mount('Before\n\n<div onclick="alert(1)">danger</div>\n\nAfter');
 

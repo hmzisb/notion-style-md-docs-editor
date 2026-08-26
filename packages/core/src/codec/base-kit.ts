@@ -31,6 +31,7 @@ import { getPluginType, KEYS, type AnySlatePlugin } from 'platejs';
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
 import { calloutRules } from './rules/callout.js';
+import { remarkToggles, toggleRules } from './rules/toggle.js';
 
 /**
  * Headless plugin list for the v1 block set (docs/05 section 2), shared by the codec and
@@ -152,9 +153,9 @@ export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
     MarkdownPlugin.configure({
       options: {
         plainMarks: UNSHIPPED_MARKS,
-        remarkPlugins: [remarkGfm, remarkInlineRefs],
+        remarkPlugins: [remarkGfm, remarkInlineRefs, remarkToggles],
         remarkStringifyOptions: { ...DEFAULT_STRINGIFY_OPTIONS, ...opts.remarkStringifyOptions },
-        rules: { ...FIDELITY_RULES, ...calloutRules, ...opts.rules },
+        rules: { ...FIDELITY_RULES, ...calloutRules, ...toggleRules, ...opts.rules },
       },
     }),
   ];

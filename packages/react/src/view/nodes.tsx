@@ -1,15 +1,17 @@
 import { isOrderedList } from '@platejs/list';
-import { Check, Copy } from 'lucide-react';
+import { Check, ChevronRight, Copy } from 'lucide-react';
 import {
   KEYS,
   NodeApi,
   type NodeComponents,
+  type Path,
   type RenderStaticNodeWrapper,
   type TCodeBlockElement,
   type TElement,
   type TCaptionProps,
   type TImageElement,
   type TListProps,
+  type Value,
 } from 'platejs';
 import {
   SlateElement,
@@ -18,7 +20,7 @@ import {
   type SlateLeafProps,
   type SlateRenderElementProps,
 } from 'platejs/static';
-import { useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { blockStyles } from '@/lib/block-styles.js';
 import { CALLOUT_VARIANTS, calloutVariantOf } from '@/lib/callout.js';
 import { useDocs } from '@/data/context.js';
@@ -46,6 +48,127 @@ type BlockProps = Partial<TListProps> & TElement;
 function indentStyle(element: TElement): { marginLeft?: string } {
   const { indent = 0 } = element as BlockProps;
   return indent > 0 ? { marginLeft: `${String(indent * INDENT_STEP)}px` } : {};
+}
+
+/**
+ * A list item spends its first indent step on its marker, so a list after a toggle is not
+ * inside it - the same correction Plate's own toggle index makes (docs/05 section 5).
+ */
+function enclosedIndent(node: TElement): number {
+  const { indent = 0, listStyleType } = node as BlockProps;
+  return listStyleType !== undefined && indent > 0 ? indent - 1 : indent;
+}
+
+/**
+ * The toggle each top-level block sits inside, by index, or -1: a block belongs to the toggle
+ * above it while it is indented deeper than that toggle (docs/05 section 5).
+ */
+function toggleOwners(value: Value): number[] {
+  const owners: number[] = [];
+  const open: { index: number; level: number }[] = [];
+  value.forEach((node, index) => {
+    const level = enclosedIndent(node);
+    // A toggle holds what is indented deeper than it, so anything else closes it.
+    while ((open.at(-1)?.level ?? -1) >= level) open.pop();
+    owners.push(open.at(-1)?.index ?? -1);
+    if (node.type === KEYS.toggle) open.push({ index, level });
+  });
+  return owners;
+}
+
+interface FoldState {
+  /** Whether the toggle at this index is open. */
+  isOpen: (index: number) => boolean;
+  /** Whether a folded toggle above this block is hiding it. */
+  isHidden: (index: number) => boolean;
+  fold: (index: number) => void;
+}
+
+/** Nothing folded, which is what a component rendered outside {@link DocumentView} gets. */
+const FoldContext = createContext<FoldState>({
+  fold: () => undefined,
+  isHidden: () => false,
+  isOpen: () => true,
+});
+
+const NONE: ReadonlySet<number> = new Set();
+
+/**
+ * docs/05 section 7: a toggle folds in read mode too, in local state. The blocks it hides are
+ * the ones after it rather than its children, so what is hidden is worked out over the whole
+ * value at once, and the reader's folds are dropped when a different page arrives.
+ */
+export function useFoldState(value: Value): FoldState {
+  const [folds, setFolds] = useState<{ open: ReadonlySet<number>; value: Value }>({
+    open: NONE,
+    value,
+  });
+  const open = folds.value === value ? folds.open : NONE;
+  const owners = useMemo(() => toggleOwners(value), [value]);
+
+  return useMemo<FoldState>(
+    () => ({
+      fold: (index) => {
+        const next = new Set(open);
+        if (!next.delete(index)) next.add(index);
+        setFolds({ open: next, value });
+      },
+      isHidden: (index) => {
+        for (let owner = owners[index] ?? -1; owner !== -1; owner = owners[owner] ?? -1)
+          if (!open.has(owner)) return true;
+        return false;
+      },
+      isOpen: (index) => open.has(index),
+    }),
+    [open, owners, value],
+  );
+}
+
+export const FoldProvider = FoldContext.Provider;
+
+/**
+ * Every block that can sit at the top level renders through this, because that is where a
+ * folded toggle hides one: a block nested inside another is gone with its parent already.
+ */
+function foldable<P extends { path: Path }>(
+  Component: (props: P) => React.JSX.Element,
+): (props: P) => ReactNode {
+  return function Foldable(props: P): ReactNode {
+    const { isHidden } = useContext(FoldContext);
+    if (props.path.length === 1 && isHidden(props.path[0] ?? 0)) return null;
+    return <Component {...props} />;
+  };
+}
+
+/**
+ * docs/06 section 7: the chevron is the whole control, and the blocks it hides are the
+ * indented siblings after it, which {@link useFoldState} works out.
+ */
+function ToggleStatic(props: SlateElementProps): React.JSX.Element {
+  const { strings } = useDocs();
+  const { fold, isOpen } = useContext(FoldContext);
+  const index = props.path[0] ?? 0;
+  const open = isOpen(index);
+
+  return (
+    <SlateElement {...props} className={blockStyles.toggle} style={indentStyle(props.element)}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-label={strings['editor.toggleBlocks']}
+        className="mt-0.5 shrink-0 rounded-sm p-px select-none hover:bg-foreground/10 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+        onClick={() => {
+          fold(index);
+        }}
+      >
+        <ChevronRight
+          aria-hidden="true"
+          className={cn(blockStyles.toggleChevron, open && 'rotate-90')}
+        />
+      </button>
+      <div className="w-full min-w-0">{props.children}</div>
+    </SlateElement>
+  );
 }
 
 /**
@@ -307,24 +430,25 @@ function StrikethroughStatic(props: SlateLeafProps): React.JSX.Element {
 
 /** Keyed by plugin key, which is how `override.components` reaches the static renderer. */
 export const viewComponents: NodeComponents = {
-  [KEYS.blockquote]: BlockquoteStatic,
-  [KEYS.callout]: CalloutStatic,
+  [KEYS.blockquote]: foldable(BlockquoteStatic),
+  [KEYS.callout]: foldable(CalloutStatic),
   [KEYS.bold]: BoldStatic,
   [KEYS.code]: CodeLeafStatic,
-  [KEYS.codeBlock]: CodeBlockStatic,
+  [KEYS.codeBlock]: foldable(CodeBlockStatic),
   [KEYS.codeLine]: CodeLineStatic,
-  [KEYS.h1]: H1Static,
-  [KEYS.h2]: H2Static,
-  [KEYS.h3]: H3Static,
-  [KEYS.hr]: HrStatic,
-  [KEYS.img]: ImageStatic,
+  [KEYS.h1]: foldable(H1Static),
+  [KEYS.h2]: foldable(H2Static),
+  [KEYS.h3]: foldable(H3Static),
+  [KEYS.hr]: foldable(HrStatic),
+  [KEYS.img]: foldable(ImageStatic),
   [KEYS.italic]: ItalicStatic,
   [KEYS.link]: LinkStatic,
-  [KEYS.p]: ParagraphStatic,
+  [KEYS.p]: foldable(ParagraphStatic),
   [KEYS.strikethrough]: StrikethroughStatic,
-  [KEYS.table]: TableStatic,
+  [KEYS.table]: foldable(TableStatic),
   [KEYS.td]: TableCellStatic,
   [KEYS.th]: TableHeaderCellStatic,
+  [KEYS.toggle]: foldable(ToggleStatic),
   [KEYS.tr]: TableRowStatic,
   [RAW_HTML_KEY]: RawHtmlStatic,
 };

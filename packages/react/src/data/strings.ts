@@ -168,6 +168,7 @@ export const defaultStrings = {
   'editor.iconRandom': 'Random',
   'editor.iconLoading': 'Loading emoji…',
   'editor.emptyToggle': 'Empty toggle. Click or drop blocks inside.',
+  'editor.toggleBlocks': 'Show or hide the blocks inside',
   'editor.copyCode': 'Copy',
   'editor.copiedCode': 'Copied',
   'editor.imageMissing': 'Image not found: {path}',

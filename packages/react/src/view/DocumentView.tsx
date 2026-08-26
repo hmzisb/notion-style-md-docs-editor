@@ -7,7 +7,13 @@ import { useTreeIndex } from '@/data/queries.js';
 import { usePageValue } from '@/data/use-page-value.js';
 import { cn } from '@/lib/utils';
 import { ViewContext, type ViewContextValue } from './context.js';
-import { RAW_HTML_KEY, listBelowNodes, viewComponents } from './nodes.js';
+import {
+  FoldProvider,
+  RAW_HTML_KEY,
+  listBelowNodes,
+  useFoldState,
+  viewComponents,
+} from './nodes.js';
 
 export interface DocumentViewProps {
   page: PageDocument;
@@ -50,6 +56,8 @@ export function DocumentView({
     [value],
   );
 
+  const folds = useFoldState(value);
+
   const context = useMemo<ViewContextValue>(
     () => ({ node, idByPath: index?.idByPath ?? {} }),
     [node, index],
@@ -57,7 +65,9 @@ export function DocumentView({
 
   return (
     <ViewContext.Provider value={context}>
-      <PlateView editor={editor} className={cn('text-base leading-[1.65]', className)} />
+      <FoldProvider value={folds}>
+        <PlateView editor={editor} className={cn('text-base leading-[1.65]', className)} />
+      </FoldProvider>
     </ViewContext.Provider>
   );
 }
