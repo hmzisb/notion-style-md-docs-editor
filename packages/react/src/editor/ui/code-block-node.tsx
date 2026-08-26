@@ -53,7 +53,8 @@ export function CodeBlockElement({ showLanguageLabel = true, ...props }: CodeBlo
         </pre>
 
         <div
-          className="absolute top-1 right-1 z-10 flex select-none gap-0.5"
+          // `bg-muted` is the block's own colour: scrolled code passes under the controls.
+          className="absolute top-1 right-1 z-10 flex select-none gap-0.5 rounded-md bg-muted pl-1"
           contentEditable={false}
         >
           {isLangSupported(element.lang) && (

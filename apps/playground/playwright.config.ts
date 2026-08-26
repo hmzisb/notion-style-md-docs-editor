@@ -18,6 +18,10 @@ export default defineConfig<Options>({
   expect: {
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, threshold: 0.2 },
   },
+  // docs/09 P3-T14 asks for the baselines here rather than beside the spec. The platform is in
+  // the name because font rasterising is not the same on two operating systems: another OS
+  // writes its own set instead of failing against this one.
+  snapshotPathTemplate: '{testDir}/__screenshots__/{arg}-{projectName}-{platform}{ext}',
   projects: [
     { name: 'demo', use: { ...devices['Desktop Chrome'], mode: 'demo' } },
     { name: 'opfs', use: { ...devices['Desktop Chrome'], mode: 'opfs' } },

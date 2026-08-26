@@ -290,7 +290,9 @@ function CodeBlockStatic(props: SlateElementProps<TCodeBlockElement>): React.JSX
   return (
     <SlateElement {...props} className={blockStyles.codeBlock} style={indentStyle(props.element)}>
       <div className="group/code relative rounded-md bg-muted">
-        <div className="absolute top-1 right-1 flex items-center gap-1">
+        {/* `bg-muted`, the block's own colour: a long line scrolls under the label rather
+            than through it. */}
+        <div className="absolute top-1 right-1 flex items-center gap-1 rounded-md bg-muted pl-1">
           {lang !== undefined && lang !== '' && (
             <span className="px-1 text-xs text-muted-foreground select-none">
               {codeLanguageLabel(lang)}

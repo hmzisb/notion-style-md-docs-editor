@@ -2,6 +2,12 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-153 · P3-T14 · 2026-08-27
+Question: `toHaveScreenshot` baselines are per-renderer, and a pixel written by this machine's Chromium on macOS is not what a Linux CI or a WebKit run produces.
+Assumed: the baselines are the darwin Chromium OPFS run only - `snapshotPathTemplate` carries `{platform}` and `{projectName}`, and the spec skips every project but `opfs`.
+Why: font rasterising differs enough between platforms that a shared baseline is a permanent red; another OS regenerates its own set on first run, and the checked-in set stays the reference for the machine that reviews the design. A visual diff is a review aid, not a portable contract.
+Cheap to reverse: yes
+
 ## ASM-152 · P3-T11 · 2026-08-26
 Question: two e2e specs that click into the body and type straight away wrote their text in two places - the first key where the click left the caret, the rest where the caret had been before it - and did it about two runs in three.
 Assumed: a `clickCaret` fixture that holds the wait inside the click (`click({ delay: 60 })`), used everywhere a test types straight after clicking into the editor.
