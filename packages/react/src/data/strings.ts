@@ -44,6 +44,7 @@ export const defaultStrings = {
   'status.unsaved': 'Unsaved changes',
   'status.offline': 'Offline, retrying',
   'status.offlineTooltip': 'Next retry {time}',
+  'status.offlineActions': 'Reconnect to change pages',
   'status.conflict': 'Changed on disk',
   'status.draft': 'Restored draft',
   'status.error': "Couldn't save",

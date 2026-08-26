@@ -14,9 +14,18 @@ export { useDocs };
 /**
  * docs/04 section 8: reads retry once, mutations never - the document session owns save
  * retries and needs to see the first failure to decide what to do with the draft.
+ *
+ * `offlineFirst` because the provider is the only thing that knows whether it is reachable:
+ * an OPFS or memory workspace works perfectly well with the radio off, and Query's default
+ * would pause every read of it and leave the shell on a skeleton (docs/04 section 3.4).
  */
 const createInternalClient = (): QueryClient =>
-  new QueryClient({ defaultOptions: { queries: { retry: 1 }, mutations: { retry: false } } });
+  new QueryClient({
+    defaultOptions: {
+      queries: { retry: 1, networkMode: 'offlineFirst' },
+      mutations: { retry: false, networkMode: 'offlineFirst' },
+    },
+  });
 
 export function DocsProvider(props: DocsProviderProps): React.JSX.Element {
   const { instanceId = 'default', provider, queryClient } = props;

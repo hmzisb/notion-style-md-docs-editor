@@ -14,6 +14,24 @@ Cheap to reverse: yes | no
 
 ---
 
+## ASM-088 · P2-T08 · 2026-08-26
+Question: docs/04 section 3.4 asks for buttons disabled with a tooltip, and a `disabled` button takes no focus and fires no pointer events.
+Assumed: the gated controls carry `aria-disabled` and stay focusable; the title field is `readOnly`. Both keep their tooltip, on hover and on focus.
+Why: a control the keyboard cannot reach is a reason nobody can read, and the reason is the whole point of the message. `readOnly` also leaves the title selectable and scrollable, which a reader offline still wants.
+Cheap to reverse: yes
+
+## ASM-087 · P2-T08 · 2026-08-26
+Question: D-05 lists create, move, delete, rename and icon as structural, and only rename and icon exist so far.
+Assumed: `useStructuralGate` in `data/online.ts` is the one place that answers it, and the title and icon are its first two callers; P3's tree writes use the same hook.
+Why: one hook is smaller than the same `useOnline` comparison in six components and keeps the message identical everywhere. Content edits stay ungated - the draft store and the save retry already carry them (docs/04 section 3.4).
+Cheap to reverse: yes
+
+## ASM-086 · P2-T08 · 2026-08-26
+Question: Query's default `networkMode` pauses every fetch while `navigator.onLine` is false, and a provider may be a directory on this machine.
+Assumed: the module's own `QueryClient` sets `networkMode: 'offlineFirst'` for queries and mutations; the provider is what decides whether it is reachable.
+Why: OPFS and memory workspaces work perfectly well with the radio off, and pausing their reads would blank the shell for no reason. A host that brings its own client keeps Query's default, so `ShellContent` also treats a paused read as "Not available offline" rather than leaving the skeleton up.
+Cheap to reverse: yes
+
 ## ASM-085 · P2-T07 · 2026-08-26
 Question: docs/06 section 7 wants the title saved "as you type" without naming an interval, and docs/03 gives `updateMeta` a `renameFile` flag.
 Assumed: commit 600 ms after the last keystroke, and flush immediately on blur, on Enter and on unmount; `renameFile` is left off for now.

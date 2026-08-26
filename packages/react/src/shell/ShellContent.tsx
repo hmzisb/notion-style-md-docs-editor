@@ -73,7 +73,16 @@ export function ShellContent({
     );
   }
 
-  if (tree.isPending) return <CanvasSkeleton />;
+  if (tree.isPending)
+    return tree.fetchStatus === 'paused' ? (
+      <OfflineCard
+        onRetry={() => {
+          void tree.refetch();
+        }}
+      />
+    ) : (
+      <CanvasSkeleton />
+    );
   const index = tree.data;
 
   if (pageId === null) {
@@ -120,7 +129,16 @@ export function ShellContent({
     );
   }
 
-  if (page.isPending) return <CanvasSkeleton />;
+  if (page.isPending)
+    return page.fetchStatus === 'paused' ? (
+      <OfflineCard
+        onRetry={() => {
+          void page.refetch();
+        }}
+      />
+    ) : (
+      <CanvasSkeleton />
+    );
   if (page.error !== null) {
     return (
       <FailureCard
@@ -194,16 +212,7 @@ function FailureCard({
   }
 
   const offline = code === 'network' && typeof navigator !== 'undefined' && !navigator.onLine;
-  if (offline) {
-    return (
-      <EmptyState
-        icon={WifiOff}
-        title={strings['empty.offline.title']}
-        body={strings['empty.offline.body']}
-        action={{ label: strings['empty.offline.action'], onClick: onRetry }}
-      />
-    );
-  }
+  if (offline) return <OfflineCard onRetry={onRetry} />;
 
   return (
     <EmptyState
@@ -211,6 +220,24 @@ function FailureCard({
       title={strings['empty.unreachable.title']}
       body={error.message}
       action={{ label: strings['empty.unreachable.action'], onClick: onRetry }}
+    />
+  );
+}
+
+/**
+ * docs/04 section 3.4: what is in the cache is served offline and this is what is left over -
+ * a page this device has never opened. A host whose own `QueryClient` keeps Query's default
+ * `networkMode` gets here too, with the fetch paused rather than failed, and the card is the
+ * honest answer either way: there is nothing to show until the network is back.
+ */
+function OfflineCard({ onRetry }: { onRetry: () => void }): React.JSX.Element {
+  const { strings } = useDocs();
+  return (
+    <EmptyState
+      icon={WifiOff}
+      title={strings['empty.offline.title']}
+      body={strings['empty.offline.body']}
+      action={{ label: strings['empty.offline.action'], onClick: onRetry }}
     />
   );
 }

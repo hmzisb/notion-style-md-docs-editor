@@ -3,8 +3,10 @@ import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react
 import { toast } from 'sonner';
 import { useDocs } from '@/data/context.js';
 import { useUpdateMeta } from '@/data/mutations.js';
+import { useStructuralGate } from '@/data/online.js';
 import { format } from '@/data/strings.js';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/ui/tooltip';
 
 /** docs/06 section 7: the title is one size below 768 px and the full one above it. */
 const TITLE = 'text-[32px] leading-tight font-bold md:text-[40px]';
@@ -41,6 +43,9 @@ export function PageTitle({
 }: PageTitleProps): React.JSX.Element {
   const { strings } = useDocs();
   const update = useUpdateMeta(rootId);
+  // A rename is structural (D-05): offline the field still reads and scrolls, it just cannot
+  // be typed into. `readOnly` rather than `disabled`, so the text stays selectable.
+  const { offline, reason } = useStructuralGate();
   const [value, setValue] = useState(title);
   const field = useRef<HTMLTextAreaElement | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -112,10 +117,11 @@ export function PageTitle({
     );
   }
 
-  return (
+  const input = (
     <textarea
       ref={field}
       aria-label={strings['editor.title']}
+      readOnly={offline}
       className={cn(
         TITLE,
         'w-full resize-none overflow-hidden border-0 bg-transparent p-0 outline-none placeholder:text-muted-foreground/50',
@@ -157,5 +163,16 @@ export function PageTitle({
         onGoToContent();
       }}
     />
+  );
+
+  if (!offline) return input;
+  return (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>{input}</TooltipTrigger>
+        {/* Centred on the field rather than over its start, where the icon button is. */}
+        <TooltipContent>{reason}</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 }
