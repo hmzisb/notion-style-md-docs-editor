@@ -1,4 +1,5 @@
 import {
+  ancestorsOf,
   isDescendant,
   type NodeId,
   type PageMode,
@@ -175,14 +176,19 @@ function TreeBody({
    * where the pointer no longer is.
    */
   const [blocked, setBlocked] = useState(false);
+  /** A drag is in flight, and the rows under the pointer may not move (see `oneBranch`). */
+  const dragActive = useRef(false);
 
   const tree = useTree<TreeNode>({
     rootItemId: ROOT,
     state: { expandedItems },
     setExpandedItems: (updater) => {
-      setExpandedIds(
-        typeof updater === 'function' ? updater(latest.current.expandedItems) : updater,
-      );
+      const open = latest.current.expandedItems;
+      const next = typeof updater === 'function' ? updater(open) : updater;
+      // Mid-drag the auto-expand opens the row under the pointer, and closing the rows above
+      // it would slide the drop target out from under the finger that is aiming at it.
+      if (dragActive.current) setExpandedIds(next);
+      else setExpandedIds(oneBranch(latest.current.index, open, next));
     },
     getItemName: (item) => item.getItemData().title,
     isItemFolder: (item) => {
@@ -210,6 +216,7 @@ function TreeBody({
     // docs/07 section 3: a page takes children as readily as a folder does.
     canDrop: (items, target) => {
       if (!latest.current.draggable) return false;
+      dragActive.current = true;
       const parentId = parentOf(target);
       const ok = items.every((item) => {
         const id = item.getId();
@@ -568,6 +575,7 @@ function TreeBody({
   const endDrag = useCallback(() => {
     edge.stop();
     setBlocked(false);
+    dragActive.current = false;
   }, [edge]);
 
   const containerProps = tree.getContainerProps(
@@ -775,6 +783,20 @@ function TreeSkeleton({ className }: { className?: string }): React.JSX.Element 
       ))}
     </div>
   );
+}
+
+/**
+ * One branch open at a time: opening a row closes everything beside it, so the sidebar shows
+ * the path being read and nothing else. Only a single row opening is treated this way - expand
+ * all, a collapse and the drag auto-expand hand over a set that already says what it wants.
+ */
+function oneBranch(index: TreeIndex, open: readonly NodeId[], next: readonly NodeId[]): NodeId[] {
+  const [id, ...alsoOpened] = next.filter((candidate) => !open.includes(candidate));
+  if (id === undefined || alsoOpened.length > 0 || next.length <= open.length) return [...next];
+  // The row and the rows it hangs from. A parent closing under an open child would take the
+  // row that was just opened off the screen with it.
+  const keep = new Set<NodeId>([...ancestorsOf(index, id), id]);
+  return next.filter((candidate) => keep.has(candidate));
 }
 
 /** The synthetic root, plus a placeholder for an id that vanished mid-rebuild. */

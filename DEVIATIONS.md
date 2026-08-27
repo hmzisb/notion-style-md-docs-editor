@@ -2,6 +2,13 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-033 · UX-T01 · 2026-08-27
+Spec said: docs/06 section 5 and docs/07 section 3 describe tree expansion as free-form - a row expands, nothing else moves - and docs/06 section 8 ships an "Expand all" action, which reads as many branches open at once.
+Reality: the owner asked for one branch open at a time, the way Notion's sidebar behaves. A corpus three levels deep otherwise fills the sidebar with rows nobody is reading, and the page being read scrolls out of the pane.
+Decision: `setExpandedItems` prunes to a single branch when, and only when, exactly one row is being opened. The row's ancestors are kept (a child expanding must not close its own parent), a collapse and a multi-row set (expand all, the restored state on remount, the 600 ms drag auto-expand) pass through untouched, and pruning is suppressed entirely while a drag is in flight so the drop target does not slide out from under the pointer.
+Impact: `react/src/tree/PageTree.tsx` (`oneBranch`, a `dragActive` ref); one new case in `tree/tree.test.tsx`; no public API change, no store change - `expandedItems` is still the whole state and still persisted.
+Reverse when: a host wants many branches open - then this becomes a `DocsShell` prop rather than the default.
+
 ## DEV-032 · P4-T01 · 2026-08-27
 Spec said: docs/04 section 5 - "the filesystem adapter emits events by polling `stat` on the open page every 5 s and the tree every 30 s when `subscribe: true` is requested (cheap: mtime only)".
 Reality: the store is a `FileStore` (docs/03 section 3) and sits below the provider, so it does not know which page is open, and the File System Access API has no `stat`: the size and mtime of a file come from `getFile()`, one handle at a time. Two cadences would mean two walks with different depths, and the 30 s tree walk is the expensive one either way.

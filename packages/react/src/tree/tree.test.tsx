@@ -102,6 +102,33 @@ describe('PageTree', () => {
     expect(screen.getByRole('button', { name: 'Collapse Guides' })).toBeInTheDocument();
   });
 
+  it('keeps one branch open: a second row closes the first, ancestors stay', async () => {
+    const user = userEvent.setup();
+    mount(
+      'accordion',
+      {},
+      {
+        'home.md': page('p_home', 'Home'),
+        'guides/index.md': page('p_guides', 'Guides'),
+        'guides/auth/index.md': page('p_auth', 'Auth'),
+        'guides/auth/tokens.md': page('p_tokens', 'Tokens'),
+        'archive/2024.md': page('p_2024', 'Notes 2024'),
+      },
+    );
+    await ready();
+
+    await user.click(screen.getByRole('button', { name: 'Expand Guides' }));
+    await user.click(screen.getByRole('button', { name: 'Expand Auth' }));
+    // A child opening leaves the rows it hangs from where they are.
+    expect(titles()).toContain('Tokens');
+    expect(rowFor('Guides')).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(screen.getByRole('button', { name: 'Expand Archive' }));
+
+    expect(titles()).toEqual(['Guides', 'Home', 'Archive', 'Notes 2024']);
+    expect(rowFor('Guides')).toHaveAttribute('aria-expanded', 'false');
+  });
+
   it('keeps the expanded folders across a remount', async () => {
     const user = userEvent.setup();
     const view = mount('persist');
