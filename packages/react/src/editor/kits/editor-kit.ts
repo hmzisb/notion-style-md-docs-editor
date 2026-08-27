@@ -10,6 +10,7 @@ import { BlockMenuKit } from './block-menu-kit.js';
 import { BlockSelectionKit } from './block-selection-kit.js';
 import { CalloutKit } from './callout-kit.js';
 import { CodeBlockKit } from './code-block-kit.js';
+import { ColorKit } from './color-kit.js';
 import { DndKit } from './dnd-kit.js';
 import { ExitBreakKit } from './exit-break-kit.js';
 import { FloatingToolbarKit } from './floating-toolbar-kit.js';
@@ -45,6 +46,7 @@ const REACT_KITS: EditorPlugin[] = [
   ...IndentKit,
   ...BasicBlocksKit,
   ...BasicMarksKit,
+  ...ColorKit,
   ...ListKit,
   ...CodeBlockKit,
   ...TableKit,

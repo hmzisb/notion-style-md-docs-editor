@@ -32,6 +32,7 @@ import { createSlatePlugin, getPluginType, KEYS, type AnySlatePlugin } from 'pla
 import remarkGfm from 'remark-gfm';
 import { remarkInlineRefs } from './inline-refs.js';
 import { calloutRules } from './rules/callout.js';
+import { COLOR_KEY, colorHandlers, colorRules, remarkColors } from './rules/color.js';
 import { captionRules, remarkCaptions } from './rules/caption.js';
 import { remarkToggles, toggleRules } from './rules/toggle.js';
 
@@ -159,6 +160,16 @@ export function withRuleKeyPlaceholders(kit: AnySlatePlugin[]): AnySlatePlugin[]
 }
 
 /**
+ * Text colour (docs/06 section 9). `@platejs/basic-styles` is not installed - its rule pair
+ * serializes to an MDX JSX element that non-MDX stringify rejects (DEV-004), so the kit would
+ * gain a dependency for a plugin that is one line and a rule this module has to write anyway.
+ */
+export const BaseColorPlugin: AnySlatePlugin = createSlatePlugin({
+  key: COLOR_KEY,
+  node: { isLeaf: true },
+});
+
+/**
  * Underline is not in the kit: `<u>` deserializes to raw HTML rather than to the mark, and
  * the mark serializes to an MDX JSX element that non-MDX stringify cannot handle (DEV-004).
  */
@@ -181,14 +192,22 @@ export function createBaseKit(opts: BaseKitOptions = {}): AnySlatePlugin[] {
     BaseCaptionPlugin,
     BaseCalloutPlugin,
     BaseTogglePlugin,
+    BaseColorPlugin,
     MarkdownPlugin.configure({
       options: {
         plainMarks: UNSHIPPED_MARKS,
-        remarkPlugins: [remarkGfm, remarkInlineRefs, remarkCaptions, remarkToggles],
-        remarkStringifyOptions: { ...DEFAULT_STRINGIFY_OPTIONS, ...opts.remarkStringifyOptions },
+        remarkPlugins: [remarkGfm, remarkInlineRefs, remarkCaptions, remarkToggles, remarkColors],
+        remarkStringifyOptions: {
+          ...DEFAULT_STRINGIFY_OPTIONS,
+          ...opts.remarkStringifyOptions,
+          // The colour rule writes node types mdast does not define, so it brings the
+          // handlers that write them; a host's own handlers still win.
+          handlers: { ...colorHandlers, ...opts.remarkStringifyOptions?.handlers },
+        },
         rules: {
           ...FIDELITY_RULES,
           ...calloutRules,
+          ...colorRules,
           ...captionRules,
           ...toggleRules,
           ...opts.rules,

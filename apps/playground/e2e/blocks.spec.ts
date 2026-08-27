@@ -223,6 +223,22 @@ test('the floating toolbar marks a selection', async ({ page }) => {
   await expect.poll(() => saved(page)).toContain('Bold **me**\n');
 });
 
+test('the floating toolbar colours a selection', async ({ page }) => {
+  await page.keyboard.type('Colour me');
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Shift+ArrowLeft');
+
+  const toolbar = page.getByRole('toolbar', { name: 'Formatting' });
+  await toolbar.getByLabel('Text color').click();
+  await page.getByRole('menuitemradio', { name: 'Red' }).click();
+
+  await done(page);
+  // DEV-034: the span carries the hex, so the file keeps the colour outside this module too.
+  await expect
+    .poll(() => saved(page))
+    .toContain('Colour <span data-color="red" style="color: #d44c47">me</span>\n');
+});
+
 test('the block shortcuts move and duplicate the block the caret is in', async ({ page }) => {
   await page.keyboard.type('One');
   await page.keyboard.press('Enter');

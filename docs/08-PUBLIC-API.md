@@ -74,7 +74,8 @@ that is documented and gone fails the suite. `@docs/react` also re-exports every
   ancestorsOf, childIdsOf, subtreeIds, isDescendant, sortSiblings, nextOrder, midpointOrder,
   renumber, splitFrontmatter, joinFrontmatter, normalizeMarkdown, firstH1, titleFromPath,
   createCodec, defaultCodec, markdownToValue, valueToMarkdown, classifyFidelity, Fidelity,
-  FidelityLevel, BaseKit, createBaseKit, resolvePageLink, parseHref, isSafeHref, generateId,
+  FidelityLevel, BaseKit, BaseColorPlugin, createBaseKit, COLOR_KEY, TEXT_COLORS,
+  TEXT_COLOR_NAMES, TextColor, isTextColor, resolvePageLink, parseHref, isSafeHref, generateId,
   pathHashId, folderHashId, slugify, uniqueSlug, CONTRACT_VERSION, CONTRACT_SCHEMAS,
   INDEX_FILE, README_FILE
 

@@ -2,6 +2,12 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-164 · UX-T04 · 2026-08-27
+Question: three of Notion's nine text colours miss the 4.5:1 that docs/06 section 1 asks of text - orange 3.28:1, yellow 2.75:1 and red 4.26:1 on white. Darken them, or ship the palette as it is?
+Assumed: ship it. The light values are Notion's own; dark mode uses a lighter set that measures 5.05:1 to 7.64:1 on the near-black ground.
+Why: the ratio governs the module's own chrome and its default body text, both untouched here - a colour is content the writer chose for emphasis, and the reader can always turn it off. Darkening the three would leave the file's hex and the app's paint saying different things for the sake of a rule the writer opted out of.
+Cheap to reverse: yes - nine variables in `styles.css`, and the stored hex is what any other reader sees anyway.
+
 ## ASM-163 · UX-T02 · 2026-08-27
 Question: the owner asked for a Notion-style `/page` row in the slash menu. Notion writes a sub-page block into the page you are on and opens the new page; should this one write a Markdown link into the parent as well?
 Assumed: no. The row creates a child of the page being edited and opens it with the title focused - the sidebar's own "Add a page inside" flow, reached from the keyboard - and writes nothing into the parent.

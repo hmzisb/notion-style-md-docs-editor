@@ -138,12 +138,21 @@ export {
 } from './fs/semantics.js';
 
 export {
+  BaseColorPlugin,
   BaseKit,
   DEFAULT_STRINGIFY_OPTIONS,
   createBaseKit,
   type BaseKitOptions,
   type StringifyOptions,
 } from './codec/base-kit.js';
+
+export {
+  COLOR_KEY,
+  TEXT_COLORS,
+  TEXT_COLOR_NAMES,
+  isTextColor,
+  type TextColor,
+} from './codec/rules/color.js';
 
 export {
   CALLOUT_ICONS,

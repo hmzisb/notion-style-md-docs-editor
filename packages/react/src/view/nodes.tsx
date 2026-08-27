@@ -1,3 +1,4 @@
+import { COLOR_KEY, isTextColor } from '@docs/core';
 import { isOrderedList } from '@platejs/list';
 import { Check, ChevronRight, Copy } from 'lucide-react';
 import {
@@ -418,6 +419,17 @@ function StrikethroughStatic(props: SlateLeafProps): React.JSX.Element {
   return <SlateLeaf {...props} as="s" />;
 }
 
+/** DEV-034: the same variable the editor's leaf paints from, so both modes agree. */
+function ColorStatic(props: SlateLeafProps): React.JSX.Element {
+  const { color } = props.leaf as { color?: unknown };
+  return (
+    <SlateLeaf
+      {...props}
+      style={isTextColor(color) ? { color: `var(--docs-text-${color})` } : undefined}
+    />
+  );
+}
+
 /** Keyed by plugin key, which is how `override.components` reaches the static renderer. */
 export const viewComponents: NodeComponents = {
   [KEYS.blockquote]: foldable(BlockquoteStatic),
@@ -426,6 +438,7 @@ export const viewComponents: NodeComponents = {
   [KEYS.code]: CodeLeafStatic,
   [KEYS.codeBlock]: foldable(CodeBlockStatic),
   [KEYS.codeLine]: CodeLineStatic,
+  [COLOR_KEY]: ColorStatic,
   [KEYS.h1]: foldable(H1Static),
   [KEYS.h2]: foldable(H2Static),
   [KEYS.h3]: foldable(H3Static),

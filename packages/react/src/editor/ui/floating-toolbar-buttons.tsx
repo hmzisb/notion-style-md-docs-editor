@@ -4,6 +4,7 @@ import { BoldIcon, Code2Icon, ItalicIcon, StrikethroughIcon } from 'lucide-react
 import { KEYS } from 'platejs';
 import { useEditorReadOnly } from 'platejs/react';
 import { useDocs } from '@/data/context.js';
+import { ColorToolbarButton } from './color-toolbar-button';
 import { LinkToolbarButton } from './link-toolbar-button';
 import { MarkToolbarButton } from './mark-toolbar-button';
 import { ToolbarGroup } from './toolbar';
@@ -66,6 +67,10 @@ export function FloatingToolbarButtons(): React.JSX.Element | null {
 
       <ToolbarGroup>
         <LinkToolbarButton className={MARK} />
+      </ToolbarGroup>
+
+      <ToolbarGroup>
+        <ColorToolbarButton className="h-7 px-1.5" />
       </ToolbarGroup>
     </>
   );

@@ -2,6 +2,13 @@
 
 Every departure from `docs/` gets an entry before the code lands. Newest first. Keep entries factual and short.
 
+## DEV-034 · UX-T04 · 2026-08-27
+Spec said: docs/06 section 1 principle 5 - "the module never introduces its own palette" - and docs/06 section 12 allows a non-token colour only for the callout tints and the banner variants. docs/05 section 2 lists font colour under "Not installed", because `fontRules.color` serializes to `mdxJsxTextElement`, which non-MDX stringify cannot write (DEV-004).
+Reality: the owner asked for Notion's text colours behind the floating toolbar's swatch. A colour has to survive the file: Markdown has no colour, and the mark is worthless if a save drops it.
+Decision: nine text colours, written as `<span data-color="NAME" style="color: #hex">words</span>`. The hex is what a reader outside the module sees with no stylesheet; `data-color` is what the module reads back, and it paints from `--docs-text-<name>` instead, so dark mode uses a lighter value. `remarkColors` folds a span back into a `color` mark only when it matches that exact shape - anything else stays raw HTML and round-trips byte for byte (DEV-003), so this rule can never eat markup somebody else wrote. Serialization goes through per-colour `remark-stringify` handlers rather than one `html` node, because Plate's `mergeTexts` merges two adjacent mdast nodes of the same type by concatenating their children and dropping the second node's `value`, which silently ate every leaf after the first.
+Impact: `core/src/codec/rules/color.ts` (new), wired into `base-kit.ts` as `BaseColorPlugin`, `remarkColors` and the stringify handlers; `COLOR_KEY`, `TEXT_COLORS`, `TEXT_COLOR_NAMES`, `TextColor`, `isTextColor` are public (docs/08 section 2); `react` gains `ColorKit`, the `ColorLeaf`, a static leaf in `view/nodes.tsx`, the toolbar's swatch menu and the nine `--docs-text-*` variables in `styles.css`; 17 codec tests and one e2e.
+Reverse when: Markdown grows a colour of its own, or the host wants a different palette - then the nine variables are the seam, and the file keeps whatever hex was written.
+
 ## DEV-033 · UX-T01 · 2026-08-27
 Spec said: docs/06 section 5 and docs/07 section 3 describe tree expansion as free-form - a row expands, nothing else moves - and docs/06 section 8 ships an "Expand all" action, which reads as many branches open at once.
 Reality: the owner asked for one branch open at a time, the way Notion's sidebar behaves. A corpus three levels deep otherwise fills the sidebar with rows nobody is reading, and the page being read scrolls out of the pane.

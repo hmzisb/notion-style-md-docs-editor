@@ -108,6 +108,36 @@
   --docs-destructive-ink: var(--destructive);
 }
 
+/*
+ * DEV-034: the nine text colours, the one palette this module does introduce. The Markdown
+ * carries the light hex inline, so the colour survives a reader that has no stylesheet; the
+ * app paints from these instead, and dark mode lightens each one to stay legible on a
+ * near-black ground (docs/06 section 12).
+ */
+.docs-root {
+  --docs-text-gray: #787774;
+  --docs-text-brown: #9f6b53;
+  --docs-text-orange: #d9730d;
+  --docs-text-yellow: #cb912f;
+  --docs-text-green: #448361;
+  --docs-text-blue: #337ea9;
+  --docs-text-purple: #9065b0;
+  --docs-text-pink: #c14c8a;
+  --docs-text-red: #d44c47;
+}
+
+.docs-root:is(.dark *) {
+  --docs-text-gray: #9b9b9b;
+  --docs-text-brown: #ba856f;
+  --docs-text-orange: #c77d48;
+  --docs-text-yellow: #ca9849;
+  --docs-text-green: #529e72;
+  --docs-text-blue: #5e87c9;
+  --docs-text-purple: #9d68d3;
+  --docs-text-pink: #d15796;
+  --docs-text-red: #df5452;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .docs-root {
     --docs-motion: 0ms;
