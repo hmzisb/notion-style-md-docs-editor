@@ -88,7 +88,9 @@ describe('the slash menu block set (docs/05 section 2)', () => {
    * docs/05 section 5: a block earns its place in the menu by round-tripping, so the menu
    * itself is the list under test - an item added with no rule behind it fails here.
    */
-  it.each(SLASH_GROUPS.flatMap((group) => group.items).filter((item) => item.inline !== true))(
+  it.each(SLASH_GROUPS.flatMap((group) => group.items).filter(
+    (item) => item.inline !== true && item.action === undefined,
+  ))(
     'writes the $value the menu offers',
     ({ value: type }) => {
       const editor = open();

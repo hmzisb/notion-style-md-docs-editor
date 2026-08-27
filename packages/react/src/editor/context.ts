@@ -10,6 +10,8 @@ export interface EditorContextValue {
   node: TreeNode;
   /** From the same tree the shell shows: a link outside that subtree stays unresolved. */
   idByPath: Readonly<Record<string, NodeId>>;
+  /** The subtree the shell shows, so a page made from the editor lands in the same cache. */
+  rootId?: NodeId | undefined;
 }
 
 export const EditorContext = createContext<EditorContextValue | null>(null);

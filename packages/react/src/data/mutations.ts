@@ -228,10 +228,14 @@ export function useCreatePage(
       onEvent({ type: 'error', code, id: tempId, error });
     },
 
-    onSettled: (_node, _error, { tempId }) => {
+    onSettled: (_node, _error, { parentId, tempId }) => {
       // After the navigation above, so nothing is left observing a page that never existed.
       client.removeQueries({ queryKey: keys.page(tempId) });
       void client.invalidateQueries({ queryKey: keys.tree(rootId) });
+      // A leaf page becomes `<dir>/index.md` when it gains a child (docs/03 section 4.2), so
+      // this wrote the parent's file: a session still open on it is holding a version that no
+      // longer exists, and its next save would be refused as a stale base (docs/04 s.3.2).
+      if (parentId !== null) void client.invalidateQueries({ queryKey: keys.page(parentId) });
     },
   });
 }

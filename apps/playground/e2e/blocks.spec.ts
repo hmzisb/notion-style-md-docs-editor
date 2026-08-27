@@ -60,6 +60,28 @@ async function slash(page: Page, name: string): Promise<void> {
   await expect(page.locator(EDITOR)).toBeFocused();
 }
 
+/**
+ * docs/07 section 2: the page row is not a block - it asks the provider for a child of the
+ * page being edited and opens it, which is where its title is typed.
+ */
+test('the page item makes a child page and opens it', async ({ page }) => {
+  await page.keyboard.type('/Page');
+  const item = menu(page).getByRole('option', { name: 'Page' });
+  await expect(item).toBeVisible();
+  await item.click();
+
+  // The new page is open, empty, with the caret in its title (docs/01 section 5.3).
+  const title = page.getByRole('textbox', { name: 'Page title' });
+  await expect(title).toHaveValue('');
+  await expect(title).toBeFocused();
+  await title.pressSequentially('Tokens');
+
+  // docs/03 section 4.2: a leaf page becomes the index of its own directory when it gains a
+  // child, and the child is a file beside it.
+  await expect.poll(() => savedFile(page, 'blocks/tokens.md')).toContain('title: Tokens');
+  expect(await savedFile(page, 'blocks/index.md')).toContain('# Blocks');
+});
+
 test('the slash menu writes every block it offers as Markdown', async ({ page }) => {
   await slash(page, 'Heading 2');
   await page.keyboard.type('Section');

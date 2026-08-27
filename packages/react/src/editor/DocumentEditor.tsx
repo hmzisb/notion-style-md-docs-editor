@@ -67,8 +67,8 @@ export function DocumentEditor({
   // same in both modes and the swap does not reflow the line (docs/06 section 7, docs/05 s.8).
   const { data: index } = useTreeIndex(rootId);
   const context = useMemo<EditorContextValue>(
-    () => ({ node: page, idByPath: index?.idByPath ?? {} }),
-    [page, index],
+    () => ({ node: page, idByPath: index?.idByPath ?? {}, rootId }),
+    [page, index, rootId],
   );
 
   // `value` is initial-only, so the editor must not be rebuilt when it changes: `initial`

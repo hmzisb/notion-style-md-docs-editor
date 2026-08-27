@@ -3,6 +3,7 @@
 import {
   ChevronRight,
   Code2,
+  FileText,
   Heading1Icon,
   Heading2Icon,
   Heading3Icon,
@@ -20,7 +21,10 @@ import {
 import { KEYS, type TComboboxInputElement } from 'platejs';
 import { PlateElement, type PlateEditor, type PlateElementProps } from 'platejs/react';
 import { useDocs } from '@/data/context.js';
+import { newTempId } from '@/data/fresh.js';
+import { useCreatePage } from '@/data/mutations.js';
 import type { DocsStrings } from '@/data/strings.js';
+import { useEditorContext } from '@/editor/context.js';
 import { insertBlock, insertInlineElement } from '@/editor/transforms';
 import {
   InlineCombobox,
@@ -44,6 +48,11 @@ interface SlashItem {
   /** An inline element opens its own popover, which is what takes the focus back. */
   inline?: boolean;
   /**
+   * Not a block: the row asks the provider for a page rather than inserting one. `page` makes
+   * a child of the page being edited and opens it, the way the sidebar's own button does.
+   */
+  action?: 'page';
+  /**
    * The block takes the caret itself - an inline popover, or the image block's URL field
    * (docs/05 section 6). Putting the caret back in the editor would blur that field, and an
    * image with no URL removes itself on blur.
@@ -66,6 +75,15 @@ export const SLASH_GROUPS: SlashGroup[] = [
   {
     label: 'editor.slash.basic',
     items: [
+      {
+        icon: <FileText />,
+        value: 'page',
+        name: 'editor.block.page',
+        description: 'editor.blockDesc.page',
+        keywords: ['subpage', 'child', 'document', 'new'],
+        action: 'page',
+        ownsFocus: true,
+      },
       {
         icon: <PilcrowIcon />,
         value: KEYS.p,
@@ -203,6 +221,8 @@ export function SlashInputElement(
 ): React.JSX.Element {
   const { editor, element } = props;
   const { strings } = useDocs();
+  const { node, rootId } = useEditorContext();
+  const create = useCreatePage(rootId);
 
   return (
     <PlateElement {...props} as="span">
@@ -224,7 +244,9 @@ export function SlashInputElement(
                   key={item.value}
                   value={item.value}
                   onClick={() => {
-                    select(editor, item);
+                    if (item.action === 'page')
+                      create.mutate({ parentId: node.id, title: '', tempId: newTempId() });
+                    else select(editor, item);
                   }}
                   className="h-auto items-center gap-2 px-2 py-1"
                   label={strings[item.name]}

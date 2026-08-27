@@ -2,6 +2,12 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-163 · UX-T02 · 2026-08-27
+Question: the owner asked for a Notion-style `/page` row in the slash menu. Notion writes a sub-page block into the page you are on and opens the new page; should this one write a Markdown link into the parent as well?
+Assumed: no. The row creates a child of the page being edited and opens it with the title focused - the sidebar's own "Add a page inside" flow, reached from the keyboard - and writes nothing into the parent.
+Why: a link would not survive. A leaf page becomes `<dir>/index.md` the moment it gains a child (docs/03 section 4.2), so writing the link rewrites the very file the editor is holding, and the session raises "Changed on disk" over its own draft - measured, not guessed. Even past that, docs/03 section 4.7 leaves inbound links unrewritten when a page is renamed, so the child's first title would break the link the parent had just been given. The tree is this module's hierarchy surface, and it shows the child immediately.
+Cheap to reverse: no - a sub-page link needs the session to accept a conversion it caused, and needs link rewriting on rename.
+
 ## ASM-162 · P4-T05 · 2026-08-27
 Question: docs/03 section 4.3 says a page's title falls back to the first `# H1` in the body "not stripped", so what should `--write-ids` do with that heading once it has copied it into frontmatter `title`?
 Assumed: take it out of the body. The migration writes `title: <the H1>` and removes that line, and only when the H1 is the page's first content line.
