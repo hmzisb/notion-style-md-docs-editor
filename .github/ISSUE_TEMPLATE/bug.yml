@@ -1,0 +1,43 @@
+name: Bug report
+description: Something does not work the way the docs say it should.
+labels: [bug]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened
+      description: What you did, what you expected, what you got instead.
+    validations:
+      required: true
+  - type: textarea
+    id: markdown
+    attributes:
+      label: The Markdown that shows it
+      description: The smallest file that reproduces the problem. Leave blank if the bug is not about content.
+      render: markdown
+  - type: input
+    id: version
+    attributes:
+      label: Version
+      placeholder: '@hmzisb/notion-docs-react 0.1.0'
+    validations:
+      required: true
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and OS
+      placeholder: Chrome 141 on macOS 15
+    validations:
+      required: true
+  - type: dropdown
+    id: provider
+    attributes:
+      label: Which provider
+      options:
+        - memory (demo)
+        - filesystem — a local folder
+        - filesystem — OPFS
+        - http
+        - one of my own
+    validations:
+      required: true
