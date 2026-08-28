@@ -90,9 +90,12 @@ end; and every optional capability is hidden rather than disabled when a provide
    gate under load found the cost of that: the palette baseline was racing the 250 ms search
    debounce and only settled inside it on an idle machine. Fixed, but slower hardware would have
    caught it first.
-5. **Two docs/06 §7 spec questions** are open: an image caption centres on the column rather than
-   under a narrow picture, and the floating toolbar draws over the page title when the selection
-   is the first block.
+5. **Two docs/06 §7 spec questions** are closed. The floating toolbar takes the editor's own box
+   as its flip boundary, so a selection in the first block flips below rather than drawing over
+   the page title. The picture is centred in its column through `blockStyles.figureImage`, so the
+   centred caption lines up with it; the figure stays column-wide in both renderers, because the
+   editor's resizable is `width: 100%` and narrowing the figure would make the caption wrap at a
+   different width on each side of the read-edit swap.
 6. **Search** is a scan, not an index: capped at 2,000 files and 4 MB a query, so a corpus past
    that is searched partially and says nothing about it.
 7. **`--write-ids` is one-way.** It rewrites files in place; there is no undo but the user's own
