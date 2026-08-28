@@ -76,7 +76,7 @@ import { DocumentView } from '@hmzisb/notion-docs-react/view';
 import { usePage, useTreeIndex } from '@hmzisb/notion-docs-react';
 ```
 
-The full export list is in [docs/08](../../docs/08-PUBLIC-API.md), which a test keeps honest.
+The full export list is in [docs/08](https://github.com/hmzisb/notion-style-md-docs-editor/blob/main/docs/08-PUBLIC-API.md), which a test keeps honest.
 
 ## Adapters
 
@@ -88,7 +88,7 @@ import { createFileSystemProvider, getOpfsRoot, pickDirectory } from '@hmzisb/no
 
 - **memory** - files in a JS object. Demos, tests, and the states that are hard to reproduce on a
   real backend: `latencyMs` makes skeletons visible, `failNext` makes an error path happen.
-- **http** - your API, over the contract in [docs/03](../../docs/03-DATA-MODEL-AND-CONTRACTS.md). Give it a
+- **http** - your API, over the contract in [docs/03](https://github.com/hmzisb/notion-style-md-docs-editor/blob/main/docs/03-DATA-MODEL-AND-CONTRACTS.md). Give it a
   `baseUrl`, and `headers()` if requests need a token. `events: 'sse'` reads `GET /events`;
   `events: 'poll'` re-reads the tree and the open page with `If-None-Match` every
   `pollIntervalMs` (5 s by default). Both reconnect with backoff; the default is `'none'`.

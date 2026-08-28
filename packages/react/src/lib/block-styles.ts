@@ -17,13 +17,19 @@ export const blockStyles = {
   h3: 'mt-4 mb-0.5 text-xl leading-[1.3] font-semibold first:mt-0',
   image: 'my-2',
   /**
-   * The figure is the picture's box, not the column's. Without `w-fit` a narrow image sits in
-   * a full-width figure, and the centred caption below it lines up with the page rather than
-   * with the picture. `mx-auto` is what `align` already does to a resized image in the editor
-   * (`center` is its default, and Markdown carries no alignment), applied here so the read
-   * view and the editor put the same picture in the same place (docs/05 section 8).
+   * Full width in both renderers, so the caption below wraps at the same place on either side
+   * of the read-edit swap (docs/05 section 8). Narrowing the figure to the picture is what
+   * breaks that: the editor's resizable is `width: 100%` and would keep the column, while the
+   * read view would shrink to the caption.
    */
-  figure: 'm-0 mx-auto w-fit max-w-full',
+  figure: 'm-0',
+  /**
+   * docs/06 section 7: the picture is centred, not left-aligned. The caption under it is
+   * centred too, so without this a picture narrower than the column sits against the left edge
+   * with its caption floating in the middle. `center` is also what `align` defaults to in the
+   * editor, and Markdown carries no alignment, so both renderers agree.
+   */
+  figureImage: 'mx-auto',
   /** docs/06 section 7: the visible caption of docs/05 section 5, under the image. */
   caption: 'mt-1 text-center text-sm text-muted-foreground',
   p: 'py-[3px]',

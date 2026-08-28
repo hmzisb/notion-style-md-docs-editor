@@ -6,8 +6,9 @@ The floating toolbar no longer draws over the page title. A selection in the fir
 above the editor, where the page header was, because `flip` measured against the scrolling
 ancestor rather than the editor's own box.
 
-An image caption now centres under the picture instead of under the column. The figure was full
-width, so a picture narrower than the text centred its caption against the page.
+A picture is now centred in its column, so the centred caption below it lines up with the
+picture. Left-aligned, a picture narrower than the column sat against the edge while its caption
+floated mid-page.
 
 The breadcrumb overflow menu is a chunk of its own. A trail deeper than three ancestors fetches
 it on the press; everything shallower never loads it, and the `./shell` entry drops from 96.9 kB

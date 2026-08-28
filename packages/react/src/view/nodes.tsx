@@ -386,7 +386,13 @@ function ImageStatic(props: SlateElementProps<TImageElement & TCaptionProps>): R
   return (
     <SlateElement {...props} className={blockStyles.image} style={indentStyle(props.element)}>
       <figure className={blockStyles.figure}>
-        <AssetImage src={url} alt={alt} title={title} node={node} />
+        <AssetImage
+          src={url}
+          alt={alt}
+          title={title}
+          node={node}
+          className={blockStyles.figureImage}
+        />
         {text !== '' && <figcaption className={blockStyles.caption}>{text}</figcaption>}
       </figure>
       {props.children}

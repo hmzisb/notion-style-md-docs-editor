@@ -5,7 +5,7 @@ on, the tree and filesystem semantics, and the Markdown codec. No React, no DOM,
 it runs in a browser, in Node, and in a test.
 
 Install it directly only if you are writing a provider or doing Markdown work server-side.
-[`@hmzisb/notion-docs-react`](../react/README.md) depends on it and re-exports all of its types.
+[`@hmzisb/notion-docs-react`](https://www.npmjs.com/package/@hmzisb/notion-docs-react) depends on it and re-exports all of its types.
 
 ## Install
 
@@ -66,7 +66,7 @@ lose before an editor opens it.
   without a database.
 - Line endings and frontmatter key order survive a save untouched.
 
-The full contract is [docs/03](../../docs/03-DATA-MODEL-AND-CONTRACTS.md); the round-trip rules are
-[docs/05](../../docs/05-EDITOR.md).
+The full contract is [docs/03](https://github.com/hmzisb/notion-style-md-docs-editor/blob/main/docs/03-DATA-MODEL-AND-CONTRACTS.md); the round-trip rules are
+[docs/05](https://github.com/hmzisb/notion-style-md-docs-editor/blob/main/docs/05-EDITOR.md).
 
 MIT licensed.

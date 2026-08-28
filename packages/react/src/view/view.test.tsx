@@ -247,11 +247,13 @@ describe('DocumentView', () => {
       expect(screen.getByText('What the logo is.')).toBeInTheDocument();
       // The caption is one block: the italic paragraph it came from is not drawn twice.
       expect(screen.getAllByText('What the logo is.')).toHaveLength(1);
-      // The caption centres inside the figure, so the figure has to be the picture's box and
-      // not the column's - a full-width figure centres it on the page instead.
-      const figure = screen.getByRole('img', { name: 'The logo' }).closest('figure');
-      expect(figure).not.toBeNull();
-      expect(figure).toHaveClass('w-fit');
+      // The caption is centred, so the picture has to be centred too: left-aligned, a picture
+      // narrower than the column sits against the edge with its caption floating mid-page.
+      // Centring the picture rather than shrinking the figure is what keeps the read view and
+      // the editor the same width, because the editor's resizable is `width: 100%`.
+      const image = screen.getByRole('img', { name: 'The logo' });
+      expect(image).toHaveClass('mx-auto');
+      expect(image.closest('figure')).not.toHaveClass('w-fit');
     });
 
     it('reports a path that is not there', async () => {

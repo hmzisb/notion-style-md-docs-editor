@@ -81,6 +81,7 @@ export const ImageElement = withHOC(
                   // (docs/05 section 8).
                   className={cn(
                     'block max-w-full cursor-pointer px-0',
+                    blockStyles.figureImage,
                     'rounded-md',
                     focused && selected && 'ring-2 ring-ring ring-offset-2',
                     isDragging && 'opacity-50',
