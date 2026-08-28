@@ -2,6 +2,7 @@
 
 **A Notion-like docs editor for your React app. It reads and writes plain Markdown files.**
 
+[![ci](https://github.com/hmzisb/notion-style-md-docs-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/hmzisb/notion-style-md-docs-editor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.base.json)
 [![React](https://img.shields.io/badge/React-18.3%20%7C%2019-149eca.svg)](#-what-you-need)
