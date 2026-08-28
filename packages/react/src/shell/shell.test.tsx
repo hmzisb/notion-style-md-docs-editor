@@ -285,6 +285,9 @@ describe('DocsShell', () => {
       expect(events.filter((event) => event.type === 'page:open')).toHaveLength(1);
     });
 
+    // The only way past `MAX_BLOCKS` is to render every one of them, so this is the one heavy
+    // test in the suite: it parses and paints 5,001 paragraphs into jsdom. 1.2s on this machine,
+    // over the 5s default on a two-core shared runner with the other workers competing for it.
     it('warns about a page too big to open in the editor (docs/05 section 6)', async () => {
       const blocks = Array.from({ length: 5001 }, (_, index) => `Line ${String(index)}`).join(
         '\n\n',
@@ -301,7 +304,7 @@ describe('DocsShell', () => {
         await screen.findByText('Large page: opened in read mode for performance.'),
       ).toBeVisible();
       expect(onEvent).toHaveBeenCalledWith({ type: 'warning', code: 'large_page', id: 'p_big' });
-    });
+    }, 30_000);
   });
 
   describe('content region', () => {
