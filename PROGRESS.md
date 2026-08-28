@@ -114,5 +114,5 @@ Legend: `[ ]` not started · `[~]` in progress (only one at a time) · `[x]` don
 
 - Current task: none. Phase 4 closed 2026-08-27; PROGRESS is fully checked.
 - Open at Gate 3: keystroke to paint is 34.1 ms p95 on the 3,000-block fixture against a 16 ms budget; 10.1 ms at 500 blocks and 16.3 at 1,000 (DEV-031).
-- Open at Gate 3: `./shell` measures 96.46 kB gz against the 60 kB budget in docs/02 section 7, capped at 98 kB; P2-T11 cut the palette and P3-T06 cut `sonner` and the page menu, so the Radix menu stack behind the breadcrumb overflow is all that is left of the Gate 2 cut (DEV-012, ASM-063).
+- Open at Gate 3: `./shell` measures 88.25 kB gz against the 60 kB budget in docs/02 section 7, capped at 92 kB. P2-T11 cut the palette, P3-T06 cut `sonner` and the page menu, and the breadcrumb overflow menu - the last of the Gate 2 cut - is now `shell/breadcrumb-overflow`, worth 8.7 kB gz (DEV-012, ASM-063).
 - Last gate passed: Gate 3 (2026-08-27) — 19 pass, 0 skip, 0 fail

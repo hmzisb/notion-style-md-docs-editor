@@ -17,6 +17,8 @@ export default defineConfig({
     'tree/move-to-dialog': 'src/tree/move-to-dialog.tsx',
     // Same reason, for the confirmation `Delete` opens and nothing else mounts.
     'tree/delete-dialog': 'src/tree/delete-dialog.tsx',
+    // Same reason, for the Radix menu stack behind a deep trail's `…` (ASM-063).
+    'shell/breadcrumb-overflow': 'src/shell/breadcrumb-overflow.tsx',
     // Same reason, for the palette cmdk lives in (DEV-012).
     'shell/command-palette': 'src/shell/command-palette.tsx',
     // Same reason, for the header menu and the picker and dialogs it opens (docs/06 §8).

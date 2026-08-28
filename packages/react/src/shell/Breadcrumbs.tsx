@@ -1,18 +1,18 @@
 import { ancestorsOf, type NodeId, type TreeIndex, type TreeNode } from '@hmzisb/notion-docs-core';
 import { MoreHorizontal } from 'lucide-react';
+import { Suspense, lazy, useState } from 'react';
 import { useDocs } from '@/data/context.js';
 import { cn } from '@/lib/utils';
 import { IconGlyph } from '@/tree/IconGlyph.js';
 import { Button } from '@/ui/button';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/ui/dropdown-menu';
 
 /** More ancestors than this and the middle ones move into the overflow menu (docs/06 §6). */
 const MAX_ANCESTORS = 3;
+
+const Overflow = lazy(async () => {
+  const { BreadcrumbOverflow } = await import('./breadcrumb-overflow.js');
+  return { default: BreadcrumbOverflow };
+});
 
 export interface BreadcrumbsProps {
   index: TreeIndex;
@@ -53,31 +53,7 @@ export function Breadcrumbs({
         ))}
         {hidden.length > 0 && (
           <li className="flex items-center">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label={strings['header.breadcrumbMore']}
-                  className="text-muted-foreground"
-                >
-                  <MoreHorizontal aria-hidden="true" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="start">
-                {hidden.map((node) => (
-                  <DropdownMenuItem
-                    key={node.id}
-                    onSelect={() => {
-                      onOpen(node.id);
-                    }}
-                  >
-                    <IconGlyph icon={node.icon} kind={node.kind} />
-                    <span className="truncate">{node.title}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <More nodes={hidden} onOpen={onOpen} label={strings['header.breadcrumbMore']} />
             <Separator />
           </li>
         )}
@@ -92,6 +68,48 @@ export function Breadcrumbs({
         </li>
       </ol>
     </nav>
+  );
+}
+
+/**
+ * A button and nothing else until it is pressed: the menu behind it is a chunk of its own,
+ * and the press is what fetches it - already open.
+ */
+function More({
+  nodes,
+  label,
+  onOpen,
+}: {
+  nodes: TreeNode[];
+  label: string;
+  onOpen: (id: NodeId) => void;
+}): React.JSX.Element {
+  const [armed, setArmed] = useState(false);
+
+  const button = (
+    <Button
+      variant="ghost"
+      size="icon-sm"
+      aria-label={label}
+      aria-haspopup="menu"
+      className="text-muted-foreground"
+      // Pointer and keyboard both arrive here; the second call of a mouse press is a no-op.
+      onPointerDown={() => {
+        setArmed(true);
+      }}
+      onClick={() => {
+        setArmed(true);
+      }}
+    >
+      <MoreHorizontal aria-hidden="true" />
+    </Button>
+  );
+
+  if (!armed) return button;
+  return (
+    <Suspense fallback={button}>
+      <Overflow nodes={nodes} label={label} onOpen={onOpen} />
+    </Suspense>
   );
 }
 

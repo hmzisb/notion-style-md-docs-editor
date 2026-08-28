@@ -74,13 +74,14 @@
   {
     "name": "@hmzisb/notion-docs-react ./shell",
     "path": "packages/react/dist/shell/index.js",
-    "limit": "98 kB",
+    "limit": "92 kB",
     "ignore": [
       "./editor/index.js",
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
       "./tree/move-to-dialog.js",
       "./tree/delete-dialog.js",
+      "./breadcrumb-overflow.js",
       "./command-palette.js",
       "./shell/page-menu-surface.js",
       "./draft-compare.js",

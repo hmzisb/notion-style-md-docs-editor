@@ -30,7 +30,7 @@ fail**, with all four phase reports present. The per-phase detail is in
 | `@hmzisb/notion-docs-core` entry, min + gz | **33.76 kB** | 40 kB |
 | `@hmzisb/notion-docs-react` `.` | **14.63 kB** | 25 kB |
 | `@hmzisb/notion-docs-react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
-| `@hmzisb/notion-docs-react` `./shell` | **96.71 kB** | 98 kB ratchet — over docs/02 §7's 60 kB (DEV-012) |
+| `@hmzisb/notion-docs-react` `./shell` | **88.25 kB** | 92 kB ratchet — over docs/02 §7's 60 kB (DEV-012) |
 | `@hmzisb/notion-docs-react` `./editor`, lazy | **213.88 kB** | 260 kB |
 | Cached page switch | **11.4 ms** | < 100 ms |
 | Cold page open from IndexedDB | **20.6 ms** | < 150 ms |
@@ -79,8 +79,10 @@ end; and every optional capability is hidden rather than disabled when a provide
 1. **Keystroke to paint** is 33.2 ms p95 at 3,000 blocks (10.1 ms at 500, 16.3 at 1,000). Both
    halves of the cost scale with document size and the one lever that moves it breaks scroll
    offset (DEV-031). The large-page guard covers the extreme; the middle is unsolved.
-2. **`./shell` bundle** is 61 % over the spec's 60 kB. The Radix menu stack behind the breadcrumb
-   overflow is the next cut (ASM-063).
+2. **`./shell` bundle** is 47 % over the spec's 60 kB. The breadcrumb overflow menu named here as
+   the next cut has since been made - `shell/breadcrumb-overflow`, 96.71 kB down to 88.25 - and the
+   cap is 92 kB. What holds the rest is the Radix popover, tooltip and sidebar primitives, which
+   are spread across three surfaces rather than sitting behind one control (DEV-012).
 3. **Lazy chunks** are ignored inside the entries that load them and carry no limit of their own,
    so nothing gates their growth (DEV-023).
 4. **Perf and visual baselines** are one machine, darwin + Chromium (DEV-028, ASM-153). No CI
