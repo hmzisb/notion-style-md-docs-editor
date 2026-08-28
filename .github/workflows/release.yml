@@ -5,6 +5,10 @@
 #      `GitHub Actions is not permitted to create or approve pull requests`.
 #   2. An `NPM_TOKEN` repository secret, granular and scoped to the two packages. Without it
 #      the publish step is the one that fails, after the version pull request has landed.
+#
+# The version pull request's own `ci` run sits at "action required" until a maintainer approves
+# it: GitHub does not run workflows on a pull request opened with `GITHUB_TOKEN`, so that no
+# workflow can trigger itself. Approve it, or merge on the strength of the run on `main`.
 name: release
 
 on:
