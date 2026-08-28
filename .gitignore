@@ -16,3 +16,8 @@ apps/playground/e2e/__screenshots__/**/*-actual.png
 
 # Plate local docs (CLAUDE.md section 4): fetched with `shadcn add @plate/docs`, not source.
 packages/react/plate-docs/
+
+# Local agent tooling, not part of the package
+.claude/
+.cursor/
+.codegraph/

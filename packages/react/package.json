@@ -3,6 +3,28 @@
   "version": "0.1.0",
   "description": "Notion-grade Markdown docs UI for React: tree, viewer, editor, shell and adapters.",
   "license": "MIT",
+  "author": "hmzisb",
+  "homepage": "https://github.com/hmzisb/notion-style-md-docs-editor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmzisb/notion-style-md-docs-editor.git",
+    "directory": "packages/react"
+  },
+  "bugs": {
+    "url": "https://github.com/hmzisb/notion-style-md-docs-editor/issues"
+  },
+  "keywords": [
+    "markdown",
+    "docs",
+    "notion",
+    "editor",
+    "react",
+    "platejs",
+    "wiki",
+    "wysiwyg",
+    "knowledge-base",
+    "tailwind"
+  ],
   "type": "module",
   "sideEffects": [
     "*.css"

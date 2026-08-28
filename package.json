@@ -1,12 +1,33 @@
 {
   "name": "docs-module",
   "private": true,
+  "description": "Notion-grade Markdown docs module for React: tree, editor, cache, adapters — backend-agnostic, plus a playground.",
+  "license": "MIT",
+  "author": "hmzisb",
+  "homepage": "https://github.com/hmzisb/notion-style-md-docs-editor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmzisb/notion-style-md-docs-editor.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hmzisb/notion-style-md-docs-editor/issues"
+  },
+  "keywords": [
+    "markdown",
+    "docs",
+    "notion",
+    "editor",
+    "react",
+    "platejs",
+    "wiki",
+    "wysiwyg",
+    "knowledge-base"
+  ],
   "type": "module",
   "packageManager": "pnpm@10.33.4",
   "engines": {
     "node": ">=22"
   },
-  "license": "MIT",
   "scripts": {
     "dev": "pnpm --filter playground dev",
     "typecheck": "tsc -b",

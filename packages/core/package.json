@@ -3,6 +3,25 @@
   "version": "0.1.0",
   "description": "Backend-agnostic Markdown docs core: models, contract, tree ops, filesystem semantics, Markdown codec.",
   "license": "MIT",
+  "author": "hmzisb",
+  "homepage": "https://github.com/hmzisb/notion-style-md-docs-editor#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hmzisb/notion-style-md-docs-editor.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/hmzisb/notion-style-md-docs-editor/issues"
+  },
+  "keywords": [
+    "markdown",
+    "docs",
+    "notion",
+    "platejs",
+    "remark",
+    "frontmatter",
+    "provider"
+  ],
   "type": "module",
   "sideEffects": false,
   "files": [
