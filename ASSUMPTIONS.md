@@ -2,6 +2,13 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-166 · publish · 2026-08-28
+Question: both packages declare `"react": "^18.3 || ^19"`, but the playground and both smoke hosts ran 19.2.8, so the 18.3 half of that range was a promise nothing tested. Narrow the range to `^19`, or prove it?
+Assumed: prove it - both smoke hosts now run React 18.3.1, and the Tailwind host's spec opens the editor, types into it and asserts no console error, so the lazy editor chunk (Plate, the floating toolbar, the table nodes) is exercised on the low end. React 19 stays covered by the playground's 156 e2e tests and the 1,255 unit tests.
+Why: the range is what a host reads before installing, and dropping 18.3 would exclude every app still on it for no measured reason. A source scan found no React-19-only API in `packages/` - no `useActionState`, `useOptimistic`, `useFormStatus`, `use()`, or `<Context>` as a provider - and the three `props.ref` sites (`floating-toolbar.tsx:73`, `table-node.tsx:1067`, `inline-combobox.tsx:209`) take the ref through a props object, never through JSX `ref=` on a function component, which is the part 18 strips. Plate v53's own peers allow `>=18.0.0`.
+Note: both hosts need `resolve.dedupe: ['react', 'react-dom']` in their Vite config. They link `packages/react` from the workspace, and its own `node_modules` holds the React 19 the package is developed against, so `dist` resolved that one and the page rendered with two Reacts ("Cannot read properties of null (reading 'useRef')"). A real npm install has none nested, because react is a peer there; deduping is what makes these hosts behave like one.
+Cheap to reverse: yes - narrow the peer range and unpin the two hosts.
+
 ## ASM-165 · publish · 2026-08-28
 Question: CI ran `pnpm gate all` on ubuntu, but the visual baselines are `__screenshots__/*-darwin.png` and the perf steps are stopwatches on one machine (DEV-028), so a shared runner fails them by construction. Keep the full gate red on every push, or narrow CI?
 Assumed: CI runs typecheck, lint, unit tests and build - everything that is deterministic across platforms. e2e, `test:perf`, `test:e2e:perf` and the visual baselines stay local, and `pnpm gate all` before a release is what still covers them.

@@ -39,5 +39,24 @@ test('the tree renders, a page opens, and the module brought its own layout', as
   ).toBeVisible();
   await expect(page.getByText('Install the package, import the styles.')).toBeVisible();
 
+  // The editor is a lazy chunk and the heaviest thing the package ships. Mounting it here is
+  // what backs the React 18.3 half of the peer range: everything else in the repo runs 19, so a
+  // hook or a ref that only works on 19 surfaces here, as a console error the assertion below
+  // is already watching for.
+  await page.getByRole('button', { name: 'Edit' }).click();
+  const editor = page.locator('[data-slate-editor]');
+  await expect(editor).toBeVisible();
+  // `delay`, so the first keystroke does not race the caret the click is still placing. Where
+  // in the paragraph it lands does not matter here - the playground suite owns caret behaviour,
+  // this only has to prove the editor takes a keystroke at all on this React.
+  await editor.getByText('Install the package, import the styles.').click({ delay: 60 });
+  await page.keyboard.type('Typed into the editor.');
+  await expect(editor).toContainText('Typed into the editor.');
+  await page.getByRole('button', { name: 'Done' }).click();
+  // Read mode keeps the same tree and turns it read-only, so the swap costs no reflow (docs/05
+  // section 8). The editor element staying put is the shape to assert, not it disappearing.
+  await expect(editor).toHaveAttribute('contenteditable', 'false');
+  await expect(page.getByRole('button', { name: 'Edit' })).toBeVisible();
+
   expect(problems, 'console errors').toEqual([]);
 });

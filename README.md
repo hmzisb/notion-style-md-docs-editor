@@ -6,8 +6,8 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.base.json)
 [![React](https://img.shields.io/badge/React-18.3%20%7C%2019-149eca.svg)](#-what-you-need)
-[![Tests](https://img.shields.io/badge/tests-1%2C255%20unit%20%2B%20153%20e2e-2ea043.svg)](#-quality)
-[![Bundle](https://img.shields.io/badge/read%20path-38.9%20kB%20gzip-2ea043.svg)](#-speed)
+[![Tests](https://img.shields.io/badge/tests-1%2C255%20unit%20%2B%20156%20e2e-2ea043.svg)](#-quality)
+[![Bundle](https://img.shields.io/badge/read%20path-39.2%20kB%20gzip-2ea043.svg)](#-speed)
 
 Drop it in and your users get a sidebar tree, a block editor, a search palette, and instant page
 loads. Your docs stay as `.md` files in a folder you own.
@@ -75,9 +75,10 @@ The playground opens with four ways to load docs:
 
 ## 🧩 Add it to your app
 
-> ℹ️ **Not on npm yet.** For now, clone this repo, run `pnpm i && pnpm build`, and point your app
-> at `packages/core` and `packages/react`. The package shape is already checked by `publint`,
-> `attw`, and two test apps that install the built files.
+> ℹ️ **Not on npm yet.** The release is wired up and waiting on the first publish. Until then,
+> clone this repo, run `pnpm i && pnpm build`, and point your app at `packages/core` and
+> `packages/react`. The published shape is already checked on every push by `publint`, `attw`,
+> and two test apps that import the built files the way you would.
 
 Once it is on npm:
 
@@ -196,10 +197,10 @@ Measured on a production build on one machine (macOS + Chromium). Treat it as a 
 
 | What | Result | Budget |
 |---|---|---|
-| Reading UI (`./tree` + `./view`), gzip | **38.9 kB** | 80 kB |
-| Full shell, gzip | **96.7 kB** | 98 kB |
-| Editor, gzip, loaded on demand | **213.9 kB** | 260 kB |
-| Core package, gzip | **33.8 kB** | 40 kB |
+| Reading UI (`./tree` + `./view`), gzip | **39.2 kB** | 80 kB |
+| Full shell, gzip | **88.3 kB** | 92 kB |
+| Editor, gzip, loaded on demand | **215.6 kB** | 260 kB |
+| Core package, gzip | **34.3 kB** | 40 kB |
 | Switch to a cached page | **11.4 ms** | under 100 ms |
 | Open a page from browser storage | **20.6 ms** | under 150 ms |
 | Scroll a 5,000-page tree | **8.4 ms per frame** | 60 fps |
@@ -212,7 +213,7 @@ Measured on a production build on one machine (macOS + Chromium). Treat it as a 
 pnpm typecheck     # strict TypeScript across the workspace
 pnpm lint          # eslint, including layer rules
 pnpm test          # 1,255 unit tests in 60 files
-pnpm test:e2e      # 153 Playwright tests: demo, browser storage, WebKit
+pnpm test:e2e      # 156 Playwright tests: demo, browser storage, WebKit
 pnpm build         # build + publint + attw + size checks
 pnpm gate all      # everything above, in order
 pnpm doctor <dir>  # shows what opening and saving would do to a real folder
@@ -220,7 +221,8 @@ pnpm doctor <dir>  # shows what opening and saving would do to a real folder
 
 Also covered: the same conformance suite run against all four adapters, 19 clean accessibility
 scans (WCAG 2.1 A/AA), 14 screenshot baselines in two sizes and both themes, and two test apps
-that install the built packages — one with Tailwind, one without.
+that install the built packages on React 18.3, the low end of the peer range — one with
+Tailwind, one without.
 
 ## 🧰 What you need
 
@@ -235,8 +237,9 @@ Straight from [`docs/execution/FINAL-REPORT.md`](docs/execution/FINAL-REPORT.md)
 1. ⌨️ Typing slows down on very long pages: 33 ms per keystroke at 3,000 blocks (10 ms at 500).
 2. 🔍 Search scans files instead of using an index. It stops at 2,000 files or 4 MB per search.
 3. 🏷️ Raw HTML inside Markdown is kept as-is, but you cannot edit it as blocks.
-4. 📦 The shell bundle is bigger than the original 60 kB target.
-5. 🖥️ Speed and screenshot baselines come from one machine. CI does not check them.
+4. 📦 The shell bundle is 88 kB gzipped, against an original 60 kB target.
+5. 🖥️ Speed and screenshot baselines come from one machine, so CI cannot check those two. It runs
+   everything else, end-to-end tests included.
 
 ## 📚 Documentation
 
@@ -275,8 +278,12 @@ Issues and pull requests are welcome. Before you push:
 pnpm typecheck && pnpm lint && pnpm test
 ```
 
-CI runs the same four steps plus `pnpm build`. End-to-end, speed, and screenshot tests run
-locally with `pnpm gate all`.
+CI runs those, plus the build, the end-to-end suite on Chromium and WebKit, and a build of two
+host apps that import the packages the way you would. Only the speed budgets and the screenshot
+baselines stay local — they come from one machine — and `pnpm gate all` is what runs those.
+
+More detail in [CONTRIBUTING.md](CONTRIBUTING.md). Security reports go through
+[SECURITY.md](SECURITY.md), not a public issue.
 
 ## 🙏 Built with
 
