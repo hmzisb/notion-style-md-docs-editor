@@ -234,6 +234,15 @@ describe('OPFS and directory copies (docs/08 section 7)', () => {
     expect(isProviderError(error) && error.code).toBe('unsupported');
   });
 
+  // The other half of the guard: a `StorageManager` that predates OPFS has the property but
+  // not the method, and reading through it is what crashed WebKit on Linux.
+  it('explains itself where the storage manager has no getDirectory', async () => {
+    Object.defineProperty(navigator, 'storage', { configurable: true, value: {} });
+    const error = await getOpfsRoot('workspace').catch((e: unknown) => e);
+    Reflect.deleteProperty(navigator, 'storage');
+    expect(isProviderError(error) && error.code).toBe('unsupported');
+  });
+
   it('creates the subdirectory it is asked for', async () => {
     const root = createFakeDirectory();
     Object.defineProperty(navigator, 'storage', {

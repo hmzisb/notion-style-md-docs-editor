@@ -15,12 +15,18 @@ test('offers every mode this browser can serve @smoke', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Remote' })).toBeVisible();
   await expect(page.getByLabel('Base URL')).toBeVisible();
 
-  // The folder card is hidden where the File System Access API is not implemented.
-  const supported = await page.evaluate(() => 'showDirectoryPicker' in window);
+  // The folder card is hidden where the File System Access API is not implemented, and the
+  // browser storage card where there is no OPFS - WebKit on Linux has neither.
+  const folder = await page.evaluate(() => 'showDirectoryPicker' in window);
   await expect(page.getByRole('heading', { name: 'Open folder' })).toBeVisible({
-    visible: supported,
+    visible: folder,
   });
-  await expect(page.getByRole('heading', { name: 'Browser storage' })).toBeVisible();
+  const opfs = await page.evaluate(
+    () => 'storage' in navigator && typeof navigator.storage.getDirectory === 'function',
+  );
+  await expect(page.getByRole('heading', { name: 'Browser storage' })).toBeVisible({
+    visible: opfs,
+  });
 });
 
 test('opens the demo corpus and remembers it across a reload @smoke', async ({ page }) => {

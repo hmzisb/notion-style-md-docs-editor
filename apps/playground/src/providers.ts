@@ -119,8 +119,13 @@ export function demoProvider(): DocumentProvider {
 export const folderSupported = (): boolean =>
   typeof window !== 'undefined' && 'showDirectoryPicker' in window;
 
+// `navigator.storage` is the part that can be missing, not just `getDirectory`: WebKit does not
+// expose it on Linux at all, and reading through it there threw where the landing renders. The
+// DOM lib declares it as always present, which is why this asks with `in` rather than `?.`.
 export const opfsSupported = (): boolean =>
-  typeof navigator !== 'undefined' && typeof navigator.storage.getDirectory === 'function';
+  typeof navigator !== 'undefined' &&
+  'storage' in navigator &&
+  typeof navigator.storage.getDirectory === 'function';
 
 /**
  * Reuses the handle saved under the current slot, which only costs a permission prompt on

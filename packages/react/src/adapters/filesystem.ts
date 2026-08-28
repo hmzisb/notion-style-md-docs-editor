@@ -280,7 +280,9 @@ const handleKey = (id: string): string => `docs:handle:${id}`;
 export async function getOpfsRoot(subdir?: string): Promise<FileSystemDirectoryHandle> {
   const storage: StorageManager | undefined =
     typeof navigator === 'undefined' ? undefined : navigator.storage;
-  if (storage === undefined) {
+  // Two ways to not have one: no `navigator.storage` at all, which is WebKit on Linux, and a
+  // `StorageManager` that predates OPFS. Both are the same answer to the caller.
+  if (typeof storage?.getDirectory !== 'function') {
     throw new ProviderError('unsupported', 'This browser has no origin private file system.');
   }
 
