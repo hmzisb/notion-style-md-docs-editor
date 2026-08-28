@@ -17,9 +17,11 @@ jobs:
           cache: pnpm
       - run: pnpm i --frozen-lockfile
       - run: pnpm typecheck
+      # Before lint: the smoke hosts import the built packages, and typed lint rules
+      # resolve `any` for every export until `packages/*/dist` exists.
+      - run: pnpm build
       - run: pnpm lint
       - run: pnpm test
-      - run: pnpm build
       # e2e, the perf budgets and the visual baselines stay local. The baselines are
       # captured on darwin (`__screenshots__/*-darwin.png`) and the perf steps are a
       # stopwatch on one machine, so neither is portable to a shared runner.
