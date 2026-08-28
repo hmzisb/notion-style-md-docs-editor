@@ -1,6 +1,6 @@
 {
   "name": "@hmzisb/notion-docs-react",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Notion-grade Markdown docs UI for React: tree, viewer, editor, shell and adapters.",
   "license": "MIT",
   "author": "hmzisb",
