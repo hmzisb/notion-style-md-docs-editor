@@ -1,74 +1,54 @@
-# notion-style-md-docs-editor
+# 📝 notion-style-md-docs-editor
 
-A Notion-grade docs experience for any React app, over plain Markdown files. No backend required.
+**A Notion-like docs editor for your React app. It reads and writes plain Markdown files.**
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-black.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
 [![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178c6.svg)](tsconfig.base.json)
-[![React](https://img.shields.io/badge/React-18.3%20%7C%2019-149eca.svg)](#requirements)
-[![Tests](https://img.shields.io/badge/tests-1%2C255%20unit%20%2B%20153%20e2e-2ea043.svg)](#quality)
-[![Bundle](https://img.shields.io/badge/read%20path-38.9%20kB%20gzip-2ea043.svg)](#performance)
+[![React](https://img.shields.io/badge/React-18.3%20%7C%2019-149eca.svg)](#-what-you-need)
+[![Tests](https://img.shields.io/badge/tests-1%2C255%20unit%20%2B%20153%20e2e-2ea043.svg)](#-quality)
+[![Bundle](https://img.shields.io/badge/read%20path-38.9%20kB%20gzip-2ea043.svg)](#-speed)
 
-`@docs/react` gives you the whole thing — sidebar tree, breadcrumbs, command palette, read view
-and a block editor with a slash menu — and reads and writes **ordinary `.md` files**. Point it at
-a folder on disk, at browser storage, at an in-memory corpus, or at your own HTTP API. The module
-never talks to a server itself: every byte goes through one `DocumentProvider` interface you
-control.
+Drop it in and your users get a sidebar tree, a block editor, a search palette, and instant page
+loads. Your docs stay as `.md` files in a folder you own.
 
-![Reading a page: sidebar tree, breadcrumbs, GFM table](docs/assets/read-light.png)
+**No backend needed.** It talks to storage through one small interface. Pick a folder on the
+user's computer, the browser's own storage, or your own API.
+
+![Reading a page: sidebar tree, breadcrumbs and a table](docs/assets/read-light.png)
 
 ---
 
-## Why this exists
+## ✨ What you get
 
-Markdown docs usually force a choice: a static site generator that nobody can edit without a pull
-request, or a hosted app that owns your content. This module takes the third option — your files
-stay yours, in git, in a folder, in the shape you already have, and the editing experience on top
-of them feels like Notion.
+**📂 Navigation**
 
-- **Markdown is canonical.** The editor's JSON is transient. 30 of 33 fixture pages round-trip
-  **byte for byte**; the rest have goldens and a classifier that tells you exactly what would
-  change before you save.
-- **A page is never written unless you edited it.** No reflowed files, no churned diffs, no
-  frontmatter reordering.
-- **The browser cache is a feature.** Cached pages paint instantly, drafts survive a reload, and
-  a save survives a dropped connection.
-- **Frontend only.** Three adapters ship. Your backend, if you ever want one, implements a
-  documented HTTP contract — with a conformance suite you can run against it.
+- A fast sidebar tree. 5,000 pages still scroll at 60 fps.
+- Drag pages to move them. Rename in place. Add emoji or Lucide icons.
+- `⌘P` opens a palette that searches page names **and** page text.
+- Only one branch stays open at a time, so deep folders never flood the sidebar.
 
-## Screenshots
+**✍️ Editing**
 
-| Block editor with the slash menu | Command palette (`⌘P`) |
-|---|---|
-| ![Editor with slash menu open](docs/assets/editor-dark.png) | ![Command palette searching pages and content](docs/assets/palette-dark.png) |
+- Type `/` for the block menu. Select text for the floating toolbar.
+- Headings, lists, to-dos, tables, code blocks, callouts, toggles, images with captions.
+- Text colour and highlight that survive the save.
+- `/page` makes a real subpage on disk, just like Notion.
 
-## Features
+**💾 Saving**
 
-**Navigation**
-- Virtualised sidebar tree — 5,000 nodes scroll at 60 fps with ≤ 45 rows mounted
-- Drag and drop, keyboard move (`⌘↑` / `⌘↓`), inline rename, icons (emoji or Lucide)
-- Breadcrumbs with overflow, command palette over page names *and* page content
-- One branch expanded at a time, so a deep tree never becomes a wall
+- Autosave with a status you can see. `⌘S` saves right now.
+- If someone else edited the file first, you get a conflict card. Nothing is overwritten.
+- Drafts live in the browser. Close the tab, come back, your text is still there.
+- A warning before an edit would drop Markdown the editor cannot show.
 
-**Editing**
-- Slash menu, floating toolbar, drag handles, block selection, Markdown autoformat
-- Headings, lists, to-dos, tables, code blocks with highlighting, callouts, toggles, images with
-  captions, links with a resolver that understands relative `.md` paths
-- Text colour and highlight that survive the round trip to Markdown
-- `/page` creates a real subpage on disk, the way Notion nests
+**🧱 Fits your app**
 
-**Saving and safety**
-- Debounced autosave with a visible status, `⌘S` to flush
-- Optimistic-concurrency conflicts surfaced as a card, not a silent overwrite
-- Drafts in IndexedDB, restored after a reload or a crash
-- Lossy-document warning before an edit would drop Markdown the editor cannot represent
+- Five entry points. The editor loads only when someone edits.
+- No router, no globals, no page-title takeover, no CSS reset.
+- Every word is replaceable (258 strings). Every action fires an event you can listen to.
+- All styles live under `.docs-root`. It will not restyle your app.
 
-**Integration**
-- Five entry points so you only pay for what you import; the editor is a lazy chunk
-- No router, no globals, no `window.location`, no `document.title`, no preflight CSS
-- Every string overridable (258 keys), every event observable via `onEvent`
-- Scoped to `.docs-root` — it will not restyle your app
-
-## Try it
+## 🎬 Try it in one minute
 
 ```bash
 git clone https://github.com/hmzisb/notion-style-md-docs-editor.git
@@ -77,37 +57,49 @@ pnpm i
 pnpm dev
 ```
 
-The playground opens with four workspace modes: the bundled **demo** corpus in memory, a **folder**
-on your computer (File System Access API), **browser storage** (OPFS, with folder import/export),
-and **remote** against any backend that answers the HTTP contract.
+The playground opens with four ways to load docs:
 
-## Install into your app
+| Mode | What it does |
+|---|---|
+| 🎈 **Demo** | A sample set of 33 pages, in memory |
+| 📁 **Folder** | A real folder on your computer (Chrome, Edge, Arc) |
+| 🌐 **Browser storage** | A private workspace in the browser. Import and export folders |
+| ☁️ **Remote** | Any API that follows the HTTP contract |
 
-> **Status:** not yet on npm. Today, consume it from this repo — `pnpm i && pnpm build`, then
-> reference `packages/core` and `packages/react` as workspace or `file:` dependencies. The
-> published shape is already verified by `publint`, `attw` and two built-package smoke hosts.
+## 📸 More screenshots
 
-Once published, the install is:
+| Block menu (`/`) | Search palette (`⌘P`) |
+|---|---|
+| ![Editor with the slash menu open](docs/assets/editor-dark.png) | ![Command palette searching pages and content](docs/assets/palette-dark.png) |
+
+## 🧩 Add it to your app
+
+> ℹ️ **Not on npm yet.** For now, clone this repo, run `pnpm i && pnpm build`, and point your app
+> at `packages/core` and `packages/react`. The package shape is already checked by `publint`,
+> `attw`, and two test apps that install the built files.
+
+Once it is on npm:
 
 ```bash
 pnpm add @docs/react @docs/core @tanstack/react-query platejs
 # plus the @platejs/* peers listed in packages/react/package.json
 ```
 
+Add the styles. If you use Tailwind v4:
+
 ```css
-/* app.css — Tailwind v4 host */
+/* app.css */
 @import "tailwindcss";
 @source "../node_modules/@docs/react/dist";
 @import "@docs/react/styles.css";
-@import "@docs/react/theme.css";   /* only if your app has no shadcn CSS variables */
+@import "@docs/react/theme.css";   /* skip this if your app already has shadcn variables */
 ```
 
-Not on Tailwind? Import `@docs/react/styles.css` alone — it is precompiled, scoped and carries no
-preflight.
+No Tailwind? Import `@docs/react/styles.css` on its own. It is already compiled and scoped.
 
-## Usage
+## 🚀 Usage
 
-The whole module is two components. `DocsProvider` owns data; `DocsShell` owns the layout.
+Two components. `DocsProvider` handles data. `DocsShell` draws the layout.
 
 ```tsx
 import { DocsProvider, type DocsNavigation } from '@docs/react';
@@ -115,6 +107,7 @@ import { DocsShell } from '@docs/react/shell';
 import { createFileSystemProvider, pickDirectory } from '@docs/react/adapters/filesystem';
 import { useState } from 'react';
 
+// Ask the user for a folder, then read and write Markdown inside it.
 const handle = await pickDirectory({ mode: 'readwrite', id: 'my-docs' });
 const provider = createFileSystemProvider(handle, { indexCache: true, watch: true });
 
@@ -139,145 +132,160 @@ export function Docs() {
 }
 ```
 
-`navigation` is the only seam to your router: give it your params and your `navigate`, add an
-optional `href()` and the tree renders real `<a>` links. Recipes for TanStack Router, Laravel +
-Inertia, and a read-only help drawer are in [`docs/08-PUBLIC-API.md`](docs/08-PUBLIC-API.md#8-integration-recipes).
+`navigation` is the only place your router meets the module. Pass your params and your `navigate`.
+Add an optional `href()` and the sidebar renders real links.
 
-Composing your own layout instead of the shell? Use `PageTree`, `PageHeader`,
-`DocumentView` / `DocumentEditor` and `useDocumentSession` directly — the tree knows nothing about
-routes, the editor knows nothing about saving, and the session is the only piece that knows both.
+Ready-made setups for **TanStack Router**, **Laravel + Inertia**, and a **read-only help drawer**
+are in [`docs/08-PUBLIC-API.md`](docs/08-PUBLIC-API.md#8-integration-recipes).
 
-## Storage adapters
+Want your own layout instead of the shell? Use `PageTree`, `PageHeader`, `DocumentView`,
+`DocumentEditor`, and `useDocumentSession` on their own. The tree knows nothing about routes. The
+editor knows nothing about saving.
 
-| Adapter | Import | Backing store | Notes |
+## 🔌 Where your docs can live
+
+| Adapter | Import from | Stores files in | Good to know |
 |---|---|---|---|
-| Memory | `@docs/react/adapters/memory` | a seeded object | demos, tests, Storybook; latency and failures injectable |
-| Filesystem | `@docs/react/adapters/filesystem` | a real folder | File System Access API — Chromium only |
-| OPFS | `@docs/react/adapters/filesystem` | origin-private FS | every evergreen browser; import/export to a real folder |
-| HTTP | `@docs/react/adapters/http` | your API | `GET /tree`, `GET/PUT /pages/:id`, ETags, SSE or polling |
+| 🧪 Memory | `@docs/react/adapters/memory` | an object you seed | demos and tests; you can fake slow calls and errors |
+| 📁 Filesystem | `@docs/react/adapters/filesystem` | a real folder | Chromium browsers only |
+| 🌐 OPFS | `@docs/react/adapters/filesystem` | the browser's private storage | works everywhere; import and export folders |
+| ☁️ HTTP | `@docs/react/adapters/http` | your API | `GET /tree`, `GET/PUT /pages/:id`, ETags, SSE or polling |
 
-Bring your own: implement `DocumentProvider` from `@docs/core` and run
-`runProviderConformance()` from `@docs/core/testing` — 52 cases covering trees, conflicts, moves,
-slug collisions, assets and capability gating.
+Have your own backend? Write a `DocumentProvider` and run `runProviderConformance()` from
+`@docs/core/testing`. It runs 52 checks: trees, conflicts, moves, name clashes, assets, and
+permissions.
 
-## How files become a tree
+## 🗂️ How your files become pages
 
 | On disk | In the app |
 |---|---|
 | `guides/intro.md` | a page |
-| `guides/index.md` | the page **for** `guides/`; its siblings become children |
-| `guides/` without `index.md` | a folder node — expandable, not openable, convertible to a page |
-| `README.md` | read as `index.md` when `index.md` is absent |
-| `.hidden/`, `node_modules/` | ignored |
-| anything not `.md` | an asset, reachable through `assetUrl` |
+| `guides/index.md` | the page **for** the `guides` folder; the rest of the folder becomes its children |
+| `guides/` with no `index.md` | a folder row: you can open it, but not read it. One click turns it into a page |
+| `README.md` | used as `index.md` when there is no `index.md` |
+| `.hidden/`, `node_modules/` | skipped |
+| anything that is not `.md` | an asset (images and so on) |
 
-Title comes from frontmatter `title`, else the first `# H1`, else the humanised filename. Order
-comes from frontmatter `order`, then natural filename sort. Ids come from the path until the first
-write, when a stable ULID is written into frontmatter (`pnpm doctor <folder> --write-ids` does it
-in bulk).
+**Title** comes from frontmatter `title`, then the first `# heading`, then the file name.
+**Order** comes from frontmatter `order`, then the file name.
+**IDs** start from the file path. The first time a page is saved, a permanent ID is written into
+its frontmatter. To do that for a whole folder at once, run `pnpm doctor <folder> --write-ids`.
 
-## Keyboard
+## ⌨️ Shortcuts
 
-| Keys | Action |
+| Keys | What happens |
 |---|---|
-| `⌘P` | Command palette (pages and content) |
-| `⌘\` | Toggle sidebar |
-| `⌘⇧E` | Toggle read / edit |
+| `⌘P` | Open the search palette |
+| `⌘\` | Show or hide the sidebar |
+| `⌘⇧E` | Switch between reading and editing |
 | `⌘⌥N` | New page |
 | `⌘S` | Save now |
-| `⌘⇧U` | Open parent page |
-| `F2` · `⌘↑` `⌘↓` | Rename · move among siblings (tree focus) |
-| `/` | Slash menu (editor) |
-| `⌘⌥1…9` | Turn block into heading, list, to-do, code, callout |
-| `⌘⇧↑` `⌘⇧↓` · `⌘D` | Move block · duplicate block |
+| `⌘⇧U` | Go to the parent page |
+| `F2` · `⌘↑` `⌘↓` | Rename · move a page up or down (sidebar) |
+| `/` | Block menu (editor) |
+| `⌘⌥1…9` | Turn a block into a heading, list, to-do, code block, or callout |
+| `⌘⇧↑` `⌘⇧↓` · `⌘D` | Move a block · copy a block |
 
-Full map, including drag and drop and the state matrix, in
+The full list, plus drag and drop, is in
 [`docs/07-INTERACTIONS-AND-SHORTCUTS.md`](docs/07-INTERACTIONS-AND-SHORTCUTS.md).
 
-## Performance
+## ⚡ Speed
 
-Measured on a production build, one machine (darwin + Chromium) — a reference, not a CI gate.
+Measured on a production build on one machine (macOS + Chromium). Treat it as a guide, not a promise.
 
-| Measure | Result | Budget |
+| What | Result | Budget |
 |---|---|---|
-| `@docs/react` read path (`./tree` + `./view`), gzip | **38.9 kB** | 80 kB |
-| `@docs/react` `./shell`, gzip | **96.7 kB** | 98 kB |
-| `@docs/react` `./editor`, gzip, lazy | **213.9 kB** | 260 kB |
-| `@docs/core`, gzip | **33.8 kB** | 40 kB |
-| Cached page switch | **11.4 ms** | < 100 ms |
-| Cold page open from IndexedDB | **20.6 ms** | < 150 ms |
-| Tree scroll, 5,000 nodes | **8.4 ms/frame**, 36 rows mounted | 60 fps |
-| `getTree` over 5,000 OPFS files | **31.7 ms** | < 300 ms |
-| Save round trip | **79 ms p95** | < 300 ms |
+| Reading UI (`./tree` + `./view`), gzip | **38.9 kB** | 80 kB |
+| Full shell, gzip | **96.7 kB** | 98 kB |
+| Editor, gzip, loaded on demand | **213.9 kB** | 260 kB |
+| Core package, gzip | **33.8 kB** | 40 kB |
+| Switch to a cached page | **11.4 ms** | under 100 ms |
+| Open a page from browser storage | **20.6 ms** | under 150 ms |
+| Scroll a 5,000-page tree | **8.4 ms per frame** | 60 fps |
+| Read 5,000 files from disk | **31.7 ms** | under 300 ms |
+| Save a page | **79 ms** (95th percentile) | under 300 ms |
 
-## Quality
+## ✅ Quality
 
 ```bash
-pnpm typecheck     # tsc -b across the workspace, strict
-pnpm lint          # eslint incl. layer-boundary rules
+pnpm typecheck     # strict TypeScript across the workspace
+pnpm lint          # eslint, including layer rules
 pnpm test          # 1,255 unit tests in 60 files
-pnpm test:e2e      # 153 Playwright specs across demo, OPFS and WebKit
-pnpm build         # tsup + publint + attw + size-limit
-pnpm gate 3        # every check above, 19 steps
-pnpm doctor <dir>  # what opening and saving would do to a real corpus
+pnpm test:e2e      # 153 Playwright tests: demo, browser storage, WebKit
+pnpm build         # build + publint + attw + size checks
+pnpm gate all      # everything above, in order
+pnpm doctor <dir>  # shows what opening and saving would do to a real folder
 ```
 
-Also covered: a provider conformance suite run against all four adapters, 19 clean axe runs
-(WCAG 2.1 A/AA), 14 visual baselines at two viewports in both themes, and two built-package smoke
-hosts — one Tailwind, one plain.
+Also covered: the same conformance suite run against all four adapters, 19 clean accessibility
+scans (WCAG 2.1 A/AA), 14 screenshot baselines in two sizes and both themes, and two test apps
+that install the built packages — one with Tailwind, one without.
 
-## Requirements
+## 🧰 What you need
 
-- React 18.3 or 19 · TypeScript 5.9 · ESM only
-- Node 22+ and pnpm 10 to develop this repo
-- Tailwind v4 optional — the CSS ships precompiled either way
+- React 18.3 or 19, TypeScript 5.9, ESM
+- Node 22+ and pnpm 10 to work on this repo
+- Tailwind v4 is optional. The CSS ships ready to use either way
 
-## Known limits
+## ⚠️ What it cannot do yet
 
-Honest ones, tracked in [`docs/execution/FINAL-REPORT.md`](docs/execution/FINAL-REPORT.md):
+Straight from [`docs/execution/FINAL-REPORT.md`](docs/execution/FINAL-REPORT.md):
 
-1. Keystroke-to-paint is 33 ms p95 on a 3,000-block page (10 ms at 500 blocks). A guard covers the
-   extreme; the middle is unsolved.
-2. Search is a scan, not an index — capped at 2,000 files and 4 MB per query.
-3. Raw HTML in Markdown survives as its own bytes but is not editable as blocks.
-4. The `./shell` bundle is 61 % over the original 60 kB target, held by a ratchet.
-5. Perf and visual baselines come from one machine; there is no CI hardware baseline.
+1. ⌨️ Typing slows down on very long pages: 33 ms per keystroke at 3,000 blocks (10 ms at 500).
+2. 🔍 Search scans files instead of using an index. It stops at 2,000 files or 4 MB per search.
+3. 🏷️ Raw HTML inside Markdown is kept as-is, but you cannot edit it as blocks.
+4. 📦 The shell bundle is bigger than the original 60 kB target.
+5. 🖥️ Speed and screenshot baselines come from one machine. CI does not check them.
 
-## Documentation
+## 📚 Documentation
 
-| Document | What's in it |
+| File | What is inside |
 |---|---|
-| [`docs/01-PRODUCT-SPEC.md`](docs/01-PRODUCT-SPEC.md) | scope, users, flows, non-goals |
+| [`docs/01-PRODUCT-SPEC.md`](docs/01-PRODUCT-SPEC.md) | who it is for, what it does, what it will not do |
 | [`docs/02-ARCHITECTURE.md`](docs/02-ARCHITECTURE.md) | packages, layers, boundaries |
-| [`docs/03-DATA-MODEL-AND-CONTRACTS.md`](docs/03-DATA-MODEL-AND-CONTRACTS.md) | types, provider contract, filesystem semantics, HTTP contract |
+| [`docs/03-DATA-MODEL-AND-CONTRACTS.md`](docs/03-DATA-MODEL-AND-CONTRACTS.md) | types, provider interface, file rules, HTTP contract |
 | [`docs/04-CACHE-AND-SYNC.md`](docs/04-CACHE-AND-SYNC.md) | cache, drafts, conflicts, offline |
-| [`docs/05-EDITOR.md`](docs/05-EDITOR.md) | Plate kits, Markdown codec, fidelity rules |
+| [`docs/05-EDITOR.md`](docs/05-EDITOR.md) | editor plugins and the Markdown converter |
 | [`docs/06-DESIGN-SPEC.md`](docs/06-DESIGN-SPEC.md) | the visual system |
-| [`docs/07-INTERACTIONS-AND-SHORTCUTS.md`](docs/07-INTERACTIONS-AND-SHORTCUTS.md) | keyboard, DnD, states, a11y |
-| [`docs/08-PUBLIC-API.md`](docs/08-PUBLIC-API.md) | every export, prop, hook, event, integration recipe |
-| [`docs/10-TESTING-AND-QUALITY.md`](docs/10-TESTING-AND-QUALITY.md) | test matrix, budgets, gates |
+| [`docs/07-INTERACTIONS-AND-SHORTCUTS.md`](docs/07-INTERACTIONS-AND-SHORTCUTS.md) | keyboard, drag and drop, states |
+| [`docs/08-PUBLIC-API.md`](docs/08-PUBLIC-API.md) | every export, prop, hook, event, and setup recipe |
+| [`docs/10-TESTING-AND-QUALITY.md`](docs/10-TESTING-AND-QUALITY.md) | test plan, budgets, gates |
 | [`docs/11-REPO-AND-TOOLING.md`](docs/11-REPO-AND-TOOLING.md) | workspace, build, scripts |
 
-Build history lives in [`PROGRESS.md`](PROGRESS.md), [`DEVIATIONS.md`](DEVIATIONS.md),
-[`ASSUMPTIONS.md`](ASSUMPTIONS.md) and `docs/execution/`.
+How it was built: [`PROGRESS.md`](PROGRESS.md), [`DEVIATIONS.md`](DEVIATIONS.md),
+[`ASSUMPTIONS.md`](ASSUMPTIONS.md), and `docs/execution/`.
 
-## Repository layout
+## 📦 What is in this repo
 
 ```
-packages/core     @docs/core   — provider contract, Markdown codec, tree ops, filesystem semantics
-packages/react    @docs/react  — shell, tree, viewer, editor, adapters, cache
+packages/core     @docs/core   provider interface, Markdown converter, tree and file rules
+packages/react    @docs/react  shell, sidebar, reader, editor, adapters, cache
 apps/playground   the demo app you get from `pnpm dev`
-fixtures          a 33-page corpus that every codec and provider test runs against
-smoke             built-package hosts: one Tailwind, one plain
-contract          generated OpenAPI 3.1 for the HTTP contract
+fixtures          33 sample pages every test runs against
+smoke             two apps that install the built packages
+contract          generated OpenAPI file for the HTTP contract
 ```
 
-## Built with
+## 🤝 Contributing
+
+Issues and pull requests are welcome. Before you push:
+
+```bash
+pnpm typecheck && pnpm lint && pnpm test
+```
+
+CI runs the same four steps plus `pnpm build`. End-to-end, speed, and screenshot tests run
+locally with `pnpm gate all`.
+
+## 🙏 Built with
 
 [Plate](https://platejs.org) · [TanStack Query](https://tanstack.com/query) ·
 [headless-tree](https://headless-tree.lukasbach.com) · [Radix](https://www.radix-ui.com) ·
 [cmdk](https://cmdk.paco.me) · [Tailwind v4](https://tailwindcss.com) · shadcn variables
 
-## License
+## 📄 License
 
-[MIT](LICENSE)
+[MIT](LICENSE) — free and open source.
+
+Use it, change it, ship it, sell it. Personal or commercial, no permission needed. Just keep the
+copyright line in the license file.
