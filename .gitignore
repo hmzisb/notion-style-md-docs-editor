@@ -1,4 +1,6 @@
 node_modules/
+# ...except the fixture that proves a vendored folder is never a node.
+!fixtures/corpus/node_modules/
 dist/
 dist-types/
 .tsbuild/
