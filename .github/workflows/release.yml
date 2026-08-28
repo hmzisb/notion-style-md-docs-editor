@@ -1,3 +1,10 @@
+# Two things live outside this file, and the job fails without either:
+#
+#   1. Settings -> Actions -> General -> "Allow GitHub Actions to create and approve pull
+#      requests". Without it the version pull request cannot be opened, and the run ends on
+#      `GitHub Actions is not permitted to create or approve pull requests`.
+#   2. An `NPM_TOKEN` repository secret, granular and scoped to the two packages. Without it
+#      the publish step is the one that fails, after the version pull request has landed.
 name: release
 
 on:
