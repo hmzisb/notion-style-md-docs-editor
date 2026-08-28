@@ -16,7 +16,11 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm i --frozen-lockfile
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium
-        if: hashFiles('apps/playground/playwright.config.ts') != ''
-      - run: pnpm gate all
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - run: pnpm test
+      - run: pnpm build
+      # e2e, the perf budgets and the visual baselines stay local. The baselines are
+      # captured on darwin (`__screenshots__/*-darwin.png`) and the perf steps are a
+      # stopwatch on one machine, so neither is portable to a shared runner.
+      # Run `pnpm gate all` locally before a release.

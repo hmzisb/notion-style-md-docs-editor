@@ -2,6 +2,12 @@
 
 Decisions Claude Code made without asking, per `CLAUDE.md` section 6. The user reviews this file, not chat. Newest first.
 
+## ASM-165 · publish · 2026-08-28
+Question: CI ran `pnpm gate all` on ubuntu, but the visual baselines are `__screenshots__/*-darwin.png` and the perf steps are stopwatches on one machine (DEV-028), so a shared runner fails them by construction. Keep the full gate red on every push, or narrow CI?
+Assumed: CI runs typecheck, lint, unit tests and build - everything that is deterministic across platforms. e2e, `test:perf`, `test:e2e:perf` and the visual baselines stay local, and `pnpm gate all` before a release is what still covers them.
+Why: a permanently red badge on a public repo says nothing about the code, and a contributor's pull request has to be able to pass. The narrowing is named in the workflow file so nobody mistakes it for full coverage.
+Cheap to reverse: yes - a linux baseline set and the two Playwright steps go back into the workflow whenever a runner is willing to hold them.
+
 ## ASM-164 · UX-T04 · 2026-08-27
 Question: three of Notion's nine text colours miss the 4.5:1 that docs/06 section 1 asks of text - orange 3.28:1, yellow 2.75:1 and red 4.26:1 on white. Darken them, or ship the palette as it is?
 Assumed: ship it. The light values are Notion's own; dark mode uses a lighter set that measures 5.05:1 to 7.64:1 on the near-black ground.
