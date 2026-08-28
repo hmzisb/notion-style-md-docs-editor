@@ -1,4 +1,4 @@
-# Final report · `@docs/core` and `@docs/react` 0.1.0
+# Final report · `@hmzisb/notion-docs-core` and `@hmzisb/notion-docs-react` 0.1.0
 
 Written 2026-08-27, at the end of Phase 4. 66 tasks across five phases (P0 … P4), every one
 committed green. `pnpm gate 3` — the highest gate docs/09 defines — is **19 pass, 0 skip, 0
@@ -7,14 +7,14 @@ fail**, with all four phase reports present. The per-phase detail is in
 
 ## What shipped
 
-- **`@docs/core`** — the provider contract and everything backend-agnostic: `DocumentProvider`,
+- **`@hmzisb/notion-docs-core`** — the provider contract and everything backend-agnostic: `DocumentProvider`,
   `ProviderCapabilities`, the Zod contract schemas and a generated `contract/openapi.json`, the
   Markdown codec (Plate-headless, custom rules for callouts, toggles and image captions), the
   fidelity classifier, frontmatter, ids, links, tree index and fractional ordering, `FileStore`
   with `MemoryFileStore`, `createFileStoreProvider` (walk, ordering, ids, conflicts, assets,
   events, content search) and a provider conformance suite hosts can run against their own
   backend.
-- **`@docs/react`** — the UI: shell, sidebar tree (virtualised, DnD, keyboard move), read view,
+- **`@hmzisb/notion-docs-react`** — the UI: shell, sidebar tree (virtualised, DnD, keyboard move), read view,
   lazy Plate editor, command palette, banners, save status, the draft and cache layer over
   TanStack Query and IndexedDB, and the three adapters (memory, filesystem/OPFS, HTTP). Five
   entry points, `.docs-root`-scoped precompiled CSS, no preflight, no router, no globals.
@@ -27,11 +27,11 @@ fail**, with all four phase reports present. The per-phase detail is in
 
 | Measure | Result | Budget (docs/10 §5) |
 |---|---|---|
-| `@docs/core` entry, min + gz | **33.76 kB** | 40 kB |
-| `@docs/react` `.` | **14.63 kB** | 25 kB |
-| `@docs/react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
-| `@docs/react` `./shell` | **96.71 kB** | 98 kB ratchet — over docs/02 §7's 60 kB (DEV-012) |
-| `@docs/react` `./editor`, lazy | **213.88 kB** | 260 kB |
+| `@hmzisb/notion-docs-core` entry, min + gz | **33.76 kB** | 40 kB |
+| `@hmzisb/notion-docs-react` `.` | **14.63 kB** | 25 kB |
+| `@hmzisb/notion-docs-react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
+| `@hmzisb/notion-docs-react` `./shell` | **96.71 kB** | 98 kB ratchet — over docs/02 §7's 60 kB (DEV-012) |
+| `@hmzisb/notion-docs-react` `./editor`, lazy | **213.88 kB** | 260 kB |
 | Cached page switch | **11.4 ms** | < 100 ms |
 | Cold page open from IndexedDB | **20.6 ms** | < 150 ms |
 | Tree scroll, 5,000 nodes | **8.36 ms/frame**, 36 rows mounted | 60 fps, ≤ 45 rows, hard |

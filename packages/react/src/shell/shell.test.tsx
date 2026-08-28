@@ -1,4 +1,8 @@
-import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
+import {
+  MemoryFileStore,
+  createFileStoreProvider,
+  type DocumentProvider,
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -285,9 +289,12 @@ describe('DocsShell', () => {
       const blocks = Array.from({ length: 5001 }, (_, index) => `Line ${String(index)}`).join(
         '\n\n',
       );
-      const { onEvent } = mount({ pageId: 'p_big' }, {
-        'big.md': `---\nid: p_big\ntitle: Big\n---\n\n${blocks}\n`,
-      });
+      const { onEvent } = mount(
+        { pageId: 'p_big' },
+        {
+          'big.md': `---\nid: p_big\ntitle: Big\n---\n\n${blocks}\n`,
+        },
+      );
       await ready();
 
       expect(

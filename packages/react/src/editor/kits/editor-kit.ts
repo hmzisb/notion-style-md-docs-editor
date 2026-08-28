@@ -1,4 +1,4 @@
-import { BaseKit } from '@docs/core';
+import { BaseKit } from '@hmzisb/notion-docs-core';
 import { NodeIdPlugin, TrailingBlockPlugin, type AnySlatePlugin } from 'platejs';
 import type { AnyPlatePlugin } from 'platejs/react';
 import type { DocsStrings } from '@/data/strings.js';

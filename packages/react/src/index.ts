@@ -42,4 +42,4 @@ export type {
   PersistOptions,
 } from './data/types.js';
 
-export type * from '@docs/core';
+export type * from '@hmzisb/notion-docs-core';

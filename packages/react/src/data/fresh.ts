@@ -1,4 +1,4 @@
-import { generateId, type NodeId } from '@docs/core';
+import { generateId, type NodeId } from '@hmzisb/notion-docs-core';
 
 /**
  * docs/01 section 5.3: a new page is in the tree and open in the editor before the provider has

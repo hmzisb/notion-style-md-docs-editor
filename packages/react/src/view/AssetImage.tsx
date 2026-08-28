@@ -1,4 +1,4 @@
-import type { TreeNode } from '@docs/core';
+import type { TreeNode } from '@hmzisb/notion-docs-core';
 import { ImageOff } from 'lucide-react';
 import { useState } from 'react';
 import { useAssetUrl } from '@/data/assets.js';

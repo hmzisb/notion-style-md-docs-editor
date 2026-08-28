@@ -6,7 +6,7 @@ import {
   normalizePath,
   type FileEntry,
   type FileStore,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 
 /**
  * `FileStore` over a `FileSystemDirectoryHandle` (docs/03 section 3). The web API is a tree of

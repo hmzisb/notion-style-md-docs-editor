@@ -1,4 +1,4 @@
-import { CONTRACT_VERSION } from '@docs/core';
+import { CONTRACT_VERSION } from '@hmzisb/notion-docs-core';
 import { experimental_createQueryPersister } from '@tanstack/query-persist-client-core';
 import type { Query, QueryKey, QueryPersister } from '@tanstack/react-query';
 import type { PersistOptions } from '../types.js';

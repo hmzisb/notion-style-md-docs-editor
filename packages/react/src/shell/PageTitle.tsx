@@ -1,4 +1,4 @@
-import type { NodeId, PageMode } from '@docs/core';
+import type { NodeId, PageMode } from '@hmzisb/notion-docs-core';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { toast } from '@/lib/toast.js';
 import { useDocs } from '@/data/context.js';

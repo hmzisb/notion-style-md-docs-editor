@@ -78,9 +78,7 @@ function middle(left: string[], right: string[], offset: number): DiffRow[] {
       const row = table[i] ?? [];
       const next = table[i + 1] ?? [];
       row[j] =
-        left[i] === right[j]
-          ? (next[j + 1] ?? 0) + 1
-          : Math.max(next[j] ?? 0, row[j + 1] ?? 0);
+        left[i] === right[j] ? (next[j + 1] ?? 0) + 1 : Math.max(next[j] ?? 0, row[j + 1] ?? 0);
     }
   }
 
@@ -89,7 +87,12 @@ function middle(left: string[], right: string[], offset: number): DiffRow[] {
   let j = 0;
   while (i < left.length && j < right.length) {
     if (left[i] === right[j]) {
-      rows.push({ kind: 'same', leftNo: offset + i + 1, rightNo: offset + j + 1, text: left[i] ?? '' });
+      rows.push({
+        kind: 'same',
+        leftNo: offset + i + 1,
+        rightNo: offset + j + 1,
+        text: left[i] ?? '',
+      });
       i += 1;
       j += 1;
       continue;

@@ -1,6 +1,6 @@
 'use client';
 
-import { CALLOUT_ICONS, isCalloutVariant } from '@docs/core';
+import { CALLOUT_ICONS, isCalloutVariant } from '@hmzisb/notion-docs-core';
 import { CalloutPlugin } from '@platejs/callout/react';
 import { createBlockStartInputRule, createSlatePlugin, KEYS } from 'platejs';
 

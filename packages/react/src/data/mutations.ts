@@ -15,7 +15,7 @@ import {
   type TreeIndex,
   type TreeNode,
   type TreeSnapshot,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { useMutation, useQueryClient, type UseMutationResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { toast } from '@/lib/toast.js';

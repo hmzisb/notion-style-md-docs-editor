@@ -1,4 +1,4 @@
-import type { DocsNavigation } from '@docs/react';
+import type { DocsNavigation } from '@hmzisb/notion-docs-react';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import { useMemo } from 'react';
 

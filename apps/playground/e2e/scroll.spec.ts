@@ -14,7 +14,10 @@ async function open(page: Parameters<typeof freshVisit>[0], title: string): Prom
   await page.keyboard.press('ControlOrMeta+p');
   const dialog = page.getByRole('dialog', { name: 'Search pages and actions' });
   await dialog.getByPlaceholder('Search pages…').fill(title);
-  await dialog.getByRole('option', { name: new RegExp(title) }).first().click();
+  await dialog
+    .getByRole('option', { name: new RegExp(title) })
+    .first()
+    .click();
   await expect(dialog).toBeHidden();
   await expect(page.getByRole('heading', { name: title, level: 1 }).first()).toBeVisible();
 }

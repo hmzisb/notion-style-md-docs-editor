@@ -1,6 +1,6 @@
 'use client';
 
-import { resolvePageLink } from '@docs/core';
+import { resolvePageLink } from '@hmzisb/notion-docs-core';
 import { getLinkAttributes } from '@platejs/link';
 import { FileText } from 'lucide-react';
 import type { TLinkElement } from 'platejs';

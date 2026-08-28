@@ -5,7 +5,7 @@ import type {
   NodeId,
   PageMode,
   ProviderCapabilities,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';
 import type { DocsPersister } from './cache/persister.js';

@@ -10,14 +10,14 @@ resolution · T08 fixture corpus and perf generators · T09 walk and `MemoryFile
 T10 provider read side · T11 provider write side · T12 conformance suite ·
 T13 Markdown codec · T14 fidelity classifier and `doctor`.
 
-`@docs/core` is complete for the read and write paths, the codec and the contract.
-`@docs/react`, `apps/playground` and `smoke/` are still the empty shells T01 created.
+`@hmzisb/notion-docs-core` is complete for the read and write paths, the codec and the contract.
+`@hmzisb/notion-docs-react`, `apps/playground` and `smoke/` are still the empty shells T01 created.
 
 ## Measurements
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gzip, excl. platejs peers and `yaml` | **30.90 kB** | 40 kB (docs/10 §5) |
+| `@hmzisb/notion-docs-core` entry, min + gzip, excl. platejs peers and `yaml` | **30.90 kB** | 40 kB (docs/10 §5) |
 | Composition of that entry | zod/mini + own code 18.0 kB, `remark-gfm` 12.9 kB | |
 | Tests | 599 in 20 files, all green | |
 | Core coverage | 97.97 % statements, 91.92 % branches | no threshold set |
@@ -54,5 +54,5 @@ DEV-003 (raw HTML round trips byte for byte, so an HTML page is `exact`, not los
 - Seven marks Plate knows and v1 does not ship are `plainMarks` (DEV-004); underline is
   the one that would otherwise throw.
 - No perf numbers yet, and no e2e: both start in P1-T13.
-- 9 kB of gz budget left on the core entry; anything Phase 1-3 adds to `@docs/core` has
+- 9 kB of gz budget left on the core entry; anything Phase 1-3 adds to `@hmzisb/notion-docs-core` has
   to fit in it.

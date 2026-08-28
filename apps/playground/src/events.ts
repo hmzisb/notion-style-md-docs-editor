@@ -1,4 +1,4 @@
-import type { DocsEvent } from '@docs/react';
+import type { DocsEvent } from '@hmzisb/notion-docs-react';
 
 /**
  * docs/08 section 3: `onEvent` is the host's window into the module. This host keeps the last

@@ -13,18 +13,27 @@ export default defineConfig({
     // `packages/react` has to hot-reload here. `smoke/` is what checks the published shape.
     // Longest specifier first - a string alias matches by prefix.
     alias: [
-      { find: '@docs/react/styles.css', replacement: `${reactSrc}/styles/styles.css` },
-      { find: '@docs/react/theme.css', replacement: `${reactSrc}/styles/theme.css` },
       {
-        find: '@docs/react/adapters/filesystem',
+        find: '@hmzisb/notion-docs-react/styles.css',
+        replacement: `${reactSrc}/styles/styles.css`,
+      },
+      { find: '@hmzisb/notion-docs-react/theme.css', replacement: `${reactSrc}/styles/theme.css` },
+      {
+        find: '@hmzisb/notion-docs-react/adapters/filesystem',
         replacement: `${reactSrc}/adapters/filesystem.ts`,
       },
-      { find: '@docs/react/adapters/memory', replacement: `${reactSrc}/adapters/memory.ts` },
-      { find: '@docs/react/adapters/http', replacement: `${reactSrc}/adapters/http.ts` },
-      { find: '@docs/react/shell', replacement: `${reactSrc}/shell/index.ts` },
-      { find: '@docs/react/tree', replacement: `${reactSrc}/tree/index.ts` },
-      { find: '@docs/react', replacement: `${reactSrc}/index.ts` },
-      { find: '@docs/core', replacement: at('../../packages/core/src/index.ts') },
+      {
+        find: '@hmzisb/notion-docs-react/adapters/memory',
+        replacement: `${reactSrc}/adapters/memory.ts`,
+      },
+      {
+        find: '@hmzisb/notion-docs-react/adapters/http',
+        replacement: `${reactSrc}/adapters/http.ts`,
+      },
+      { find: '@hmzisb/notion-docs-react/shell', replacement: `${reactSrc}/shell/index.ts` },
+      { find: '@hmzisb/notion-docs-react/tree', replacement: `${reactSrc}/tree/index.ts` },
+      { find: '@hmzisb/notion-docs-react', replacement: `${reactSrc}/index.ts` },
+      { find: '@hmzisb/notion-docs-core', replacement: at('../../packages/core/src/index.ts') },
       { find: /^@\/(.*)$/, replacement: `${reactSrc}/$1` },
     ],
   },

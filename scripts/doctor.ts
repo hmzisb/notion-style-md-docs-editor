@@ -15,7 +15,7 @@ import {
   isMarkdown,
   splitFrontmatter,
   type Fidelity,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { NodeFileStore } from './node-store.js';
 import { writeIds } from './write-ids.js';
 

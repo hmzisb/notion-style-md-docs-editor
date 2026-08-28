@@ -3,7 +3,7 @@ import {
   createFileStoreProvider,
   type DocumentProvider,
   type SearchHit,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -171,8 +171,7 @@ describe('CommandPalette (docs/06 section 8, docs/07 section 4)', () => {
     // the host's history rather than a second one.
     await waitFor(() => {
       const last = view.navigate.mock.calls.at(-1) as
-        | [{ mode: string; pageId: string }, { replace?: boolean }?]
-        | undefined;
+        [{ mode: string; pageId: string }, { replace?: boolean }?] | undefined;
       expect(last?.[0].pageId).not.toMatch(/^tmp_/);
       expect(last?.[1]).toEqual({ replace: true });
     });

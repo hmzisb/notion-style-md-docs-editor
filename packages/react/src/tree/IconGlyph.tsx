@@ -1,4 +1,4 @@
-import type { NodeKind, PageIcon } from '@docs/core';
+import type { NodeKind, PageIcon } from '@hmzisb/notion-docs-core';
 import { FileText, Folder } from 'lucide-react';
 import { Suspense, lazy } from 'react';
 import { cn } from '@/lib/utils';

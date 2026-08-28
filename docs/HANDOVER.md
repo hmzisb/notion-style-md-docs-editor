@@ -58,7 +58,7 @@ Stop only on a blocker as defined in CLAUDE.md section 6.
 
 ## Deliverable at the end of the plan
 
-- `packages/core` (`@docs/core`) and `packages/react` (`@docs/react`), built, typed, published-shape verified.
+- `packages/core` (`@hmzisb/notion-docs-core`) and `packages/react` (`@hmzisb/notion-docs-react`), built, typed, published-shape verified.
 - `apps/playground`: a standalone Notion-like app over a local folder (File System Access), browser storage (OPFS), an in-memory demo corpus, or any HTTP backend implementing the contract.
 - Green gates: typecheck, lint with boundary rules, unit, provider conformance, e2e, bundle budgets, built-package smoke in a Tailwind host and a non-Tailwind host.
 - `PROGRESS.md` fully checked, `DEVIATIONS.md` and `ASSUMPTIONS.md` complete, one `docs/execution/PHASE-N-REPORT.md` per phase.

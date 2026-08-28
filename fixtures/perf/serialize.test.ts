@@ -1,4 +1,4 @@
-import { defaultCodec } from '@docs/core';
+import { defaultCodec } from '@hmzisb/notion-docs-core';
 import { describe, expect, it } from 'vitest';
 import { generateLargePage } from './gen.js';
 

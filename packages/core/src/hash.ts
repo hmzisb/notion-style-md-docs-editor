@@ -23,7 +23,9 @@ function toHex(bytes: ArrayBuffer): string {
  */
 export async function sha256Hex(input: string | ArrayBuffer | Uint8Array): Promise<string> {
   if (!SUBTLE) {
-    throw new Error('Web Crypto is unavailable; @docs/core needs crypto.subtle for page versions.');
+    throw new Error(
+      'Web Crypto is unavailable; @hmzisb/notion-docs-core needs crypto.subtle for page versions.',
+    );
   }
   const data =
     typeof input === 'string'

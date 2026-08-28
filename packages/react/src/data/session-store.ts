@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId } from '@hmzisb/notion-docs-core';
 import { create, useStore, type StoreApi, type UseBoundStore } from 'zustand';
 
 /** docs/04 section 3. */

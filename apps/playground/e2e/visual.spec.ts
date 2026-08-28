@@ -14,7 +14,8 @@ const EDITOR = '[data-slate-editor]';
 const THEMES = ['light', 'dark'] as const;
 
 const PAGES: Record<string, string> = {
-  'index.md': '---\nid: p_home\ntitle: Handbook\nicon: 📘\n---\n\n# Handbook\n\nEverything a new joiner needs, in one place.\n',
+  'index.md':
+    '---\nid: p_home\ntitle: Handbook\nicon: 📘\n---\n\n# Handbook\n\nEverything a new joiner needs, in one place.\n',
   'guides/index.md': '---\nid: p_guides\ntitle: Guides\n---\n\n# Guides\n\nHow the team works.\n',
   'guides/writing.md':
     '---\nid: p_writing\ntitle: Writing docs\n---\n\n# Writing docs\n\n' +
@@ -25,7 +26,8 @@ const PAGES: Record<string, string> = {
     '- Nothing a reader can get from the code\n\n' +
     '> [!NOTE]\n> Frontmatter you did not write is left exactly as it was found.\n\n' +
     '```ts\nexport const save = (body: string) => provider.savePage(id, { body, baseVersion });\n```\n',
-  'reference/api.md': '---\nid: p_api\ntitle: API reference\n---\n\n# API reference\n\nOne table per entry point.\n',
+  'reference/api.md':
+    '---\nid: p_api\ntitle: API reference\n---\n\n# API reference\n\nOne table per entry point.\n',
 };
 
 /** Opens the seeded workspace in one theme, on the desktop viewport. */

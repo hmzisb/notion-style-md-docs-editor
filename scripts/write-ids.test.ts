@@ -2,7 +2,7 @@ import { cp, mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createFileStoreProvider, splitFrontmatter, type PageMeta } from '@docs/core';
+import { createFileStoreProvider, splitFrontmatter, type PageMeta } from '@hmzisb/notion-docs-core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { NodeFileStore } from './node-store.js';
 import { writeIds } from './write-ids.js';

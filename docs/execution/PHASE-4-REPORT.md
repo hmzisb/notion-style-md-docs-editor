@@ -22,11 +22,11 @@ lands where it was left.
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gz | **33.76 kB** | 40 kB (docs/10 §5) |
-| `@docs/react` `.` entry | **14.63 kB** | 25 kB |
-| `@docs/react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
-| `@docs/react` `./shell` | **96.71 kB** | 98 kB ratchet (DEV-012) |
-| `@docs/react` `./editor` (lazy) | **213.88 kB** | 260 kB |
+| `@hmzisb/notion-docs-core` entry, min + gz | **33.76 kB** | 40 kB (docs/10 §5) |
+| `@hmzisb/notion-docs-react` `.` entry | **14.63 kB** | 25 kB |
+| `@hmzisb/notion-docs-react` `./tree` + `./view` | **38.91 kB** | 80 kB, hard |
+| `@hmzisb/notion-docs-react` `./shell` | **96.71 kB** | 98 kB ratchet (DEV-012) |
+| `@hmzisb/notion-docs-react` `./editor` (lazy) | **213.88 kB** | 260 kB |
 | Cached page switch | **11.4 ms** | < 100 ms |
 | Cold page open from IndexedDB | **20.6 ms** | < 150 ms |
 | Tree scroll, 5,000 nodes | **8.36 ms/frame** (120 fps), 36 rows mounted | 60 fps, ≤ 45 rows |

@@ -1,7 +1,7 @@
 import '@fontsource-variable/inter';
 import './app.css';
-import '@docs/react/styles.css';
-import '@docs/react/theme.css';
+import '@hmzisb/notion-docs-react/styles.css';
+import '@hmzisb/notion-docs-react/theme.css';
 
 import { RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';

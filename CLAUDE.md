@@ -1,6 +1,6 @@
 # CLAUDE.md: Operating Protocol for Autonomous Execution
 
-You are building `@docs/core` and `@docs/react`: a backend-agnostic, Notion-grade Markdown docs module for React, plus a playground app. The full spec lives in `docs/`. This file tells you how to work. It wins over every other document.
+You are building `@hmzisb/notion-docs-core` and `@hmzisb/notion-docs-react`: a backend-agnostic, Notion-grade Markdown docs module for React, plus a playground app. The full spec lives in `docs/`. This file tells you how to work. It wins over every other document.
 
 ## 1. Mission and non-negotiables
 

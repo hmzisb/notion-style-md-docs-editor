@@ -6,7 +6,7 @@ import {
   type FileEntry,
   type PageInfo,
   type PageMeta,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { createStore, get as idbGet, set as idbSet, type UseStore } from 'idb-keyval';
 import { FileSystemDirectoryStore, copyTree, stampOf } from './filesystem-store.js';
 

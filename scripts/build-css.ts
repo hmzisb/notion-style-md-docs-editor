@@ -1,5 +1,5 @@
 /**
- * `pnpm --filter @docs/react build:css` (docs/11 section 4). Runs as tsup's `onSuccess`,
+ * `pnpm --filter @hmzisb/notion-docs-react build:css` (docs/11 section 4). Runs as tsup's `onSuccess`,
  * so `dist` always carries both sheets:
  *
  *   dist/styles.css - Tailwind utilities compiled from this package's own `.tsx`, plus the

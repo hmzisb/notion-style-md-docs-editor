@@ -19,11 +19,11 @@ the page. Page operations (create, rename, move, delete) and packaging are P3.
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gz | **32.93 kB** | 40 kB (docs/10 §5) |
-| `@docs/react` `.` entry | **12.51 kB** | 25 kB |
-| `@docs/react` `./tree` + `./view` | **30.13 kB** | 80 kB, hard |
-| `@docs/react` `./shell` | **98.29 kB** | 60 kB (docs/02 §7) — over, DEV-012 |
-| `@docs/react` `./editor` | **211.09 kB** | 260 kB |
+| `@hmzisb/notion-docs-core` entry, min + gz | **32.93 kB** | 40 kB (docs/10 §5) |
+| `@hmzisb/notion-docs-react` `.` entry | **12.51 kB** | 25 kB |
+| `@hmzisb/notion-docs-react` `./tree` + `./view` | **30.13 kB** | 80 kB, hard |
+| `@hmzisb/notion-docs-react` `./shell` | **98.29 kB** | 60 kB (docs/02 §7) — over, DEV-012 |
+| `@hmzisb/notion-docs-react` `./editor` | **211.09 kB** | 260 kB |
 | Cached page switch, click → painted | **14.2 ms** | < 100 ms |
 | Tree scroll, 5,000-node fixture | **8.45 ms/frame** (118 fps), 37 rows mounted | 60 fps, ≤ 45 rows, hard |
 | Unit tests | 1,121 in 47 files, green | |

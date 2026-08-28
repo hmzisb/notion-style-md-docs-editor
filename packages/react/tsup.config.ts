@@ -37,7 +37,7 @@ export default defineConfig({
       composite: false,
       incremental: false,
       declarationMap: false,
-      // Without project references, the workspace `paths` would pull `@docs/core`'s source
+      // Without project references, the workspace `paths` would pull `@hmzisb/notion-docs-core`'s source
       // into this program, outside `rootDir` (TS6059). Declarations must point at the
       // package the consumer installs, so only the package-local alias survives here.
       baseUrl: '.',

@@ -1,4 +1,4 @@
-import type { NodeId, PageMode } from '@docs/core';
+import type { NodeId, PageMode } from '@hmzisb/notion-docs-core';
 import { Search } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { useDocs } from '@/data/context.js';

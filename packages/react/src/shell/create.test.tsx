@@ -4,7 +4,7 @@ import {
   type DocumentProvider,
   type NodeId,
   type PageMode,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { act, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -129,8 +129,7 @@ const ready = async (): Promise<void> => {
  */
 const newPageButtons = (): HTMLElement[] => screen.getAllByRole('button', { name: 'New page' });
 
-const titleField = (): HTMLTextAreaElement =>
-  screen.getByRole('textbox', { name: 'Page title' });
+const titleField = (): HTMLTextAreaElement => screen.getByRole('textbox', { name: 'Page title' });
 
 describe('useCreatePage (docs/01 section 5.3)', () => {
   it('opens the new page before the provider answers, then carries it to the real id', async () => {
@@ -169,7 +168,11 @@ describe('useCreatePage (docs/01 section 5.3)', () => {
     // docs/03 section 4.7: the first title on a fresh page renames `untitled.md` to its slug.
     const id = view.at().pageId;
     await waitFor(() => {
-      expect(view.updateMeta).toHaveBeenCalledWith(id, { title: 'Release plan' }, { renameFile: true });
+      expect(view.updateMeta).toHaveBeenCalledWith(
+        id,
+        { title: 'Release plan' },
+        { renameFile: true },
+      );
     });
     await waitFor(() => {
       expect(view.pathOf(id ?? '')).toBe('release-plan.md');

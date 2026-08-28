@@ -1,6 +1,6 @@
 [
   {
-    "name": "@docs/core",
+    "name": "@hmzisb/notion-docs-core",
     "path": "packages/core/dist/index.js",
     "limit": "40 kB",
     "ignore": [
@@ -20,12 +20,12 @@
     "gzip": true
   },
   {
-    "name": "@docs/react .",
+    "name": "@hmzisb/notion-docs-react .",
     "path": "packages/react/dist/index.js",
     "limit": "25 kB",
     "ignore": [
       "./editor/index.js",
-      "@docs/core",
+      "@hmzisb/notion-docs-core",
       "@tanstack/react-query",
       "react",
       "react-dom",
@@ -44,18 +44,15 @@
     "gzip": true
   },
   {
-    "name": "@docs/react ./tree + ./view",
-    "path": [
-      "packages/react/dist/tree/index.js",
-      "packages/react/dist/view/index.js"
-    ],
+    "name": "@hmzisb/notion-docs-react ./tree + ./view",
+    "path": ["packages/react/dist/tree/index.js", "packages/react/dist/view/index.js"],
     "limit": "80 kB",
     "ignore": [
       "./tree/icon-picker-grid.js",
       "./tree/row-menu-surface.js",
       "./tree/move-to-dialog.js",
       "./tree/delete-dialog.js",
-      "@docs/core",
+      "@hmzisb/notion-docs-core",
       "lucide-react/dynamic",
       "@tanstack/react-query",
       "react",
@@ -75,7 +72,7 @@
     "gzip": true
   },
   {
-    "name": "@docs/react ./shell",
+    "name": "@hmzisb/notion-docs-react ./shell",
     "path": "packages/react/dist/shell/index.js",
     "limit": "98 kB",
     "ignore": [
@@ -88,7 +85,7 @@
       "./shell/page-menu-surface.js",
       "./draft-compare.js",
       "../ui/toast-surface.js",
-      "@docs/core",
+      "@hmzisb/notion-docs-core",
       "lucide-react/dynamic",
       "@tanstack/react-query",
       "react",
@@ -108,11 +105,11 @@
     "gzip": true
   },
   {
-    "name": "@docs/react ./editor",
+    "name": "@hmzisb/notion-docs-react ./editor",
     "path": "packages/react/dist/editor/index.js",
     "limit": "260 kB",
     "ignore": [
-      "@docs/core",
+      "@hmzisb/notion-docs-core",
       "lucide-react/dynamic",
       "@tanstack/react-query",
       "react",

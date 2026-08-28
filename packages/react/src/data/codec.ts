@@ -1,4 +1,4 @@
-import { createCodec, defaultCodec, type Codec } from '@docs/core';
+import { createCodec, defaultCodec, type Codec } from '@hmzisb/notion-docs-core';
 import { useMemo } from 'react';
 import { useDocs } from './context.js';
 

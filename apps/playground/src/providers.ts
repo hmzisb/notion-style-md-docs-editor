@@ -1,13 +1,13 @@
-import type { DocumentProvider } from '@docs/core';
+import type { DocumentProvider } from '@hmzisb/notion-docs-core';
 import {
   createFileSystemProvider,
   exportToDirectory,
   getOpfsRoot,
   importFromDirectory,
   pickDirectory,
-} from '@docs/react/adapters/filesystem';
-import { createHttpProvider } from '@docs/react/adapters/http';
-import { createMemoryProvider } from '@docs/react/adapters/memory';
+} from '@hmzisb/notion-docs-react/adapters/filesystem';
+import { createHttpProvider } from '@hmzisb/notion-docs-react/adapters/http';
+import { createMemoryProvider } from '@hmzisb/notion-docs-react/adapters/memory';
 
 /** Demo mode is the corpus, bundled as text at build time (docs/09 P1-T05). */
 const CORPUS_PREFIX = '../../../fixtures/corpus/';

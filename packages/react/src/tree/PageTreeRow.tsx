@@ -1,4 +1,4 @@
-import type { NodeId, NodeKind, PageIcon } from '@docs/core';
+import type { NodeId, NodeKind, PageIcon } from '@hmzisb/notion-docs-core';
 import { ChevronRight, Plus } from 'lucide-react';
 import { memo, useLayoutEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';

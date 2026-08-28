@@ -32,7 +32,8 @@ export interface ConformanceOptions {
  * - one directory with no index page, so the folder cases have a folder node,
  * - one page carrying a frontmatter key outside `KNOWN_META_KEYS`.
  */
-const SEED_HELP = 'see ConformanceOptions in @docs/core/testing for what the seed must contain';
+const SEED_HELP =
+  'see ConformanceOptions in @hmzisb/notion-docs-core/testing for what the seed must contain';
 
 const nodeByPath = (snapshot: TreeSnapshot, path: string): TreeNode | undefined =>
   snapshot.nodes.find((node) => node.path === path);

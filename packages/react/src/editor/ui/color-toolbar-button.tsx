@@ -2,13 +2,18 @@
 
 import * as React from 'react';
 
-import { COLOR_KEY, isTextColor, TEXT_COLOR_NAMES, type TextColor } from '@docs/core';
+import { COLOR_KEY, isTextColor, TEXT_COLOR_NAMES, type TextColor } from '@hmzisb/notion-docs-core';
 import { CheckIcon } from 'lucide-react';
 import { useEditorRef, useEditorSelector } from 'platejs/react';
 import { DropdownMenu as DropdownMenuPrimitive } from 'radix-ui';
 import { useDocs } from '@/data/context.js';
 import type { DocsStrings } from '@/data/strings.js';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioItem, DropdownMenuTrigger } from '@/ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuRadioItem,
+  DropdownMenuTrigger,
+} from '@/ui/dropdown-menu';
 
 import { ToolbarButton, ToolbarMenuGroup } from './toolbar';
 

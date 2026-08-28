@@ -10,7 +10,7 @@ records what was copied and when, so a later `shadcn diff`/re-add can be merged 
 | Copied | 2026-08-25                                                                                                              |
 | Target | `src/ui/*` (alias `@/ui`), `src/hooks/*`, `src/lib/utils.ts`                                                            |
 
-Confirm the engine before adding anything: `pnpm --filter @docs/react exec shadcn info` must
+Confirm the engine before adding anything: `pnpm --filter @hmzisb/notion-docs-react exec shadcn info` must
 report `base radix`.
 
 ## Items from `@shadcn` (P1-T01)

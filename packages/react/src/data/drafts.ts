@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId } from '@hmzisb/notion-docs-core';
 import { DRAFTS_STORE, createDocsStorage, type DocsStorage } from './cache/idb.js';
 
 /**

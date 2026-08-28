@@ -8,7 +8,7 @@ let inflight: Promise<EditorModule> | null = null;
 const listeners = new Set<() => void>();
 
 /**
- * Loads `@docs/react/editor` (docs/05 section 8). Idempotent and safe to call from a hover
+ * Loads `@hmzisb/notion-docs-react/editor` (docs/05 section 8). Idempotent and safe to call from a hover
  * handler on every pointer move: the first call owns the import, the rest await the same
  * promise. Hosts that compose their own layout call it whenever they like.
  */

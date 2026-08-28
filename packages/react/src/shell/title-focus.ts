@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId } from '@hmzisb/notion-docs-core';
 
 /**
  * docs/06 section 8: the page menu's "Rename" puts the caret in the page title. The menu is in

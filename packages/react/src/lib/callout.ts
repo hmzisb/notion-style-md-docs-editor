@@ -14,7 +14,7 @@ import type { DocsStrings } from '@/data/strings.js';
  * is `bg-muted` in every variant - and the icon is the one docs/05 section 5 gives the
  * Markdown marker, so it cannot be picked.
  *
- * The five variants are GitHub's alert set, which `@docs/core` owns; this layer may not
+ * The five variants are GitHub's alert set, which `@hmzisb/notion-docs-core` owns; this layer may not
  * import it (docs/02 section 2), so `callout-node.tsx` holds the check that both lists
  * still say the same thing.
  */

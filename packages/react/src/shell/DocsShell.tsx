@@ -1,4 +1,4 @@
-import type { NodeId, PageMode } from '@docs/core';
+import type { NodeId, PageMode } from '@hmzisb/notion-docs-core';
 import { PanelLeftOpen } from 'lucide-react';
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 'react';
 import { toast } from '@/lib/toast.js';

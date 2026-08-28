@@ -1,8 +1,13 @@
-import type { NodeId } from '@docs/core';
-import { DocsProvider, usePage, useTreeIndex, type DocsNavigation } from '@docs/react';
-import { createMemoryProvider } from '@docs/react/adapters/memory';
-import { PageTree } from '@docs/react/tree';
-import { DocumentView } from '@docs/react/view';
+import type { NodeId } from '@hmzisb/notion-docs-core';
+import {
+  DocsProvider,
+  usePage,
+  useTreeIndex,
+  type DocsNavigation,
+} from '@hmzisb/notion-docs-react';
+import { createMemoryProvider } from '@hmzisb/notion-docs-react/adapters/memory';
+import { PageTree } from '@hmzisb/notion-docs-react/tree';
+import { DocumentView } from '@hmzisb/notion-docs-react/view';
 import { useMemo, useState } from 'react';
 
 const provider = createMemoryProvider({

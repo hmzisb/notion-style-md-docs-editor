@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId } from '@hmzisb/notion-docs-core';
 import { CircleAlert, CircleDot, CloudOff, History, Loader2, TriangleAlert } from 'lucide-react';
 import { useEffect, useRef, useState, type ComponentType } from 'react';
 import { useDocs } from '@/data/context.js';

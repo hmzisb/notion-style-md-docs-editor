@@ -1,7 +1,7 @@
 /* docs/08 section 1, the non-Tailwind host: the precompiled, scoped stylesheet and the
    variables, and nothing else. No preflight, no build step of the host's own. */
-import '@docs/react/styles.css';
-import '@docs/react/theme.css';
+import '@hmzisb/notion-docs-react/styles.css';
+import '@hmzisb/notion-docs-react/theme.css';
 
 import { createRoot } from 'react-dom/client';
 import { App } from './app.js';

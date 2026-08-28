@@ -12,7 +12,7 @@
  * on demand rather than carried, with its Chrome, in every install.
  */
 import { execFileSync } from 'node:child_process';
-import { pathHashId } from '@docs/core';
+import { pathHashId } from '@hmzisb/notion-docs-core';
 
 /** docs/01 section 6: "Lighthouse accessibility >= 95 on the playground page view." */
 const MIN_SCORE = 95;

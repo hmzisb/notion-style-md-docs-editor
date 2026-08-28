@@ -1,4 +1,4 @@
-import { ancestorsOf, type NodeId, type TreeIndex, type TreeNode } from '@docs/core';
+import { ancestorsOf, type NodeId, type TreeIndex, type TreeNode } from '@hmzisb/notion-docs-core';
 import { MoreHorizontal } from 'lucide-react';
 import { useDocs } from '@/data/context.js';
 import { cn } from '@/lib/utils';

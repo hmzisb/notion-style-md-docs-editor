@@ -3,7 +3,7 @@
   "info": {
     "title": "Docs module HTTP contract",
     "version": "1.0.0",
-    "description": "Client-side contract implemented by the `http` adapter of @docs/react. Generated from the zod schemas in @docs/core; do not edit by hand.",
+    "description": "Client-side contract implemented by the `http` adapter of @hmzisb/notion-docs-react. Generated from the zod schemas in @hmzisb/notion-docs-core; do not edit by hand.",
     "license": {
       "name": "MIT"
     }

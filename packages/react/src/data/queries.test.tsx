@@ -1,4 +1,8 @@
-import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
+import {
+  MemoryFileStore,
+  createFileStoreProvider,
+  type DocumentProvider,
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';

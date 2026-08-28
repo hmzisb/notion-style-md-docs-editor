@@ -4,7 +4,7 @@
  * Not part of `build`: it downloads and runs the shadcn CLI, and the palette only moves when
  * shadcn's default theme does. Run it by hand, read the diff, commit the result:
  *
- *   pnpm --filter @docs/react gen:theme
+ *   pnpm --filter @hmzisb/notion-docs-react gen:theme
  *
  * It copies the `:root` and `.dark` variable blocks out of a fresh init and rewrites the
  * selectors to `.docs-root` and `.dark .docs-root, .dark.docs-root`, so the theme paints the

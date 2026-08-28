@@ -1,4 +1,4 @@
-import type { PageMode } from '@docs/core';
+import type { PageMode } from '@hmzisb/notion-docs-core';
 import { Loader2 } from 'lucide-react';
 import { useDocs } from '@/data/context.js';
 import { format } from '@/data/strings.js';

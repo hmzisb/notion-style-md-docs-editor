@@ -18,7 +18,7 @@ import {
   splitFrontmatter,
   type FileStore,
   type PageMeta,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 
 export interface WriteIdsResult {
   /** Markdown files considered, hidden and vendored ones excluded. */

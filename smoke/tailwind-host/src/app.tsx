@@ -1,7 +1,7 @@
-import type { NodeId, PageMode } from '@docs/core';
-import { DocsProvider, type DocsNavigation } from '@docs/react';
-import { createMemoryProvider } from '@docs/react/adapters/memory';
-import { DocsShell } from '@docs/react/shell';
+import type { NodeId, PageMode } from '@hmzisb/notion-docs-core';
+import { DocsProvider, type DocsNavigation } from '@hmzisb/notion-docs-react';
+import { createMemoryProvider } from '@hmzisb/notion-docs-react/adapters/memory';
+import { DocsShell } from '@hmzisb/notion-docs-react/shell';
 import { useMemo, useState } from 'react';
 
 /** Three Markdown files, which is a workspace: ids, order and slugs come off the paths. */

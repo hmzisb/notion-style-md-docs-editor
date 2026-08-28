@@ -40,11 +40,11 @@
 | Editor state | Owned by Plate; `onChange` marks dirty + schedules save | Never mirror keystrokes into a store |
 | Saving | Debounced autosave (1.5 s idle) + flush on blur/route/hide/Cmd+S; dirty-only; `If-Match` version check | Notion feel, no write storms, no accidental reformatting |
 | Routing | Router-agnostic module via a `DocsNavigation` adapter; playground uses TanStack Router | Each host brings its own router (Inertia, TanStack, React Router) |
-| Packaging | pnpm monorepo: `@docs/core`, `@docs/react`, `@docs/server-node`, `@docs/contract-tests`, `apps/playground` | Logic shared by frontend and Node backend; contract testable against any backend |
+| Packaging | pnpm monorepo: `@hmzisb/notion-docs-core`, `@hmzisb/notion-docs-react`, `@hmzisb/notion-docs-server-node`, `@hmzisb/notion-docs-contract-tests`, `apps/playground` | Logic shared by frontend and Node backend; contract testable against any backend |
 | Styling | Tailwind v4 classes, shadcn CSS variable contract, no preflight; Plate UI (Radix) scoped inside the editor entry | Works in Tailwind hosts with one line; fallback CSS for the rest |
 | Frontmatter | Backend-owned at runtime; frontend receives `{ meta, body }`; the parser lives in `core` so Node backends and fixtures share it | Frontend never re-serializes YAML |
 
-Rename the `@docs/*` scope to your org scope; nothing else depends on the name.
+Rename the `@hmzisb/notion-docs-*` scope to your org scope; nothing else depends on the name.
 
 ---
 
@@ -69,13 +69,13 @@ Rename the `@docs/*` scope to your org scope; nothing else depends on the name.
 ```
 docs-module/                      pnpm workspace, Changesets, (Turborepo optional)
   packages/
-    core/           @docs/core            no React, no DOM. Models, zod contract, tree ops, frontmatter,
+    core/           @hmzisb/notion-docs-core            no React, no DOM. Models, zod contract, tree ops, frontmatter,
                                           Markdown codec (headless Plate base plugins), fidelity check, errors
-    react/          @docs/react           hooks, DocsProvider, PageTree, DocumentEditor, DocumentView, DocsShell,
+    react/          @hmzisb/notion-docs-react           hooks, DocsProvider, PageTree, DocumentEditor, DocumentView, DocsShell,
                                           session, stores, adapters (memory, http). Built ESM + d.ts
-    server-node/    @docs/server-node     reference backend (Hono) over a folder. Implements the contract.
+    server-node/    @hmzisb/notion-docs-server-node     reference backend (Hono) over a folder. Implements the contract.
                                           Used by playground, e2e, conformance suite. Template for Laravel
-    contract-tests/ @docs/contract-tests  conformance CLI: `docs-contract --base-url http://host/api/docs`
+    contract-tests/ @hmzisb/notion-docs-contract-tests  conformance CLI: `docs-contract --base-url http://host/api/docs`
   apps/
     playground/     the standalone Notion-like app (Vite + TanStack Router). Dogfooding, e2e, demo, docs
   contract/
@@ -89,7 +89,7 @@ docs-module/                      pnpm workspace, Changesets, (Turborepo optiona
 
 **Why a reference Node backend from day one:** "backend may be Laravel or Node" means the contract must be executable. The reference implementation is the executable spec; the conformance CLI proves a Laravel implementation matches it.
 
-**Package exports (`@docs/react`):**
+**Package exports (`@hmzisb/notion-docs-react`):**
 
 ```jsonc
 {
@@ -112,9 +112,9 @@ Subpaths matter: a read-only help drawer imports `./view` and `./tree` and never
 
 **Distribution and styling.**
 - Build with tsup (or Vite library mode) to ESM + `.d.ts`. Tailwind class strings survive the build untouched.
-- Tailwind hosts (all of yours): add `@source "../node_modules/@docs/react/dist";` to their CSS entry. Their Tailwind compiles the module's classes; the module reads the host's shadcn variables (`--background`, `--foreground`, `--muted`, `--accent`, `--border`, `--ring`, `--radius`, and friends). Zero theme work.
-- Hosts without shadcn variables: import `@docs/react/theme.css` (defaults scoped to `.docs-root`, light and `.dark`).
-- Hosts without Tailwind: import `@docs/react/styles.css` built with all used utilities, no preflight, wrapped in `@scope (.docs-root)`. Supported, not the primary path.
+- Tailwind hosts (all of yours): add `@source "../node_modules/@hmzisb/notion-docs-react/dist";` to their CSS entry. Their Tailwind compiles the module's classes; the module reads the host's shadcn variables (`--background`, `--foreground`, `--muted`, `--accent`, `--border`, `--ring`, `--radius`, and friends). Zero theme work.
+- Hosts without shadcn variables: import `@hmzisb/notion-docs-react/theme.css` (defaults scoped to `.docs-root`, light and `.dark`).
+- Hosts without Tailwind: import `@hmzisb/notion-docs-react/styles.css` built with all used utilities, no preflight, wrapped in `@scope (.docs-root)`. Supported, not the primary path.
 - Every module root element carries `.docs-root`. Nothing in the module styles `html`, `body`, or bare tags.
 - Plate UI components (Radix-based) and the module's own shadcn primitives (Base UI) live inside the package and are not exported. They coexist without conflict.
 
@@ -127,7 +127,7 @@ Subpaths matter: a read-only help drawer imports `./view` and `./tree` and never
 
 ---
 
-## 4. Runtime architecture inside `@docs/react`
+## 4. Runtime architecture inside `@hmzisb/notion-docs-react`
 
 ```
 ┌───────────────────────────────────────────────────────────────────────┐
@@ -136,7 +136,7 @@ Subpaths matter: a read-only help drawer imports `./view` and `./tree` and never
 │ tree/         PageTree      editor/ DocumentEditor    view/ DocumentView│ reusable React
 │ data/         DocsProvider, queries, mutations, session, stores        │
 ├───────────────────────────────────────────────────────────────────────┤
-│ @docs/core    models, contract, tree ops, codec, frontmatter, errors   │ no React, no DOM
+│ @hmzisb/notion-docs-core    models, contract, tree ops, codec, frontmatter, errors   │ no React, no DOM
 ├───────────────────────────────────────────────────────────────────────┤
 │ adapters/     memory, http   (implement DocumentProvider from core)    │ swappable I/O
 └───────────────────────────────────────────────────────────────────────┘
@@ -368,7 +368,7 @@ file.md ─backend─► { meta, body, version } ─HTTP/JSON─► Query cache 
         provider.savePage(id, { body, baseVersion }) ─► PUT + If-Match ─► backend merges frontmatter, atomic write
 ```
 
-**Frontmatter.** Backend-owned at runtime. `@docs/core/frontmatter` (`yaml` package) is what the Node backend, fixtures, and the memory adapter use; Laravel reimplements the same rules with `symfony/yaml`. Rules: known keys `id`, `title`, `icon`, `order`; everything else preserved; key order preserved; comments are not preserved (documented limitation of both YAML libraries; keep frontmatter comment-free). Title resolution: `title` key, else the first H1 (the backend does not strip it), else filename. Run the `ids` command once to write ids and migrate leading H1s into `title` in a single commit.
+**Frontmatter.** Backend-owned at runtime. `@hmzisb/notion-docs-core/frontmatter` (`yaml` package) is what the Node backend, fixtures, and the memory adapter use; Laravel reimplements the same rules with `symfony/yaml`. Rules: known keys `id`, `title`, `icon`, `order`; everything else preserved; key order preserved; comments are not preserved (documented limitation of both YAML libraries; keep frontmatter comment-free). Title resolution: `title` key, else the first H1 (the backend does not strip it), else filename. Run the `ids` command once to write ids and migrate leading H1s into `title` in a single commit.
 
 **Codec (headless, one instance, no DOM), in `core`:**
 
@@ -423,7 +423,7 @@ export function classifyFidelity(body: string, value: Value): Fidelity {
 
 **Read-only rendering: two components, one plugin base.**
 - Editing hosts: one `<Plate>` per page with `readOnly={mode === 'read'}`. Click on content (or press `E` / Enter on the focused content region, or the mode toggle) → edit mode in place; Escape → read. No remount, no re-parse, no scroll jump.
-- Read-only hosts (help drawers, previews, canvas cards): `DocumentView` on `<PlateView>` with static node components, imported from `@docs/react/view`. Same base kit, no editor bundle.
+- Read-only hosts (help drawers, previews, canvas cards): `DocumentView` on `<PlateView>` with static node components, imported from `@hmzisb/notion-docs-react/view`. Same base kit, no editor bundle.
 
 **Editing and saving.** `useDocumentSession(page)` owns the write path: latest value in a ref, status in the session store, 1.5 s idle debounce, flush on editor blur, `visibilitychange` hidden, navigation, unmount, Cmd/Ctrl+S; `beforeunload` guard when dirty (`guardUnload` prop, default on). Save sends `{ body }` with `If-Match: "<baseVersion>"`. Success patches the page query and the tree node's `updatedAt`; no refetch. 409 → status `conflict`, cache untouched, banner offers Reload or Overwrite. If the page query refreshes with a new version while the session is clean, `editor.tf.setValue(newValue)`; if dirty, conflict banner.
 
@@ -651,23 +651,23 @@ export { useSavePage, useUpdateMeta, useCreatePage, useMovePage, useDeletePage }
 export { useDocumentSession } from './data/session';
 export { useSidebarStore } from './data/sidebar-store';
 export type { DocsNavigation, DocsEvent, DocsStrings } from './types';
-export type * from '@docs/core';                          // models, contract types, errors
-// subpaths: '@docs/react/tree' → PageTree; '/editor' → DocumentEditor; '/view' → DocumentView;
+export type * from '@hmzisb/notion-docs-core';                          // models, contract types, errors
+// subpaths: '@hmzisb/notion-docs-react/tree' → PageTree; '/editor' → DocumentEditor; '/view' → DocumentView;
 //           '/shell' → DocsShell, PageHeader, Sidebar; '/adapters/http', '/adapters/memory'
 ```
 
 The five separations map onto the packages directly:
-1. Reusable document/editor domain: `@docs/core`
-2. Reusable UI components: `@docs/react/tree`, `/editor`, `/view`
-3. App-specific navigation/layout: `@docs/react/shell` (optional) + the host's adapter
-4. File/data access: `@docs/react/adapters/*` behind `DocumentProvider`; `@docs/server-node` on the other side
+1. Reusable document/editor domain: `@hmzisb/notion-docs-core`
+2. Reusable UI components: `@hmzisb/notion-docs-react/tree`, `/editor`, `/view`
+3. App-specific navigation/layout: `@hmzisb/notion-docs-react/shell` (optional) + the host's adapter
+4. File/data access: `@hmzisb/notion-docs-react/adapters/*` behind `DocumentProvider`; `@hmzisb/notion-docs-server-node` on the other side
 5. Integration API: `DocsProvider` props + `DocsNavigation`
 
 ---
 
 ## 16. Backend contract
 
-**Versioned, generated, and testable.** `contract/openapi.json` is generated from the zod schemas (`pnpm contract:gen`); `@docs/contract-tests` runs against any base URL; `@docs/server-node` is the reference implementation; `contract/LARAVEL.md` maps every rule to Laravel idioms.
+**Versioned, generated, and testable.** `contract/openapi.json` is generated from the zod schemas (`pnpm contract:gen`); `@hmzisb/notion-docs-contract-tests` runs against any base URL; `@hmzisb/notion-docs-server-node` is the reference implementation; `contract/LARAVEL.md` maps every rule to Laravel idioms.
 
 **Endpoints (base path is host-defined, default `/api/docs`).**
 
@@ -735,7 +735,7 @@ GET    /events                      → text/event-stream of ChangeEvent      ca
 ## 18. Testing strategy
 
 - **core (Vitest):** tree ops incl. property test (no orphans, no duplicate ids, move guard); frontmatter split/join round-trip with unknown keys and key order; link resolution table; fidelity classification table; codec golden tests over `fixtures/corpus` (`*.md` → parse → serialize → compare `*.expected.md`, plus idempotence).
-- **Provider contract suite (core of `@docs/contract-tests`):** identical cases run in-process against the memory adapter (unit) and over HTTP against `server-node` (integration) and any external URL (Laravel CI). Cases: meta, tree, page, ETag/If-Match, 409, 412, create + slug collision, move + path update, delete subtree, folder conversion, unsupported → 405, search when advertised. The suite creates a `__contract-<run>` subtree and cleans up; no reset endpoint needed.
+- **Provider contract suite (core of `@hmzisb/notion-docs-contract-tests`):** identical cases run in-process against the memory adapter (unit) and over HTTP against `server-node` (integration) and any external URL (Laravel CI). Cases: meta, tree, page, ETag/If-Match, 409, 412, create + slug collision, move + path update, delete subtree, folder conversion, unsupported → 405, search when advertised. The suite creates a `__contract-<run>` subtree and cleans up; no reset endpoint needed.
 - **react (RTL):** tree keyboard nav (arrows, Home/End, Enter, F2), expand persistence across remount, active row, collapse; header title edit; icon picker; capability gating (read-only host renders no edit UI).
 - **Session (fake timers):** type → dirty → 1.5 s → saved; Cmd+S; blur; unmount; conflict; offline retry; unedited page never saves; SSE echo ignored.
 - **Built-package smoke:** CI builds the packages and runs the playground against `dist`, not workspace source, so "works in the monorepo, breaks when published" is caught. A second tiny host without Tailwind imports `styles.css` and renders `DocumentView` in CI.
@@ -959,9 +959,9 @@ export function PageTree({ activeId, onOpen, rootId }: { activeId: NodeId | null
 ```tsx
 // app.css
 @import "tailwindcss";
-@source "../node_modules/@docs/react/dist";
-@import "@docs/react/styles.css";
-/* host already defines shadcn variables; otherwise: @import "@docs/react/theme.css"; */
+@source "../node_modules/@hmzisb/notion-docs-react/dist";
+@import "@hmzisb/notion-docs-react/styles.css";
+/* host already defines shadcn variables; otherwise: @import "@hmzisb/notion-docs-react/theme.css"; */
 
 // navigation-adapter.ts
 export function useDocsNavigation(): DocsNavigation {
@@ -1014,9 +1014,9 @@ export default function Show({ pageId, mode }: { pageId: string | null; mode: 'r
 **3. Read-only in-app help drawer (no editor bundle)**
 
 ```tsx
-import { DocsProvider, usePage } from '@docs/react';
-import { PageTree } from '@docs/react/tree';
-import { DocumentView } from '@docs/react/view';
+import { DocsProvider, usePage } from '@hmzisb/notion-docs-react';
+import { PageTree } from '@hmzisb/notion-docs-react/tree';
+import { DocumentView } from '@hmzisb/notion-docs-react/view';
 
 const provider = createHttpProvider({ baseUrl: '/api/help', rootId: HELP_ROOT });   // backend reports write: false
 export function HelpDrawer() {

@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const pickDirectory = vi.fn();
 const createFileSystemProvider = vi.fn(() => ({ key: 'stub' }));
 
-vi.mock('@docs/react/adapters/filesystem', () => ({
+vi.mock('@hmzisb/notion-docs-react/adapters/filesystem', () => ({
   pickDirectory,
   createFileSystemProvider,
   getOpfsRoot: vi.fn(),

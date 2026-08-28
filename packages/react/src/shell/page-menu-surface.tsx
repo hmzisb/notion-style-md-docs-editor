@@ -1,4 +1,4 @@
-import { joinFrontmatter } from '@docs/core';
+import { joinFrontmatter } from '@hmzisb/notion-docs-core';
 import {
   CornerUpRight,
   Download,
@@ -235,11 +235,7 @@ export function PageMenuSurface({ id, rootId, label }: PageMenuSurfaceProps): Re
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <PopoverContent
-        align="end"
-        aria-label={strings['menu.changeIcon']}
-        className="w-[352px] p-0"
-      >
+      <PopoverContent align="end" aria-label={strings['menu.changeIcon']} className="w-[352px] p-0">
         <IconPicker
           value={node?.icon}
           onChange={(next) => {

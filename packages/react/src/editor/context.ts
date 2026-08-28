@@ -1,4 +1,4 @@
-import type { NodeId, TreeNode } from '@docs/core';
+import type { NodeId, TreeNode } from '@hmzisb/notion-docs-core';
 import { createContext, useContext } from 'react';
 
 /**

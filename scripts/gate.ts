@@ -22,12 +22,16 @@ interface Step {
 const GATE_0: Step[] = [
   { name: 'typecheck', run: 'pnpm typecheck' },
   { name: 'lint (boundaries)', run: 'pnpm lint' },
-  { name: 'core tests', run: 'pnpm --filter @docs/core test' },
-  { name: 'core build', run: 'pnpm --filter @docs/core build' },
-  { name: 'publint', run: 'pnpm --filter @docs/core exec publint', needs: ['packages/core/dist'] },
+  { name: 'core tests', run: 'pnpm --filter @hmzisb/notion-docs-core test' },
+  { name: 'core build', run: 'pnpm --filter @hmzisb/notion-docs-core build' },
+  {
+    name: 'publint',
+    run: 'pnpm --filter @hmzisb/notion-docs-core exec publint',
+    needs: ['packages/core/dist'],
+  },
   {
     name: 'attw',
-    run: 'pnpm --filter @docs/core exec attw --pack --profile esm-only',
+    run: 'pnpm --filter @hmzisb/notion-docs-core exec attw --pack --profile esm-only',
     needs: ['packages/core/dist'],
   },
   {
@@ -44,16 +48,20 @@ const GATE_0: Step[] = [
 ];
 
 const GATE_1: Step[] = [
-  { name: 'react tests', run: 'pnpm --filter @docs/react test' },
-  { name: 'react build', run: 'pnpm --filter @docs/react build', needs: ['packages/react/src'] },
+  { name: 'react tests', run: 'pnpm --filter @hmzisb/notion-docs-react test' },
+  {
+    name: 'react build',
+    run: 'pnpm --filter @hmzisb/notion-docs-react build',
+    needs: ['packages/react/src'],
+  },
   {
     name: 'react publint',
-    run: 'pnpm --filter @docs/react exec publint',
+    run: 'pnpm --filter @hmzisb/notion-docs-react exec publint',
     needs: ['packages/react/dist'],
   },
   {
     name: 'react attw',
-    run: 'pnpm --filter @docs/react exec attw --pack --profile esm-only',
+    run: 'pnpm --filter @hmzisb/notion-docs-react exec attw --pack --profile esm-only',
     needs: ['packages/react/dist'],
   },
   { name: 'size-limit', run: 'pnpm exec size-limit', needs: ['packages/react/dist'] },
@@ -65,7 +73,11 @@ const GATE_2: Step[] = [];
 const GATE_3: Step[] = [
   // Both of these are stopwatches, so neither shares a machine with the rest of the suite:
   // the codec budget runs alone, and the browser ones run one worker against a real build.
-  { name: 'perf budgets (node)', run: 'pnpm test:perf', needs: ['fixtures/perf/serialize.test.ts'] },
+  {
+    name: 'perf budgets (node)',
+    run: 'pnpm test:perf',
+    needs: ['fixtures/perf/serialize.test.ts'],
+  },
   {
     name: 'perf budgets (browser)',
     run: 'pnpm test:e2e:perf',

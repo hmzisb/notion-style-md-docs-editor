@@ -1,4 +1,4 @@
-import type { NodeId, PageMode } from '@docs/core';
+import type { NodeId, PageMode } from '@hmzisb/notion-docs-core';
 import { FileText, History, TriangleAlert, type LucideIcon } from 'lucide-react';
 import {
   Suspense,

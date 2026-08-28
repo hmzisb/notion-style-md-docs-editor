@@ -1,16 +1,16 @@
-# @docs/core
+# @hmzisb/notion-docs-core
 
 The backend-agnostic half of the docs module: the provider contract, the models both sides agree
 on, the tree and filesystem semantics, and the Markdown codec. No React, no DOM, no I/O of its own -
 it runs in a browser, in Node, and in a test.
 
 Install it directly only if you are writing a provider or doing Markdown work server-side.
-[`@docs/react`](../react/README.md) depends on it and re-exports all of its types.
+[`@hmzisb/notion-docs-react`](../react/README.md) depends on it and re-exports all of its types.
 
 ## Install
 
 ```bash
-pnpm add @docs/core platejs @platejs/markdown @platejs/basic-nodes @platejs/list \
+pnpm add @hmzisb/notion-docs-core platejs @platejs/markdown @platejs/basic-nodes @platejs/list \
   @platejs/table @platejs/link @platejs/media @platejs/code-block @platejs/caption
 ```
 
@@ -27,7 +27,7 @@ the UI hides what is missing rather than failing at the click. `CONTRACT_VERSION
 root is generated from them.
 
 ```ts
-import { runProviderConformance } from '@docs/core/testing';
+import { runProviderConformance } from '@hmzisb/notion-docs-core/testing';
 
 runProviderConformance(async () => createMyProvider(...), { name: 'my-api' });
 ```
@@ -43,7 +43,7 @@ frontmatter, conflicts, and content search (titles first, then page bodies, capp
 and 4 MB per query).
 
 ```ts
-import { createFileStoreProvider, MemoryFileStore } from '@docs/core';
+import { createFileStoreProvider, MemoryFileStore } from '@hmzisb/notion-docs-core';
 
 const provider = createFileStoreProvider(new MemoryFileStore({ 'index.md': '# Handbook\n' }));
 ```

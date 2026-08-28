@@ -5,7 +5,7 @@ import {
   type PageMode,
   type TreeIndex,
   type TreeNode,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import {
   dragAndDropFeature,
   hotkeysCoreFeature,

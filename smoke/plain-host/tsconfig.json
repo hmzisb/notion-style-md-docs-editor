@@ -5,7 +5,7 @@
     "rootDir": ".",
     "outDir": "../../.tsbuild/smoke-plain-host",
     "tsBuildInfoFile": "../../.tsbuild/smoke-plain-host.tsbuildinfo",
-    // A host resolves `@docs/*` the way a stranger does: through the exports map, into
+    // A host resolves `@hmzisb/notion-docs-*` the way a stranger does: through the exports map, into
     // `dist`. The workspace path aliases the rest of the repo uses would defeat the point.
     "paths": {}
   },

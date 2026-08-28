@@ -1,6 +1,6 @@
-import { DocsShell } from '@docs/react/shell';
+import { DocsShell } from '@hmzisb/notion-docs-react/shell';
 import { createRoute } from '@tanstack/react-router';
-import type { PageMode } from '@docs/react';
+import type { PageMode } from '@hmzisb/notion-docs-react';
 import { applyTheme } from '../theme.js';
 import { rootRoute } from './root.js';
 

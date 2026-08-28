@@ -6,8 +6,8 @@ Plate v53 (`platejs`, `@platejs/*`) with Plate UI registry components. Read the 
 
 | Kit | Package location | Purpose | Imports |
 |---|---|---|---|
-| `BaseKit` | `@docs/core/src/codec/base-kit.ts` | Headless `Base*` plugins + Markdown plugin config. Used by the codec (`createSlateEditor`) and by `DocumentView` static rendering | `platejs`, `@platejs/*` root entries only |
-| `EditorKit` | `@docs/react/src/editor/kits/editor-kit.ts` | React plugins with node components, toolbars, slash, DnD, selection, autoformat, placeholder | `@platejs/*/react`, Plate UI components |
+| `BaseKit` | `@hmzisb/notion-docs-core/src/codec/base-kit.ts` | Headless `Base*` plugins + Markdown plugin config. Used by the codec (`createSlateEditor`) and by `DocumentView` static rendering | `platejs`, `@platejs/*` root entries only |
+| `EditorKit` | `@hmzisb/notion-docs-react/src/editor/kits/editor-kit.ts` | React plugins with node components, toolbars, slash, DnD, selection, autoformat, placeholder | `@platejs/*/react`, Plate UI components |
 
 Rule: the codec and the view never import `/react`. The editor kit is built by extending the same plugin list with React components so that serialization behavior is identical in all three paths.
 
@@ -40,7 +40,7 @@ Rule: the codec and the view never import `/react`. The editor kit is built by e
 
 Not installed: AI, comments, suggestions, mentions, math, columns/layout, TOC, date, font/color, media embeds, video, audio, file, excalidraw, cursor overlay, discussion, docx, juice, playwright kits.
 
-## 3. Markdown codec (`@docs/core/src/codec/codec.ts`)
+## 3. Markdown codec (`@hmzisb/notion-docs-core/src/codec/codec.ts`)
 
 ```ts
 import { createSlateEditor, type Value } from 'platejs';
@@ -62,7 +62,7 @@ Configuration decisions:
 - Headings above H3 deserialize to H3 with a `reformat` reason `heading_level_clamped` (H4-H6 are not in the block set); the serializer never emits H4+.
 - Lists: indent-based `ListKit`. Golden tests cover nested, mixed, loose and tight lists, task items, and code inside list items.
 
-## 4. Fidelity (`@docs/core/src/codec/fidelity.ts`)
+## 4. Fidelity (`@hmzisb/notion-docs-core/src/codec/fidelity.ts`)
 
 ```ts
 export type Fidelity = { level: 'exact' | 'reformat' | 'lossy'; reasons: string[] };
@@ -76,7 +76,7 @@ export function classifyFidelity(body: string, value: Value, codec?): Fidelity
 
 `docs doctor` (a Vitest-driven script, `pnpm doctor <folder>`) runs the same function over a folder and prints a table; run it on any corpus before adoption. `--allow-lossy` keeps the exit code at zero. `--write-ids` migrates the folder in place first (docs/03 sections 4.2 and 4.3): a frontmatter `id` for every page that lacks one, and a leading `# H1` hoisted into `title` and removed from the body. It rewrites files, so run it on a clean checkout; a page that already declares both is not written at all.
 
-## 5. Custom serialization rules (`@docs/core/src/codec/rules/`)
+## 5. Custom serialization rules (`@hmzisb/notion-docs-core/src/codec/rules/`)
 
 Each rule is a pair (mdast → Plate, Plate → mdast) registered in the Markdown plugin's `rules` option, with golden tests in `fixtures/corpus/rules/*.md` and idempotence tests (parse → serialize → parse equals parse).
 
@@ -113,7 +113,7 @@ If a rule cannot pass its golden and idempotence tests inside its task budget (d
 - Preload `./editor` on `requestIdleCallback` after first paint when `capabilities.write` is true, and on `pointerenter`/`focusin` of the content region.
 - When the user requests edit mode before the chunk is ready: show a spinner inside the Edit control (never a full-page spinner), await the chunk, swap `DocumentView` → `<Plate>` inside the same scroll container, restore `scrollTop`, then focus.
 - After the swap, read mode stays on `<Plate readOnly>` for that page session (no swap back), so click-to-edit remains instant.
-- Hosts that compose their own layout receive `preloadEditor()` from `@docs/react` and can call it whenever they want.
+- Hosts that compose their own layout receive `preloadEditor()` from `@hmzisb/notion-docs-react` and can call it whenever they want.
 
 ## 9. Security
 

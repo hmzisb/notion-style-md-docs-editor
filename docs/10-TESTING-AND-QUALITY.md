@@ -68,8 +68,8 @@ Shared helpers: `openPage(title)`, `enterEdit()`, `typeInEditor(text)`, `waitFor
 | Draft serialize | < 30 ms | 3k-block page |
 | `./tree` + `./view` | ≤ 80 KB gz excl. peers (hard) | |
 | `./editor` | ≤ 260 KB gz excl. peers | |
-| `.` core entry of `@docs/react` | ≤ 25 KB gz | |
-| `@docs/core` | ≤ 40 KB gz excl. `platejs` peers and `yaml` | |
+| `.` core entry of `@hmzisb/notion-docs-react` | ≤ 25 KB gz | |
+| `@hmzisb/notion-docs-core` | ≤ 40 KB gz excl. `platejs` peers and `yaml` | |
 | Playground TTI (local, warm) | < 1.5 s | |
 
 ## 6. Fixture corpus manifest

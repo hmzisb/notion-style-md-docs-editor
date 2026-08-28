@@ -1,6 +1,6 @@
 'use client';
 
-import { CALLOUT_ICONS, type CalloutVariant } from '@docs/core';
+import { CALLOUT_ICONS, type CalloutVariant } from '@hmzisb/notion-docs-core';
 import type { TCalloutElement } from 'platejs';
 import { PlateElement, useEditorRef, useReadOnly, type PlateElementProps } from 'platejs/react';
 import { useState } from 'react';
@@ -22,7 +22,7 @@ import {
 } from '@/ui/dropdown-menu';
 
 /**
- * `@/lib` may not import `@docs/core` (docs/02 section 2), so this is where the two halves of
+ * `@/lib` may not import `@hmzisb/notion-docs-core` (docs/02 section 2), so this is where the two halves of
  * the variant list meet: a variant core knows and this file cannot draw fails here.
  */
 const VARIANTS: Record<CalloutVariant, CalloutStyle> = CALLOUT_VARIANTS;

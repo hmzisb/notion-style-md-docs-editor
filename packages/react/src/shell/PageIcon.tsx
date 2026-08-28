@@ -1,4 +1,9 @@
-import type { NodeId, PageIcon as PageIconValue, PageMode, TreeNode } from '@docs/core';
+import type {
+  NodeId,
+  PageIcon as PageIconValue,
+  PageMode,
+  TreeNode,
+} from '@hmzisb/notion-docs-core';
 import { Smile } from 'lucide-react';
 import { useState } from 'react';
 import { toast } from '@/lib/toast.js';

@@ -69,7 +69,8 @@ const NO_HEADLESS_TREE = {
 };
 const NO_NODE_BUILTINS = {
   group: ['node:*'],
-  message: '@docs/core is platform-neutral. Node built-ins belong to scripts/ and generators.',
+  message:
+    '@hmzisb/notion-docs-core is platform-neutral. Node built-ins belong to scripts/ and generators.',
 };
 
 /** Nothing in the packages may reach for the host document, URL bar or a router. */
@@ -168,7 +169,7 @@ export default tseslint.config(
     files: ['packages/**/*.{ts,tsx}', 'apps/**/*.{ts,tsx}', 'smoke/**/*.{ts,tsx}'],
     plugins: { boundaries },
     settings: {
-      // Resolve relative TS imports and the workspace `@docs/*` specifiers so the
+      // Resolve relative TS imports and the workspace `@hmzisb/notion-docs-*` specifiers so the
       // plugin classifies them as local elements instead of external modules.
       'import/resolver': {
         typescript: { project: './tsconfig.json', alwaysTryTypes: true },

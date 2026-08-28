@@ -1,4 +1,4 @@
-import { createCodec } from '@docs/core';
+import { createCodec } from '@hmzisb/notion-docs-core';
 import { KEYS, type Path } from 'platejs';
 import { createPlateEditor, type PlateEditor } from 'platejs/react';
 import { describe, expect, it } from 'vitest';

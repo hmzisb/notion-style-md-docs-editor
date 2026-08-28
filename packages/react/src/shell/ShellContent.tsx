@@ -5,7 +5,7 @@ import {
   type PageMode,
   type TreeIndex,
   type TreeNode,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { FilePlus, FileText, FileX, Folder, TriangleAlert, WifiOff } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { toast } from '@/lib/toast.js';

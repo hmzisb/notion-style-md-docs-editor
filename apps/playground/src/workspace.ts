@@ -1,4 +1,4 @@
-import type { DocumentProvider } from '@docs/core';
+import type { DocumentProvider } from '@hmzisb/notion-docs-core';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   benchProvider,

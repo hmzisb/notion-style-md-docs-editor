@@ -1,4 +1,4 @@
-import type { NodeId, PageIcon } from '@docs/core';
+import type { NodeId, PageIcon } from '@hmzisb/notion-docs-core';
 import { Ellipsis } from 'lucide-react';
 import { Suspense, lazy, useState } from 'react';
 

@@ -1,4 +1,4 @@
-import { createCodec } from '@docs/core';
+import { createCodec } from '@hmzisb/notion-docs-core';
 import { KEYS } from 'platejs';
 import { createPlateEditor, type PlateEditor } from 'platejs/react';
 import { describe, expect, it } from 'vitest';
@@ -88,22 +88,21 @@ describe('the slash menu block set (docs/05 section 2)', () => {
    * docs/05 section 5: a block earns its place in the menu by round-tripping, so the menu
    * itself is the list under test - an item added with no rule behind it fails here.
    */
-  it.each(SLASH_GROUPS.flatMap((group) => group.items).filter(
-    (item) => item.inline !== true && item.action === undefined,
-  ))(
-    'writes the $value the menu offers',
-    ({ value: type }) => {
-      const editor = open();
-      insertBlock(editor, type, { upsert: true });
-      const block = editor.api.block();
-      // A void block has no text to type into; what it writes is the block itself.
-      if (block && !editor.api.isVoid(block[0])) editor.tf.insertText('Words');
-      // The image is inserted with no URL and asks for one in place (docs/05 section 6); an
-      // image still waiting for one is not written to the file, so give it what it asked for.
-      if (type === KEYS.img && block) editor.tf.setNodes({ url: 'shot.png' }, { at: block[1] });
-      expect(markdown(editor)).not.toBe('');
-    },
-  );
+  it.each(
+    SLASH_GROUPS.flatMap((group) => group.items).filter(
+      (item) => item.inline !== true && item.action === undefined,
+    ),
+  )('writes the $value the menu offers', ({ value: type }) => {
+    const editor = open();
+    insertBlock(editor, type, { upsert: true });
+    const block = editor.api.block();
+    // A void block has no text to type into; what it writes is the block itself.
+    if (block && !editor.api.isVoid(block[0])) editor.tf.insertText('Words');
+    // The image is inserted with no URL and asks for one in place (docs/05 section 6); an
+    // image still waiting for one is not written to the file, so give it what it asked for.
+    if (type === KEYS.img && block) editor.tf.setNodes({ url: 'shot.png' }, { at: block[1] });
+    expect(markdown(editor)).not.toBe('');
+  });
 });
 
 /** docs/05 section 5 and docs/07 section 2: the three ways into a callout, and one way out. */

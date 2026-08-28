@@ -1,5 +1,5 @@
 import 'fake-indexeddb/auto';
-import { isProviderError } from '@docs/core';
+import { isProviderError } from '@hmzisb/notion-docs-core';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createFakeDirectory } from './filesystem-fake.js';
 import { FileSystemDirectoryStore } from './filesystem-store.js';

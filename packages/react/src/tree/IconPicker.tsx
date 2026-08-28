@@ -1,4 +1,4 @@
-import type { PageIcon } from '@docs/core';
+import type { PageIcon } from '@hmzisb/notion-docs-core';
 import { Suspense, lazy } from 'react';
 
 export interface IconPickerProps {

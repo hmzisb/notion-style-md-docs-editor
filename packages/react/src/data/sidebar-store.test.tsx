@@ -1,4 +1,4 @@
-import { MemoryFileStore, createFileStoreProvider } from '@docs/core';
+import { MemoryFileStore, createFileStoreProvider } from '@hmzisb/notion-docs-core';
 import { act, renderHook } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';

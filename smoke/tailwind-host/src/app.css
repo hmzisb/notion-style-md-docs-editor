@@ -2,9 +2,9 @@
    `dist`, which is what `@source` is for; `styles.css` carries the scoped rules Tailwind
    cannot infer, and `theme.css` the shadcn variables this host does not define itself. */
 @import 'tailwindcss';
-@source '../node_modules/@docs/react/dist';
-@import '@docs/react/styles.css';
-@import '@docs/react/theme.css';
+@source '../node_modules/@hmzisb/notion-docs-react/dist';
+@import '@hmzisb/notion-docs-react/styles.css';
+@import '@hmzisb/notion-docs-react/theme.css';
 
 body {
   margin: 0;

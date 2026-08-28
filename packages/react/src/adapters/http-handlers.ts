@@ -7,7 +7,7 @@ import {
   type FileStore,
   type NodeId,
   type ProviderErrorCode,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { HttpResponse, http, type RequestHandler } from 'msw';
 
 /**

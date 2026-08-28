@@ -1,4 +1,4 @@
-import { generateId } from '@docs/core';
+import { generateId } from '@hmzisb/notion-docs-core';
 import { KEYS, type Path, type SlateEditor, type TElement } from 'platejs';
 
 /**

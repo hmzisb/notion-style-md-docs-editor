@@ -71,15 +71,15 @@ importers:
 
   apps/playground:
     dependencies:
-      '@docs/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@docs/react':
-        specifier: workspace:*
-        version: link:../../packages/react
       '@fontsource-variable/inter':
         specifier: ^5.3.0
         version: 5.3.0
+      '@hmzisb/notion-docs-core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@hmzisb/notion-docs-react':
+        specifier: workspace:*
+        version: link:../../packages/react
       '@tanstack/react-query':
         specifier: ^5.102.3
         version: 5.102.3(react@19.2.8)
@@ -184,15 +184,15 @@ importers:
       '@ariakit/react':
         specifier: ^0.4.38
         version: 0.4.38(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
-      '@docs/core':
-        specifier: workspace:*
-        version: link:../core
       '@headless-tree/core':
         specifier: ^1.7.0
         version: 1.7.0
       '@headless-tree/react':
         specifier: ^1.7.0
         version: 1.7.0(@headless-tree/core@1.7.0)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
+      '@hmzisb/notion-docs-core':
+        specifier: workspace:*
+        version: link:../core
       '@tanstack/query-persist-client-core':
         specifier: ^5.102.3
         version: 5.102.3
@@ -350,10 +350,10 @@ importers:
 
   smoke/plain-host:
     dependencies:
-      '@docs/core':
+      '@hmzisb/notion-docs-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@docs/react':
+      '@hmzisb/notion-docs-react':
         specifier: workspace:*
         version: link:../../packages/react
       '@platejs/basic-nodes':
@@ -420,10 +420,10 @@ importers:
 
   smoke/tailwind-host:
     dependencies:
-      '@docs/core':
+      '@hmzisb/notion-docs-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@docs/react':
+      '@hmzisb/notion-docs-react':
         specifier: workspace:*
         version: link:../../packages/react
       '@platejs/basic-nodes':

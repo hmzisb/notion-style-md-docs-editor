@@ -5,10 +5,10 @@
 ```
 docs-module/                       pnpm workspace, Changesets
   packages/
-    core/        @docs/core         no React, no DOM at runtime. Models, zod contract, tree ops, frontmatter,
+    core/        @hmzisb/notion-docs-core         no React, no DOM at runtime. Models, zod contract, tree ops, frontmatter,
                                     filesystem semantics over FileStore, Markdown codec, fidelity, links, errors,
                                     MemoryFileStore, conformance suite (test utility, exported from ./testing)
-    react/       @docs/react        DocsProvider, queries, cache, drafts, session, stores, PageTree, DocumentEditor,
+    react/       @hmzisb/notion-docs-react        DocsProvider, queries, cache, drafts, session, stores, PageTree, DocumentEditor,
                                     DocumentView, DocsShell, internal ui/, adapters (http, filesystem, memory)
   apps/
     playground/                    Vite + TanStack Router. Modes: demo, folder, opfs, remote. Dogfooding, e2e, demo
@@ -24,7 +24,7 @@ docs-module/                       pnpm workspace, Changesets
   docs/                            this handover (kept in repo)
 ```
 
-## 2. Layers inside `@docs/react`
+## 2. Layers inside `@hmzisb/notion-docs-react`
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
@@ -35,7 +35,7 @@ docs-module/                       pnpm workspace, Changesets
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ ui/        internal shadcn primitives (Radix), not exported                  │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ @docs/core models, contract, tree ops, codec, frontmatter, fs semantics      │ no React, no DOM
+│ @hmzisb/notion-docs-core models, contract, tree ops, codec, frontmatter, fs semantics      │ no React, no DOM
 ├─────────────────────────────────────────────────────────────────────────────┤
 │ adapters/  http, filesystem, memory   (produce DocumentProvider)             │ swappable I/O
 └─────────────────────────────────────────────────────────────────────────────┘

@@ -5,7 +5,13 @@
  */
 import { mkdir, readFile, readdir, rename, rm, stat, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
-import { ProviderError, isHidden, normalizePath, type FileEntry, type FileStore } from '@docs/core';
+import {
+  ProviderError,
+  isHidden,
+  normalizePath,
+  type FileEntry,
+  type FileStore,
+} from '@hmzisb/notion-docs-core';
 
 export interface NodeFileStoreOptions {
   /** Provider identity. Defaults to `node:<absolute root>`. */

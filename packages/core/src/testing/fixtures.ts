@@ -4,7 +4,7 @@ import type { PageIcon } from '../model.js';
  * Loader for `fixtures/corpus` (docs/10 section 6). The manifest is the spec: tests
  * assert against it, and a new page means a new entry rather than a re-frozen baseline.
  *
- * Node built-ins are imported lazily so that `@docs/core/testing` stays loadable in a
+ * Node built-ins are imported lazily so that `@hmzisb/notion-docs-core/testing` stays loadable in a
  * browser test environment, where the conformance suite runs and this loader does not.
  */
 

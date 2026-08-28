@@ -1,4 +1,4 @@
-import { isSafeHref, parseHref, resolvePageLink } from '@docs/core';
+import { isSafeHref, parseHref, resolvePageLink } from '@hmzisb/notion-docs-core';
 import { FileText } from 'lucide-react';
 import type { MouseEvent } from 'react';
 import type { TLinkElement } from 'platejs';

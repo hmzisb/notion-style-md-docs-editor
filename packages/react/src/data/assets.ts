@@ -1,4 +1,4 @@
-import { parseHref, type TreeNode } from '@docs/core';
+import { parseHref, type TreeNode } from '@hmzisb/notion-docs-core';
 import { useEffect, useState } from 'react';
 import { useDocs } from './context.js';
 

@@ -1,4 +1,4 @@
-import { BaseKit, type NodeId, type PageDocument, type TreeNode } from '@docs/core';
+import { BaseKit, type NodeId, type PageDocument, type TreeNode } from '@hmzisb/notion-docs-core';
 import { BaseListPlugin } from '@platejs/list';
 import { createSlatePlugin } from 'platejs';
 import { PlateView, usePlateViewEditor } from 'platejs/react';

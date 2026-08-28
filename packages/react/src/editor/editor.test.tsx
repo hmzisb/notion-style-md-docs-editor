@@ -4,8 +4,8 @@ import {
   createFileStoreProvider,
   type PageDocument,
   type TreeNode,
-} from '@docs/core';
-import { loadCorpus } from '@docs/core/testing';
+} from '@hmzisb/notion-docs-core';
+import { loadCorpus } from '@hmzisb/notion-docs-core/testing';
 import { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
@@ -337,12 +337,11 @@ describe('the block context menu (docs/05 section 2)', () => {
     await rightClick('First block');
 
     const menu = await screen.findByRole('menu');
-    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual([
-      'Turn into',
-      'Duplicate',
-      'Copy',
-      'Delete',
-    ]);
+    expect(
+      within(menu)
+        .getAllByRole('menuitem')
+        .map((item) => item.textContent),
+    ).toEqual(['Turn into', 'Duplicate', 'Copy', 'Delete']);
   });
 
   it('deletes the blocks it was opened on', async () => {

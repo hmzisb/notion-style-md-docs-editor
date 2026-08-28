@@ -6,7 +6,7 @@ export default defineConfig({
   // project here does, never a stale dist.
   resolve: {
     alias: {
-      '@docs/core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
+      '@hmzisb/notion-docs-core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
     },
   },
   test: {

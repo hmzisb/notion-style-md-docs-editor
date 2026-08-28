@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query';
 import { useEffect, useMemo, useRef } from 'react';
-import { isProviderError } from '@docs/core';
+import { isProviderError } from '@hmzisb/notion-docs-core';
 import { createDocsPersister, resolvePersist, scheduleGc } from './cache/persister.js';
 import { DocsContext, useDocs } from './context.js';
 import { createEmitter, type DocsEventHandler } from './events.js';

@@ -1,4 +1,4 @@
-import type { NodeId } from '@docs/core';
+import type { NodeId } from '@hmzisb/notion-docs-core';
 import { Ellipsis } from 'lucide-react';
 import { Suspense, lazy, useState } from 'react';
 import { useDocs } from '@/data/context.js';

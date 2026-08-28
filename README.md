@@ -82,7 +82,7 @@ The playground opens with four ways to load docs:
 Once it is on npm:
 
 ```bash
-pnpm add @docs/react @docs/core @tanstack/react-query platejs
+pnpm add @hmzisb/notion-docs-react @hmzisb/notion-docs-core @tanstack/react-query platejs
 # plus the @platejs/* peers listed in packages/react/package.json
 ```
 
@@ -91,21 +91,21 @@ Add the styles. If you use Tailwind v4:
 ```css
 /* app.css */
 @import "tailwindcss";
-@source "../node_modules/@docs/react/dist";
-@import "@docs/react/styles.css";
-@import "@docs/react/theme.css";   /* skip this if your app already has shadcn variables */
+@source "../node_modules/@hmzisb/notion-docs-react/dist";
+@import "@hmzisb/notion-docs-react/styles.css";
+@import "@hmzisb/notion-docs-react/theme.css";   /* skip this if your app already has shadcn variables */
 ```
 
-No Tailwind? Import `@docs/react/styles.css` on its own. It is already compiled and scoped.
+No Tailwind? Import `@hmzisb/notion-docs-react/styles.css` on its own. It is already compiled and scoped.
 
 ## 🚀 Usage
 
 Two components. `DocsProvider` handles data. `DocsShell` draws the layout.
 
 ```tsx
-import { DocsProvider, type DocsNavigation } from '@docs/react';
-import { DocsShell } from '@docs/react/shell';
-import { createFileSystemProvider, pickDirectory } from '@docs/react/adapters/filesystem';
+import { DocsProvider, type DocsNavigation } from '@hmzisb/notion-docs-react';
+import { DocsShell } from '@hmzisb/notion-docs-react/shell';
+import { createFileSystemProvider, pickDirectory } from '@hmzisb/notion-docs-react/adapters/filesystem';
 import { useState } from 'react';
 
 // Ask the user for a folder, then read and write Markdown inside it.
@@ -147,13 +147,13 @@ editor knows nothing about saving.
 
 | Adapter | Import from | Stores files in | Good to know |
 |---|---|---|---|
-| 🧪 Memory | `@docs/react/adapters/memory` | an object you seed | demos and tests; you can fake slow calls and errors |
-| 📁 Filesystem | `@docs/react/adapters/filesystem` | a real folder | Chromium browsers only |
-| 🌐 OPFS | `@docs/react/adapters/filesystem` | the browser's private storage | works everywhere; import and export folders |
-| ☁️ HTTP | `@docs/react/adapters/http` | your API | `GET /tree`, `GET/PUT /pages/:id`, ETags, SSE or polling |
+| 🧪 Memory | `@hmzisb/notion-docs-react/adapters/memory` | an object you seed | demos and tests; you can fake slow calls and errors |
+| 📁 Filesystem | `@hmzisb/notion-docs-react/adapters/filesystem` | a real folder | Chromium browsers only |
+| 🌐 OPFS | `@hmzisb/notion-docs-react/adapters/filesystem` | the browser's private storage | works everywhere; import and export folders |
+| ☁️ HTTP | `@hmzisb/notion-docs-react/adapters/http` | your API | `GET /tree`, `GET/PUT /pages/:id`, ETags, SSE or polling |
 
 Have your own backend? Write a `DocumentProvider` and run `runProviderConformance()` from
-`@docs/core/testing`. It runs 52 checks: trees, conflicts, moves, name clashes, assets, and
+`@hmzisb/notion-docs-core/testing`. It runs 52 checks: trees, conflicts, moves, name clashes, assets, and
 permissions.
 
 ## 🗂️ How your files become pages
@@ -259,8 +259,8 @@ How it was built: [`PROGRESS.md`](PROGRESS.md), [`DEVIATIONS.md`](DEVIATIONS.md)
 ## 📦 What is in this repo
 
 ```
-packages/core     @docs/core   provider interface, Markdown converter, tree and file rules
-packages/react    @docs/react  shell, sidebar, reader, editor, adapters, cache
+packages/core     @hmzisb/notion-docs-core   provider interface, Markdown converter, tree and file rules
+packages/react    @hmzisb/notion-docs-react  shell, sidebar, reader, editor, adapters, cache
 apps/playground   the demo app you get from `pnpm dev`
 fixtures          33 sample pages every test runs against
 smoke             two apps that install the built packages

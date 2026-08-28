@@ -1,4 +1,4 @@
-import { DocsProvider } from '@docs/react';
+import { DocsProvider } from '@hmzisb/notion-docs-react';
 import { QueryClient } from '@tanstack/react-query';
 import { Link, Outlet, createRootRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';

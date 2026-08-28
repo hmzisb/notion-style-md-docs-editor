@@ -3,7 +3,7 @@ import {
   createFileStoreProvider,
   type PageDocument,
   type TreeNode,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

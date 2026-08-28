@@ -8,7 +8,7 @@ import {
   type PageDocument,
   type SaveResult,
   type TreeSnapshot,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { QueryClient } from '@tanstack/react-query';
 import { act, renderHook, type RenderHookResult } from '@testing-library/react';
 import type { Value } from 'platejs';
@@ -25,7 +25,12 @@ import {
 } from './session-store.js';
 import { valueCache, valueCacheKey } from './cache/value-cache.js';
 import type { DocsStorage } from './cache/idb.js';
-import { forgetPage, useDocumentSession, type DocumentSession, type SessionEditor } from './session.js';
+import {
+  forgetPage,
+  useDocumentSession,
+  type DocumentSession,
+  type SessionEditor,
+} from './session.js';
 import type { DocsEvent } from './events.js';
 import type { DocsNavigation } from './types.js';
 

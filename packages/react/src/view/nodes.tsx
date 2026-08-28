@@ -1,4 +1,4 @@
-import { COLOR_KEY, isTextColor } from '@docs/core';
+import { COLOR_KEY, isTextColor } from '@hmzisb/notion-docs-core';
 import { isOrderedList } from '@platejs/list';
 import { Check, ChevronRight, Copy } from 'lucide-react';
 import {

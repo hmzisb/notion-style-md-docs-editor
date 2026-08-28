@@ -1,4 +1,4 @@
-import type { NodeId, PageDocument, PageMode, TreeNode } from '@docs/core';
+import type { NodeId, PageDocument, PageMode, TreeNode } from '@hmzisb/notion-docs-core';
 import { TriangleAlert } from 'lucide-react';
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useDocs } from '@/data/context.js';

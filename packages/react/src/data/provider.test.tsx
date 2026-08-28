@@ -3,7 +3,7 @@ import {
   createFileStoreProvider,
   fnv1a64,
   type DocumentProvider,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
 import { render, renderHook, screen, waitFor } from '@testing-library/react';
 import { useState, type ReactNode } from 'react';

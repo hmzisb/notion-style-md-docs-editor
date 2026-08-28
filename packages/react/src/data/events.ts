@@ -1,4 +1,4 @@
-import type { NodeId, ProviderErrorCode } from '@docs/core';
+import type { NodeId, ProviderErrorCode } from '@hmzisb/notion-docs-core';
 
 /** docs/08 section 3. The host's window into everything the module does. */
 export type DocsEvent =

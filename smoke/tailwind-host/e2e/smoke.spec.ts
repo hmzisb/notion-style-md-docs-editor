@@ -5,9 +5,7 @@ import { expect, test } from '@playwright/test';
  * packaging - an export the map does not resolve, a class Tailwind never compiled because
  * `@source` missed the package, a style that needs the host's own preflight.
  */
-test('the tree renders, a page opens, and the module brought its own layout', async ({
-  page,
-}) => {
+test('the tree renders, a page opens, and the module brought its own layout', async ({ page }) => {
   const problems: string[] = [];
   page.on('console', (message) => {
     if (message.type() === 'error') problems.push(message.text());

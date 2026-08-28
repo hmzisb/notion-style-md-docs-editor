@@ -5,7 +5,7 @@ import {
   isProviderError,
   type ChangeEvent,
   type DocumentProvider,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { HttpResponse, http } from 'msw';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -432,7 +432,10 @@ describe('change events', () => {
     expect((attempts[1] ?? 0) - (attempts[0] ?? 0)).toBeGreaterThanOrEqual(step * 0.9);
     expect((attempts[2] ?? 0) - (attempts[1] ?? 0)).toBeGreaterThanOrEqual(step * 1.9);
 
-    await backend.store?.writeText('guides/auth.md', '---\nid: p_auth\ntitle: Auth\n---\n\nBack.\n');
+    await backend.store?.writeText(
+      'guides/auth.md',
+      '---\nid: p_auth\ntitle: Auth\n---\n\nBack.\n',
+    );
     await vi.waitFor(() => {
       expect(seen).toContainEqual(expect.objectContaining({ type: 'page', id }));
     });
@@ -458,7 +461,10 @@ describe('change events', () => {
     // Nothing changed, so every one of those answered 304 and nobody heard about it.
     expect(seen).toEqual([]);
 
-    await backend.store?.writeText('guides/auth.md', '---\nid: p_auth\ntitle: Auth\n---\n\nEdit.\n');
+    await backend.store?.writeText(
+      'guides/auth.md',
+      '---\nid: p_auth\ntitle: Auth\n---\n\nEdit.\n',
+    );
     await vi.waitFor(() => {
       expect(seen).toContainEqual(expect.objectContaining({ type: 'page', id }));
     });

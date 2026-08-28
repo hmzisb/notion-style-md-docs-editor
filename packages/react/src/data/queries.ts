@@ -1,11 +1,16 @@
-import { buildIndex, type NodeId, type TreeIndex, type TreeSnapshot } from '@docs/core';
+import {
+  buildIndex,
+  type NodeId,
+  type TreeIndex,
+  type TreeSnapshot,
+} from '@hmzisb/notion-docs-core';
 import type {
   BackendMeta,
   DocumentProvider,
   PageDocument,
   SearchHit,
   WalkWarning,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { queryOptions, useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { queryPersister } from './cache/persister.js';

@@ -1,4 +1,10 @@
-import { ancestorsOf, flatten, isDescendant, type NodeId, type TreeIndex } from '@docs/core';
+import {
+  ancestorsOf,
+  flatten,
+  isDescendant,
+  type NodeId,
+  type TreeIndex,
+} from '@hmzisb/notion-docs-core';
 import { useMemo } from 'react';
 import { useDocs } from '@/data/context.js';
 import {

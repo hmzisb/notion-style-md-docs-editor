@@ -2,7 +2,7 @@
  * Generates `contract/openapi.json` from the zod schemas (D-01: the contract is
  * documented and generated, no server is built). Run with `pnpm contract:gen`.
  *
- * This file is a build-time generator, not part of the `@docs/core` runtime graph:
+ * This file is a build-time generator, not part of the `@hmzisb/notion-docs-core` runtime graph:
  * it is the one place in core allowed to import `node:*`.
  */
 import { writeFileSync } from 'node:fs';
@@ -52,8 +52,8 @@ export function buildOpenApiDocument(): Record<string, unknown> {
       title: 'Docs module HTTP contract',
       version: `${CONTRACT_VERSION}.0.0`,
       description:
-        'Client-side contract implemented by the `http` adapter of @docs/react. ' +
-        'Generated from the zod schemas in @docs/core; do not edit by hand.',
+        'Client-side contract implemented by the `http` adapter of @hmzisb/notion-docs-react. ' +
+        'Generated from the zod schemas in @hmzisb/notion-docs-core; do not edit by hand.',
       license: { name: 'MIT' },
     },
     servers: [{ url: '/api/docs', description: 'Host-defined base path.' }],

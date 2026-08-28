@@ -438,7 +438,7 @@ Why: that is what GitHub renders, and remark-gfm does not parse alerts at all, s
 Cheap to reverse: yes
 
 ## ASM-092 · P2-T10 · 2026-08-26
-Question: the variant list is two halves - core owns the mdast marker and the `icon` string, `@/lib` owns the Lucide icon, the tint and the label - and docs/02 section 2 forbids `react-lib` from importing `@docs/core`.
+Question: the variant list is two halves - core owns the mdast marker and the `icon` string, `@/lib` owns the Lucide icon, the tint and the label - and docs/02 section 2 forbids `react-lib` from importing `@hmzisb/notion-docs-core`.
 Assumed: `lib/callout.ts` carries the presentation half with its own `note` fallback, and the two halves are checked against each other in `editor/ui/callout-node.tsx` by `const VARIANTS: Record<CalloutVariant, CalloutStyle> = CALLOUT_VARIANTS`.
 Why: keeps the leaf layer a leaf while still failing the build the day core learns a sixth variant this file cannot draw.
 Cheap to reverse: yes
@@ -858,8 +858,8 @@ Why: docs/11's Vite pin wins over the plugin's latest major; v5 is the release l
 Cheap to reverse: yes
 
 ## ASM-022 · P1-T05 · 2026-08-25
-Question: should `apps/playground` import `@docs/react` from the built `dist` or from source?
-Assumed: `vite.config.ts` aliases `@docs/react`, its `styles.css` / `theme.css` / `adapters/*` subpaths and `@docs/core` to `src`, so the dev server has HMR into the packages and no build step in the loop.
+Question: should `apps/playground` import `@hmzisb/notion-docs-react` from the built `dist` or from source?
+Assumed: `vite.config.ts` aliases `@hmzisb/notion-docs-react`, its `styles.css` / `theme.css` / `adapters/*` subpaths and `@hmzisb/notion-docs-core` to `src`, so the dev server has HMR into the packages and no build step in the loop.
 Why: the published entry shape is already covered by `smoke/` and by `attw` in the gate, so the playground does not need to re-verify it and would otherwise need a rebuild per edit.
 Cheap to reverse: yes
 
@@ -888,13 +888,13 @@ Why: the rewrite is what makes the sheet both leak-free and correct for a non-Ta
 Cheap to reverse: yes
 
 ## ASM-017 · P1-T01 · 2026-08-25
-Question: docs/10 section 5 budgets `@docs/react`'s `.` entry at 25 kB gz "excl. peers", but `@docs/core` is a dependency of the package rather than a peer, and it already carries its own 40 kB budget.
-Assumed: `.size-limit.json` ignores `@docs/core` alongside the peers for all three react entries, and `./shell` is measured with no limit because docs/10 gives it no number.
+Question: docs/10 section 5 budgets `@hmzisb/notion-docs-react`'s `.` entry at 25 kB gz "excl. peers", but `@hmzisb/notion-docs-core` is a dependency of the package rather than a peer, and it already carries its own 40 kB budget.
+Assumed: `.size-limit.json` ignores `@hmzisb/notion-docs-core` alongside the peers for all three react entries, and `./shell` is measured with no limit because docs/10 gives it no number.
 Why: counting core twice would make the 25 kB budget unreachable by construction; a measured-but-unbudgeted entry still shows growth in every `pnpm build`.
 Cheap to reverse: yes
 
 ## ASM-016 · Gate 0 · 2026-08-25
-Question: docs/10 section 5 budgets `@docs/core` at 40 KB **gz** excluding the platejs peers and `yaml`. `.size-limit.json` was measuring brotli (the `preset-small-lib` default), which read 39.58 kB; the same bundle gzipped is 44.74 kB, 4.74 kB over budget. Breakdown: zod 19.74 kB, remark-gfm and its mdast utils 12.89 kB, the module's own code 11.97 kB.
+Question: docs/10 section 5 budgets `@hmzisb/notion-docs-core` at 40 KB **gz** excluding the platejs peers and `yaml`. `.size-limit.json` was measuring brotli (the `preset-small-lib` default), which read 39.58 kB; the same bundle gzipped is 44.74 kB, 4.74 kB over budget. Breakdown: zod 19.74 kB, remark-gfm and its mdast utils 12.89 kB, the module's own code 11.97 kB.
 Assumed: measure gzip, as the budget says, and cut the largest item - `contract/schemas.ts` and `contract/openapi.ts` now import `zod/mini` (the same zod 4.4.3, tree-shakeable functional API) instead of the classic chained API. `.min(1)` becomes `.check(z.minLength(1))`, `.optional()` becomes `z.optional(...)`, and `.meta({ id })` becomes `.register(z.globalRegistry, { id })`. Entry is 30.90 kB gzipped, and `contract/openapi.json` regenerates byte for byte identical.
 Why: the budget is a hard number in docs/10 and Phase 1 adds to this entry; 9 kB of headroom is worth one mechanical rewrite. Schemas stay in the root entry, exactly as docs/08 lists them.
 Cheap to reverse: yes - the classic API is the same package; the cost is 14 kB gz.
@@ -930,7 +930,7 @@ Why: docs/05 section 5 says a rule that misses its budget means "keep the plugin
 Cheap to reverse: yes
 
 ## ASM-010 · P0-T12 · 2026-08-25
-Question: docs/09 P0-T12 says the suite must run "against `createMemoryProvider` seeded from the corpus", but docs/08 puts `createMemoryProvider` in `@docs/react/adapters/memory`, and `@docs/react` has no source yet.
+Question: docs/09 P0-T12 says the suite must run "against `createMemoryProvider` seeded from the corpus", but docs/08 puts `createMemoryProvider` in `@hmzisb/notion-docs-react/adapters/memory`, and `@hmzisb/notion-docs-react` has no source yet.
 Assumed: core's conformance test builds the same thing inline - `createFileStoreProvider(new MemoryFileStore(corpus))`, which is exactly what docs/02 line 145 says `createMemoryProvider` is - and the react adapter will call `runProviderConformance` again when it lands.
 Why: exporting a second `createMemoryProvider` from core would put a name in the public API that docs/08 does not list, and moving the suite to react would leave core's own provider unverified until P1.
 Cheap to reverse: yes
@@ -960,7 +960,7 @@ Why: the generator is real code with a real invariant (deterministic output, exa
 Cheap to reverse: yes
 
 ## ASM-005 · P0-T08 · 2026-08-25
-Question: `loadCorpus` must read the repo from disk, but `@docs/core/testing` also carries `runProviderConformance`, which docs/10 section 1 runs in jsdom.
+Question: `loadCorpus` must read the repo from disk, but `@hmzisb/notion-docs-core/testing` also carries `runProviderConformance`, which docs/10 section 1 runs in jsdom.
 Assumed: `testing/fixtures.ts` imports `node:fs/promises` and `node:url` lazily inside the function, and is listed as an exception to the core node-built-in lint ban.
 Why: a static node import would make the whole `./testing` subpath unloadable in a browser test environment; the lazy import keeps the conformance suite platform-neutral and still fails loudly in a browser if `loadCorpus` is actually called there.
 Cheap to reverse: yes
@@ -978,7 +978,7 @@ Why: a phase report is the signal that a phase shipped (docs/09), so CI verifies
 Cheap to reverse: yes
 
 ## ASM-002 · P0-T01 · 2026-08-25
-Question: `eslint-plugin-boundaries` v7 classifies `@docs/*` and extensionless relative TS imports as unresolved, so the docs/02 section 2 rules never fire.
+Question: `eslint-plugin-boundaries` v7 classifies `@hmzisb/notion-docs-*` and extensionless relative TS imports as unresolved, so the docs/02 section 2 rules never fire.
 Assumed: add dev dependency `eslint-import-resolver-typescript` and point it at the root `tsconfig.json`.
 Why: without a resolver the boundary rules are silently vacuous; verified by probe files that the rules now fail core→react and view→tree.
 Cheap to reverse: yes

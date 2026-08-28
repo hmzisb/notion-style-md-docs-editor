@@ -1,4 +1,10 @@
-import { ancestorsOf, type NodeId, type PageMode, type TreeIndex, type TreeNode } from '@docs/core';
+import {
+  ancestorsOf,
+  type NodeId,
+  type PageMode,
+  type TreeIndex,
+  type TreeNode,
+} from '@hmzisb/notion-docs-core';
 import { defaultFilter } from 'cmdk';
 import {
   ChevronsDownUp,
@@ -86,9 +92,7 @@ export function CommandPaletteDialog({
   // Not `hits.data` alone: the last query's hits are still cached while a shorter one is typed.
   // Only hits with a snippet: docs/07 section 2 gives Results the content matches, and a page
   // that matched on its title is already a row in Pages.
-  const results = wantsSearch
-    ? (hits.data ?? []).filter((hit) => hit.snippet !== undefined)
-    : [];
+  const results = wantsSearch ? (hits.data ?? []).filter((hit) => hit.snippet !== undefined) : [];
 
   const close = (): void => {
     onOpenChange(false);

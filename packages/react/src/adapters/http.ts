@@ -26,7 +26,7 @@ import {
   type SearchHit,
   type TreeNode,
   type TreeSnapshot,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 
 /**
  * The HTTP contract of docs/03 section 9, client side. Every response is parsed against the

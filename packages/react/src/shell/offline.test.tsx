@@ -1,4 +1,8 @@
-import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
+import {
+  MemoryFileStore,
+  createFileStoreProvider,
+  type DocumentProvider,
+} from '@hmzisb/notion-docs-core';
 import { QueryClient, onlineManager } from '@tanstack/react-query';
 import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';

@@ -1,5 +1,5 @@
-import { loadCorpus, runProviderConformance } from '@docs/core/testing';
-import type { DocumentProvider } from '@docs/core';
+import { loadCorpus, runProviderConformance } from '@hmzisb/notion-docs-core/testing';
+import type { DocumentProvider } from '@hmzisb/notion-docs-core';
 import { createFakeDirectory } from './filesystem-fake.js';
 import { createFileSystemProvider } from './filesystem.js';
 

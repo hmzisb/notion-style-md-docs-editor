@@ -1,4 +1,4 @@
-import { DocsShell } from '@docs/react/shell';
+import { DocsShell } from '@hmzisb/notion-docs-react/shell';
 import { createRoute } from '@tanstack/react-router';
 import { applyTheme } from '../theme.js';
 import { rootRoute } from './root.js';

@@ -1,6 +1,6 @@
 'use client';
 
-import { BaseColorPlugin } from '@docs/core';
+import { BaseColorPlugin } from '@hmzisb/notion-docs-core';
 import { toPlatePlugin } from 'platejs/react';
 
 import { ColorLeaf } from '@/editor/ui/color-node';

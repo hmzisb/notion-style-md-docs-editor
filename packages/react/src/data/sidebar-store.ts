@@ -1,4 +1,4 @@
-import type { NodeId, TreeNode } from '@docs/core';
+import type { NodeId, TreeNode } from '@hmzisb/notion-docs-core';
 import { useStore, type StoreApi } from 'zustand';
 import { useDocs } from './context.js';
 import { perNamespace } from './local-store.js';

@@ -7,7 +7,7 @@ import {
   type PageDocument,
   type SaveResult,
   type TreeSnapshot,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Value } from 'platejs';
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';

@@ -1,6 +1,6 @@
 'use client';
 
-import type { NodeId, TreeNode } from '@docs/core';
+import type { NodeId, TreeNode } from '@hmzisb/notion-docs-core';
 import type { Value } from 'platejs';
 import { Plate, usePlateEditor, type PlateEditor } from 'platejs/react';
 import { useEffect, useMemo, useRef } from 'react';

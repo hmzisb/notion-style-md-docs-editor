@@ -1,5 +1,9 @@
-import { MemoryFileStore, createFileStoreProvider, type DocumentProvider } from '@docs/core';
-import { loadCorpus, runProviderConformance } from '@docs/core/testing';
+import {
+  MemoryFileStore,
+  createFileStoreProvider,
+  type DocumentProvider,
+} from '@hmzisb/notion-docs-core';
+import { loadCorpus, runProviderConformance } from '@hmzisb/notion-docs-core/testing';
 import { setupServer } from 'msw/node';
 import { afterAll, afterEach, beforeAll } from 'vitest';
 import { docsHandlers, type DocsBackend } from './http-handlers.js';

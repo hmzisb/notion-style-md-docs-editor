@@ -1,5 +1,5 @@
 {
-  "name": "@docs/react",
+  "name": "@hmzisb/notion-docs-react",
   "version": "0.1.0",
   "description": "Notion-grade Markdown docs UI for React: tree, viewer, editor, shell and adapters.",
   "license": "MIT",
@@ -32,6 +32,10 @@
   "files": [
     "dist"
   ],
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -77,7 +81,7 @@
   },
   "dependencies": {
     "@ariakit/react": "^0.4.38",
-    "@docs/core": "workspace:*",
+    "@hmzisb/notion-docs-core": "workspace:*",
     "@headless-tree/core": "^1.7.0",
     "@headless-tree/react": "^1.7.0",
     "@tanstack/query-persist-client-core": "^5.102.3",

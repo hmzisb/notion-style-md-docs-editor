@@ -3,30 +3,30 @@
 ## 1. Install (Tailwind v4 host)
 
 ```bash
-pnpm add @docs/react @docs/core @tanstack/react-query platejs   # plus the @platejs/* peers listed in @docs/react's peerDependencies
+pnpm add @hmzisb/notion-docs-react @hmzisb/notion-docs-core @tanstack/react-query platejs   # plus the @platejs/* peers listed in @hmzisb/notion-docs-react's peerDependencies
 ```
 
 ```css
 /* app.css */
 @import "tailwindcss";
-@source "../node_modules/@docs/react/dist";
-@import "@docs/react/styles.css";
+@source "../node_modules/@hmzisb/notion-docs-react/dist";
+@import "@hmzisb/notion-docs-react/styles.css";
 /* host without shadcn variables: */
-@import "@docs/react/theme.css";
+@import "@hmzisb/notion-docs-react/theme.css";
 ```
 
-Non-Tailwind host: import only `@docs/react/styles.css` (precompiled, scoped, no preflight) and optionally `theme.css`.
+Non-Tailwind host: import only `@hmzisb/notion-docs-react/styles.css` (precompiled, scoped, no preflight) and optionally `theme.css`.
 
 ## 2. Exports
 
 Every name below is checked against the real entry points by `packages/react/src/public-api.test.ts`:
 a `complete` list is the whole entry and a `headline` list is a subset of one, and either way a name
-that is documented and gone fails the suite. `@docs/react` also re-exports every type of
-`@docs/core`, so a host that only composes UI never imports the core package directly.
+that is documented and gone fails the suite. `@hmzisb/notion-docs-react` also re-exports every type of
+`@hmzisb/notion-docs-core`, so a host that only composes UI never imports the core package directly.
 
 <!-- exports:start -->
 ```text
-@docs/react  complete
+@hmzisb/notion-docs-react  complete
   CreatePageVariables, DEFAULT_SIDEBAR_WIDTH, DeletePageVariables, DocsContextValue,
   DocsEvent, DocsEventHandler, DocsKeys, DocsNavigation, DocsOptions, DocsProvider,
   DocsProviderProps, DocsStrings, DocumentSession, GC, MAX_RECENTS, MovePageVariables,
@@ -37,17 +37,17 @@ that is documented and gone fails the suite. `@docs/react` also re-exports every
   useDocumentSession, useMeta, useMovePage, useOnline, usePage, useRecents, useSavePage,
   useSearch, useSidebarStore, useTreeIndex, useUpdateMeta
 
-@docs/react/tree  complete
+@hmzisb/notion-docs-react/tree  complete
   PageTree, PageTreeProps
 
-@docs/react/editor  complete
+@hmzisb/notion-docs-react/editor  complete
   DocumentEditor, DocumentEditorProps, EditorErrorBoundary, EditorErrorBoundaryProps,
   EditorKitOptions, PlateEditor, baseKitKeys, createEditorKit
 
-@docs/react/view  complete
+@hmzisb/notion-docs-react/view  complete
   DocumentView, DocumentViewProps
 
-@docs/react/shell  complete
+@hmzisb/notion-docs-react/shell  complete
   Banner, BannerProps, BannerVariant, Breadcrumbs, BreadcrumbsProps, CommandPalette,
   CommandPaletteProps, DocsShell, DocsShellProps, DocsShellSidebarOptions, DocsShellSlots,
   EmptyState, EmptyStateAction, EmptyStateProps, IconPicker, IconPickerProps, ModeToggle,
@@ -55,17 +55,17 @@ that is documented and gone fails the suite. `@docs/react` also re-exports every
   PageIconProps, PageMenu, PageMenuProps, PageTitle, PageTitleProps, SaveStatus,
   SaveStatusProps
 
-@docs/react/adapters/http  complete
+@hmzisb/notion-docs-react/adapters/http  complete
   HttpProviderOptions, createHttpProvider
 
-@docs/react/adapters/filesystem  complete
+@hmzisb/notion-docs-react/adapters/filesystem  complete
   FileSystemProviderOptions, ImportOptions, PickDirectoryOptions, createFileSystemProvider,
   exportToDirectory, getOpfsRoot, importFromDirectory, pickDirectory
 
-@docs/react/adapters/memory  complete
+@hmzisb/notion-docs-react/adapters/memory  complete
   MemoryProviderOptions, MemorySeed, createMemoryProvider
 
-@docs/core  headline
+@hmzisb/notion-docs-core  headline
   DocumentProvider, ProviderCapabilities, ProviderError, ConflictError, StorageQuotaError,
   isProviderError, isConflictError, PageDocument, PageMeta, PageMetaPatch, TreeSnapshot,
   TreeNode, TreeIndex, NodeId, NodeKind, PageMode, SearchHit, SaveResult, BackendMeta,
@@ -79,13 +79,13 @@ that is documented and gone fails the suite. `@docs/react` also re-exports every
   pathHashId, folderHashId, slugify, uniqueSlug, CONTRACT_VERSION, CONTRACT_SCHEMAS,
   INDEX_FILE, README_FILE
 
-@docs/core/testing  complete
+@hmzisb/notion-docs-core/testing  complete
   ConformanceOptions, Corpus, CorpusFidelity, CorpusFolder, CorpusManifest, CorpusPage,
   FidelityLevel, LoadCorpusOptions, loadCorpus, runProviderConformance
 ```
 <!-- exports:end -->
 
-CSS lives at `@docs/react/styles.css` and `@docs/react/theme.css`; both packages also expose
+CSS lives at `@hmzisb/notion-docs-react/styles.css` and `@hmzisb/notion-docs-react/theme.css`; both packages also expose
 `./package.json`. Nothing else is importable: `dist` has no deep paths in its `exports` map.
 
 ## 3. `DocsProvider`
@@ -227,9 +227,9 @@ export default function Show({ pageId, mode }) {
 ### 8.3 Read-only help drawer (no editor bundle)
 
 ```tsx
-import { DocsProvider, usePage, useTreeIndex } from '@docs/react';
-import { PageTree } from '@docs/react/tree';
-import { DocumentView } from '@docs/react/view';
+import { DocsProvider, usePage, useTreeIndex } from '@hmzisb/notion-docs-react';
+import { PageTree } from '@hmzisb/notion-docs-react/tree';
+import { DocumentView } from '@hmzisb/notion-docs-react/view';
 const provider = createHttpProvider({ baseUrl: '/api/help', rootId: HELP_ROOT });   // backend reports write: false
 export function HelpDrawer() {
   const [pageId, setPageId] = useState<string | null>(HELP_HOME);

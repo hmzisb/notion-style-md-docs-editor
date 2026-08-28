@@ -1,4 +1,12 @@
-import { clickCaret, expect, freshVisit, openWorkspace, savedFile, seedFile, test } from './fixtures.js';
+import {
+  clickCaret,
+  expect,
+  freshVisit,
+  openWorkspace,
+  savedFile,
+  seedFile,
+  test,
+} from './fixtures.js';
 
 /**
  * docs/09 P4-T01 and docs/04 section 5. The OPFS workspace is opened with `watch: true`, so the
@@ -48,7 +56,9 @@ test('a save of our own never interrupts the editor', async ({ page }) => {
   await clickCaret(page.locator(EDITOR).getByText('Original body'));
   await page.keyboard.type('typed ');
   await page.keyboard.press('ControlOrMeta+s');
-  await expect.poll(async () => await savedFile(page, FILE), { timeout: 10_000 }).toContain('typed ');
+  await expect
+    .poll(async () => await savedFile(page, FILE), { timeout: 10_000 })
+    .toContain('typed ');
 
   // Unsaved edits held across two poll cycles: what the file has is what we wrote, and the
   // provider knows it (`watch.test.ts` asserts the silence directly). If it did not, the page

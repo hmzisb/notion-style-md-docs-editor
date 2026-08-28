@@ -7,7 +7,7 @@ import { describe, expect, it } from 'vitest';
  * docs/08 section 2 is the list a host reads before installing anything, and a list nobody runs
  * is a list that rots: it promised `useSearch` and four mutation hooks that the root entry did
  * not export. So it is parsed here and compared with what the entry points actually export -
- * `complete` for an entry small enough to write down whole, `headline` for `@docs/core`, whose
+ * `complete` for an entry small enough to write down whole, `headline` for `@hmzisb/notion-docs-core`, whose
  * 146 names would drown the page.
  */
 
@@ -27,16 +27,16 @@ const read = (path: string): string => readFileSync(ROOT + path, 'utf8');
 
 /** Documented path -> source entry. The package `exports` map is checked against these keys. */
 const ENTRIES: Record<string, string> = {
-  '@docs/core': 'packages/core/src/index.ts',
-  '@docs/core/testing': 'packages/core/src/testing/index.ts',
-  '@docs/react': 'packages/react/src/index.ts',
-  '@docs/react/tree': 'packages/react/src/tree/index.ts',
-  '@docs/react/editor': 'packages/react/src/editor/index.ts',
-  '@docs/react/view': 'packages/react/src/view/index.ts',
-  '@docs/react/shell': 'packages/react/src/shell/index.ts',
-  '@docs/react/adapters/http': 'packages/react/src/adapters/http.ts',
-  '@docs/react/adapters/filesystem': 'packages/react/src/adapters/filesystem.ts',
-  '@docs/react/adapters/memory': 'packages/react/src/adapters/memory.ts',
+  '@hmzisb/notion-docs-core': 'packages/core/src/index.ts',
+  '@hmzisb/notion-docs-core/testing': 'packages/core/src/testing/index.ts',
+  '@hmzisb/notion-docs-react': 'packages/react/src/index.ts',
+  '@hmzisb/notion-docs-react/tree': 'packages/react/src/tree/index.ts',
+  '@hmzisb/notion-docs-react/editor': 'packages/react/src/editor/index.ts',
+  '@hmzisb/notion-docs-react/view': 'packages/react/src/view/index.ts',
+  '@hmzisb/notion-docs-react/shell': 'packages/react/src/shell/index.ts',
+  '@hmzisb/notion-docs-react/adapters/http': 'packages/react/src/adapters/http.ts',
+  '@hmzisb/notion-docs-react/adapters/filesystem': 'packages/react/src/adapters/filesystem.ts',
+  '@hmzisb/notion-docs-react/adapters/memory': 'packages/react/src/adapters/memory.ts',
 };
 
 interface Documented {
@@ -92,8 +92,8 @@ const actual = actualExports();
 /** The root entry re-exports core's types wholesale, and those are documented under core. */
 const own = (path: string): Set<string> => {
   const names = actual.get(path) ?? new Set<string>();
-  if (path !== '@docs/react') return names;
-  const core = actual.get('@docs/core') ?? new Set<string>();
+  if (path !== '@hmzisb/notion-docs-react') return names;
+  const core = actual.get('@hmzisb/notion-docs-core') ?? new Set<string>();
   return new Set([...names].filter((name) => !core.has(name)));
 };
 
@@ -103,9 +103,10 @@ describe('docs/08 section 2 matches the entry points', () => {
     expect(doc, 'documented entry').toBeDefined();
     if (doc === undefined) return;
     const names = own(path);
-    expect([...doc.names].filter((name) => !names.has(name)), 'documented but not exported').toEqual(
-      [],
-    );
+    expect(
+      [...doc.names].filter((name) => !names.has(name)),
+      'documented but not exported',
+    ).toEqual([]);
     if (doc.mode === 'complete') {
       const undocumented = [...names].filter((name) => !doc.names.includes(name));
       expect(undocumented, 'exported but not documented').toEqual([]);
@@ -113,14 +114,17 @@ describe('docs/08 section 2 matches the entry points', () => {
   });
 
   it('re-exports the core types from the root entry', () => {
-    const core = actual.get('@docs/core') ?? new Set<string>();
-    const root = actual.get('@docs/react') ?? new Set<string>();
-    expect([...core].filter((name) => !root.has(name)), 'lost from `export type *`').toEqual([]);
+    const core = actual.get('@hmzisb/notion-docs-core') ?? new Set<string>();
+    const root = actual.get('@hmzisb/notion-docs-react') ?? new Set<string>();
+    expect(
+      [...core].filter((name) => !root.has(name)),
+      'lost from `export type *`',
+    ).toEqual([]);
   });
 
   it.each([
-    ['@docs/core', 'packages/core/package.json'],
-    ['@docs/react', 'packages/react/package.json'],
+    ['@hmzisb/notion-docs-core', 'packages/core/package.json'],
+    ['@hmzisb/notion-docs-react', 'packages/react/package.json'],
   ])('%s has an exports map that matches the documented paths', (name, file) => {
     const map = JSON.parse(read(file)) as { exports: Record<string, unknown> };
     const published = Object.keys(map.exports)

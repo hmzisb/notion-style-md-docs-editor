@@ -1,5 +1,5 @@
 ---
-'@docs/react': patch
+'@hmzisb/notion-docs-react': patch
 ---
 
 The command palette's Results group lists content matches only. A page the provider matched on

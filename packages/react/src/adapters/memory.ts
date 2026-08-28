@@ -10,7 +10,7 @@ import {
   type ProviderCapabilities,
   type ProviderErrorCode,
   type TreeSnapshot,
-} from '@docs/core';
+} from '@hmzisb/notion-docs-core';
 
 /**
  * Either a set of Markdown files, which is what the demo corpus and the tests use, or a tree

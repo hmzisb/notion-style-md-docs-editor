@@ -1,4 +1,4 @@
-# @docs/react
+# @hmzisb/notion-docs-react
 
 A Notion-grade Markdown docs UI for React: page tree, reader, editor, shell, and the adapters that
 put them over a backend you already have. Markdown files stay the source of truth - the module
@@ -9,7 +9,7 @@ Frontend only. Every read and write goes through a `DocumentProvider` you pass i
 ## Install
 
 ```bash
-pnpm add @docs/react @docs/core @tanstack/react-query platejs
+pnpm add @hmzisb/notion-docs-react @hmzisb/notion-docs-core @tanstack/react-query platejs
 pnpm add @platejs/basic-nodes @platejs/callout @platejs/caption @platejs/code-block \
   @platejs/combobox @platejs/dnd @platejs/floating @platejs/indent @platejs/link \
   @platejs/list @platejs/media @platejs/resizable @platejs/selection \
@@ -25,20 +25,20 @@ stylesheet:
 ```css
 /* app.css */
 @import "tailwindcss";
-@source "../node_modules/@docs/react/dist";
-@import "@docs/react/styles.css";
-@import "@docs/react/theme.css";   /* only if your app has no shadcn variables */
+@source "../node_modules/@hmzisb/notion-docs-react/dist";
+@import "@hmzisb/notion-docs-react/styles.css";
+@import "@hmzisb/notion-docs-react/theme.css";   /* only if your app has no shadcn variables */
 ```
 
-Host without Tailwind: import `@docs/react/styles.css` alone. It is precompiled, scoped to
+Host without Tailwind: import `@hmzisb/notion-docs-react/styles.css` alone. It is precompiled, scoped to
 `.docs-root`, and carries no preflight, so nothing outside the module changes.
 
 ## Quick start
 
 ```tsx
-import { DocsProvider, type DocsNavigation } from '@docs/react';
-import { DocsShell } from '@docs/react/shell';
-import { createMemoryProvider } from '@docs/react/adapters/memory';
+import { DocsProvider, type DocsNavigation } from '@hmzisb/notion-docs-react';
+import { DocsShell } from '@hmzisb/notion-docs-react/shell';
+import { createMemoryProvider } from '@hmzisb/notion-docs-react/adapters/memory';
 import { useMemo, useState } from 'react';
 
 const provider = createMemoryProvider({
@@ -71,9 +71,9 @@ Composing instead of using the shell - the sidebar, the reader and the editor ar
 and each is a plain component:
 
 ```tsx
-import { PageTree } from '@docs/react/tree';
-import { DocumentView } from '@docs/react/view';
-import { usePage, useTreeIndex } from '@docs/react';
+import { PageTree } from '@hmzisb/notion-docs-react/tree';
+import { DocumentView } from '@hmzisb/notion-docs-react/view';
+import { usePage, useTreeIndex } from '@hmzisb/notion-docs-react';
 ```
 
 The full export list is in [docs/08](../../docs/08-PUBLIC-API.md), which a test keeps honest.
@@ -81,9 +81,9 @@ The full export list is in [docs/08](../../docs/08-PUBLIC-API.md), which a test 
 ## Adapters
 
 ```ts
-import { createMemoryProvider } from '@docs/react/adapters/memory';
-import { createHttpProvider } from '@docs/react/adapters/http';
-import { createFileSystemProvider, getOpfsRoot, pickDirectory } from '@docs/react/adapters/filesystem';
+import { createMemoryProvider } from '@hmzisb/notion-docs-react/adapters/memory';
+import { createHttpProvider } from '@hmzisb/notion-docs-react/adapters/http';
+import { createFileSystemProvider, getOpfsRoot, pickDirectory } from '@hmzisb/notion-docs-react/adapters/filesystem';
 ```
 
 - **memory** - files in a JS object. Demos, tests, and the states that are hard to reproduce on a
@@ -96,14 +96,14 @@ import { createFileSystemProvider, getOpfsRoot, pickDirectory } from '@docs/reac
   through OPFS. No server at all. `watch: true` polls the folder every `pollIntervalMs` and
   reports what changed under you.
 
-Any object that satisfies `DocumentProvider` from `@docs/core` works; the conformance suite in
-`@docs/core/testing` tells you whether yours does.
+Any object that satisfies `DocumentProvider` from `@hmzisb/notion-docs-core` works; the conformance suite in
+`@hmzisb/notion-docs-core/testing` tells you whether yours does.
 
 ## Theming
 
 The module reads shadcn's CSS variables - `--background`, `--foreground`, `--primary`, `--border`,
 `--sidebar*` and the rest. If your app defines them, the docs match your app on both themes with no
-extra work. If it does not, `@docs/react/theme.css` supplies a neutral set.
+extra work. If it does not, `@hmzisb/notion-docs-react/theme.css` supplies a neutral set.
 
 Its own knobs are set on `.docs-root` and can be overridden there:
 

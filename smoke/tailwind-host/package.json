@@ -9,8 +9,8 @@
     "test": "playwright test"
   },
   "dependencies": {
-    "@docs/core": "workspace:*",
-    "@docs/react": "workspace:*",
+    "@hmzisb/notion-docs-core": "workspace:*",
+    "@hmzisb/notion-docs-react": "workspace:*",
     "@platejs/basic-nodes": "53.0.0",
     "@platejs/callout": "53.0.0",
     "@platejs/caption": "53.0.0",

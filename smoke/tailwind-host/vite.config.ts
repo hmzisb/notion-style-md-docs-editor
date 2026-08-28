@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 
 /**
- * No aliases: this host resolves `@docs/react` through its exports map, into the built
+ * No aliases: this host resolves `@hmzisb/notion-docs-react` through its exports map, into the built
  * `dist`, which is the whole point of it (docs/11 section 7).
  */
 export default defineConfig({

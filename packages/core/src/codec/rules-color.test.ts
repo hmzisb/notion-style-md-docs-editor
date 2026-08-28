@@ -52,7 +52,9 @@ describe('the colour rule (DEV-034)', () => {
       { children: [{ bold: true, color: 'green', text: 'ok' }], type: KEYS.p },
     ];
     const body = valueToMarkdown(value);
-    expect(body).toBe(`**<span data-color="green" style="color: ${TEXT_COLORS.green}">ok</span>**\n`);
+    expect(body).toBe(
+      `**<span data-color="green" style="color: ${TEXT_COLORS.green}">ok</span>**\n`,
+    );
     expect(markdownToValue(body)).toEqual(value);
   });
 
@@ -61,7 +63,9 @@ describe('the colour rule (DEV-034)', () => {
       { children: [{ code: true, color: 'red', text: 'rm -rf' }], type: KEYS.p },
     ];
     const body = valueToMarkdown(value);
-    expect(body).toBe(`<span data-color="red" style="color: ${TEXT_COLORS.red}">\`rm -rf\`</span>\n`);
+    expect(body).toBe(
+      `<span data-color="red" style="color: ${TEXT_COLORS.red}">\`rm -rf\`</span>\n`,
+    );
     expect(markdownToValue(body)).toEqual(value);
   });
 

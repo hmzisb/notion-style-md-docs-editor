@@ -1,4 +1,4 @@
-import type { PageDocument } from '@docs/core';
+import type { PageDocument } from '@hmzisb/notion-docs-core';
 import type { Value } from 'platejs';
 import { useMemo } from 'react';
 import { useCodec } from './codec.js';

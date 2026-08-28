@@ -17,7 +17,7 @@ Install, configure, verify.
 - Verify
 
 ```bash
-pnpm add @docs/react
+pnpm add @hmzisb/notion-docs-react
 pnpm dev
 ```
 

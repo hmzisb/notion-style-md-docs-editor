@@ -1,6 +1,6 @@
 'use client';
 
-import { CALLOUT_ICONS, DEFAULT_CALLOUT_VARIANT } from '@docs/core';
+import { CALLOUT_ICONS, DEFAULT_CALLOUT_VARIANT } from '@hmzisb/notion-docs-core';
 import { insertCallout } from '@platejs/callout';
 import { insertCodeBlock, toggleCodeBlock } from '@platejs/code-block';
 import { triggerFloatingLink } from '@platejs/link/react';

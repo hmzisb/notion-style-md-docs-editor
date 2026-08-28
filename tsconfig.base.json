@@ -32,16 +32,16 @@
 
     "baseUrl": ".",
     "paths": {
-      "@docs/core": ["packages/core/src/index.ts"],
-      "@docs/core/testing": ["packages/core/src/testing/index.ts"],
-      "@docs/react": ["packages/react/src/index.ts"],
-      "@docs/react/tree": ["packages/react/src/tree/index.ts"],
-      "@docs/react/view": ["packages/react/src/view/index.ts"],
-      "@docs/react/editor": ["packages/react/src/editor/index.ts"],
-      "@docs/react/shell": ["packages/react/src/shell/index.ts"],
-      "@docs/react/adapters/memory": ["packages/react/src/adapters/memory.ts"],
-      "@docs/react/adapters/http": ["packages/react/src/adapters/http.ts"],
-      "@docs/react/adapters/filesystem": ["packages/react/src/adapters/filesystem.ts"]
+      "@hmzisb/notion-docs-core": ["packages/core/src/index.ts"],
+      "@hmzisb/notion-docs-core/testing": ["packages/core/src/testing/index.ts"],
+      "@hmzisb/notion-docs-react": ["packages/react/src/index.ts"],
+      "@hmzisb/notion-docs-react/tree": ["packages/react/src/tree/index.ts"],
+      "@hmzisb/notion-docs-react/view": ["packages/react/src/view/index.ts"],
+      "@hmzisb/notion-docs-react/editor": ["packages/react/src/editor/index.ts"],
+      "@hmzisb/notion-docs-react/shell": ["packages/react/src/shell/index.ts"],
+      "@hmzisb/notion-docs-react/adapters/memory": ["packages/react/src/adapters/memory.ts"],
+      "@hmzisb/notion-docs-react/adapters/http": ["packages/react/src/adapters/http.ts"],
+      "@hmzisb/notion-docs-react/adapters/filesystem": ["packages/react/src/adapters/filesystem.ts"]
     }
   }
 }

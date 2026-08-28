@@ -17,10 +17,10 @@ Plate view, and reach every page from the palette. Editing, mutations and row ac
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gz | **31 kB** | 40 kB (docs/10 §5) |
-| `@docs/react` `.` entry | **7.97 kB** | 25 kB |
-| `@docs/react` `./tree` + `./view` | **30.18 kB** | 80 kB, hard |
-| `@docs/react` `./shell` | **90.01 kB** | 60 kB (docs/02 §7) — over, DEV-012 |
+| `@hmzisb/notion-docs-core` entry, min + gz | **31 kB** | 40 kB (docs/10 §5) |
+| `@hmzisb/notion-docs-react` `.` entry | **7.97 kB** | 25 kB |
+| `@hmzisb/notion-docs-react` `./tree` + `./view` | **30.18 kB** | 80 kB, hard |
+| `@hmzisb/notion-docs-react` `./shell` | **90.01 kB** | 60 kB (docs/02 §7) — over, DEV-012 |
 | Cached page switch, click → painted | **47.2 ms** | < 100 ms |
 | Tree scroll, 5,000-node fixture | **9.69 ms/frame**, 37 rows mounted | 60 fps, ≤ 45 rows, hard |
 | Lighthouse accessibility, page view | **100** | ≥ 95 (docs/01 §6) |

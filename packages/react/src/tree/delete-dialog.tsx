@@ -1,4 +1,4 @@
-import { subtreeIds, type NodeId, type TreeIndex } from '@docs/core';
+import { subtreeIds, type NodeId, type TreeIndex } from '@hmzisb/notion-docs-core';
 import { useRef } from 'react';
 import { useDocs } from '@/data/context.js';
 import { format } from '@/data/strings.js';

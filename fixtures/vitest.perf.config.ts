@@ -9,7 +9,7 @@ import { defineConfig } from 'vitest/config';
 export default defineConfig({
   resolve: {
     alias: {
-      '@docs/core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
+      '@hmzisb/notion-docs-core': fileURLToPath(new URL('../packages/core/src/index.ts', import.meta.url)),
     },
   },
   test: {

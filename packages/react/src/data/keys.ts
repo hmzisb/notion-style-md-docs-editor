@@ -1,4 +1,4 @@
-import { fnv1a64, type NodeId } from '@docs/core';
+import { fnv1a64, type NodeId } from '@hmzisb/notion-docs-core';
 
 /**
  * Cache namespace (docs/02 section 6). Everything the module stores - query keys, IndexedDB

@@ -21,11 +21,11 @@ the exports map rather than the workspace.
 
 | Measure | Result | Budget |
 |---|---|---|
-| `@docs/core` entry, min + gz | **33.05 kB** | 40 kB (docs/10 §5) |
-| `@docs/react` `.` entry | **14.49 kB** | 25 kB |
-| `@docs/react` `./tree` + `./view` | **38.89 kB** | 80 kB, hard |
-| `@docs/react` `./shell` | **96.47 kB** | 98 kB ratchet — over docs/02 §7's 60 kB, DEV-012 |
-| `@docs/react` `./editor` (lazy) | **213.88 kB** | 260 kB |
+| `@hmzisb/notion-docs-core` entry, min + gz | **33.05 kB** | 40 kB (docs/10 §5) |
+| `@hmzisb/notion-docs-react` `.` entry | **14.49 kB** | 25 kB |
+| `@hmzisb/notion-docs-react` `./tree` + `./view` | **38.89 kB** | 80 kB, hard |
+| `@hmzisb/notion-docs-react` `./shell` | **96.47 kB** | 98 kB ratchet — over docs/02 §7's 60 kB, DEV-012 |
+| `@hmzisb/notion-docs-react` `./editor` (lazy) | **213.88 kB** | 260 kB |
 | Cached page switch, click → painted | **13.0 ms** | < 100 ms |
 | Cold page open from IndexedDB | **20.7 ms** | < 150 ms |
 | Tree scroll, 5,000-node fixture | **8.38 ms/frame** (119 fps), 36 rows mounted | 60 fps, ≤ 45 rows, hard |
@@ -50,7 +50,7 @@ runs as its own vitest project for the same reason.
   full e2e suite, both perf runners, both smoke hosts and `changeset status` — 19 steps, every one
   of them with its artefacts present, so nothing reports as a skip.
 - **Boundaries**: `pnpm lint` green at `--max-warnings 0`, including the two smoke workspaces,
-  which resolve `@docs/*` through the exports map with `"paths": {}` — so a missing export or a
+  which resolve `@hmzisb/notion-docs-*` through the exports map with `"paths": {}` — so a missing export or a
   types condition that only works inside the monorepo fails there rather than at a host.
 - **Public API**: docs/08 §2 is now generated from the real entry points and asserted by
   `public-api.test.ts` (13 tests) against `ts.createProgram`, both directions: an undocumented
@@ -68,7 +68,7 @@ runs as its own vitest project for the same reason.
   editor node now paint the block's own `bg-muted` behind that group. The baselines belong to
   this machine's Chromium run (ASM-153).
 - **Packaging**: `pnpm smoke` builds both hosts against `dist`. The Tailwind host proves the
-  shell's arbitrary values need `@source "../node_modules/@docs/react/dist"`, which the README
+  shell's arbitrary values need `@source "../node_modules/@hmzisb/notion-docs-react/dist"`, which the README
   now says; the plain host proves `styles.css` is precompiled, `.docs-root`-scoped and
   preflight-free by asserting a bare `<p>` outside the root keeps its UA margin.
 

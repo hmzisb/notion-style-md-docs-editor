@@ -1,6 +1,6 @@
 'use client';
 
-import { isTextColor } from '@docs/core';
+import { isTextColor } from '@hmzisb/notion-docs-core';
 import { PlateLeaf, type PlateLeafProps } from 'platejs/react';
 
 /**
