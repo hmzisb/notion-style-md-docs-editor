@@ -5,7 +5,11 @@ import type { Options } from './e2e/fixtures.js';
 export default defineConfig<Options>({
   testDir: './e2e',
   // The budgets run against the production build, from `playwright.perf.config.ts`.
-  testIgnore: /perf\.spec\.ts/,
+  // `DOCS_E2E_NO_VISUAL` drops the baselines too: they are rasterised on one OS
+  // (`__screenshots__/*-darwin.png`), so a shared runner has nothing to compare against.
+  // CI sets it; everything else in this directory is portable and runs there.
+  testIgnore:
+    process.env.DOCS_E2E_NO_VISUAL === undefined ? /perf\.spec\.ts/ : /(perf|visual)\.spec\.ts/,
   fullyParallel: true,
   forbidOnly: true,
   retries: process.env.CI === undefined ? 0 : 2,
