@@ -11,7 +11,12 @@ import {
 } from '@platejs/floating';
 import { useComposedRef } from '@udecode/cn';
 import { KEYS } from 'platejs';
-import { useEditorId, useEventEditorValue, usePluginOption } from 'platejs/react';
+import {
+  useEditorContainerRef,
+  useEditorId,
+  useEventEditorValue,
+  usePluginOption,
+} from 'platejs/react';
 
 import { cn } from '@/lib/utils';
 
@@ -29,6 +34,7 @@ export function FloatingToolbar({
   const focusedEditorId = useEventEditorValue('focus');
   const isFloatingLinkOpen = !!usePluginOption({ key: KEYS.link }, 'mode');
   const isAIChatOpen = usePluginOption({ key: KEYS.aiChat }, 'open');
+  const containerRef = useEditorContainerRef();
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,
@@ -38,10 +44,19 @@ export function FloatingToolbar({
     floatingOptions: {
       middleware: [
         offset(12),
-        flip({
+        // Derivable, not a plain object: the container is null on the first render and
+        // this runs on every reposition, by which point it is not.
+        flip(() => ({
           fallbackPlacements: ['top-start', 'top-end', 'bottom-start', 'bottom-end'],
           padding: 12,
-        }),
+          // docs/06 section 8 puts the toolbar above the selection. Left to the default
+          // boundary it measures against the scrolling ancestor, which starts above the
+          // editor - so a selection in the first block had room to draw over the page
+          // title. The editor's own box is the top it may not pass. `rootBoundary` still
+          // defaults to the viewport and is intersected in, so a block scrolled to the
+          // top of the screen still flips below rather than off it.
+          ...(containerRef.current === null ? {} : { boundary: containerRef.current }),
+        })),
       ],
       placement: 'top',
       ...state?.floatingOptions,

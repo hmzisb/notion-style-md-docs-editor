@@ -50,7 +50,7 @@ export const ImageElement = withHOC(
 
     return (
       <PlateElement {...props} className={blockStyles.image}>
-        <figure className="group relative m-0" contentEditable={false}>
+        <figure className={cn(blockStyles.figure, 'group relative')} contentEditable={false}>
           <Resizable
             align={align}
             options={{

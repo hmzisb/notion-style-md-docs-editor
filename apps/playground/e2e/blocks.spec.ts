@@ -20,6 +20,12 @@ import {
 const EDITOR = '[data-slate-editor]';
 const FILE = 'blocks.md';
 
+async function boxOf(target: Locator): Promise<{ x: number; y: number; height: number }> {
+  const box = await target.boundingBox();
+  if (box === null) throw new Error('the element has no box, so it is not on the page');
+  return box;
+}
+
 test.beforeEach(async ({ page, mode }) => {
   // The demo workspace lives in memory, so there are no bytes to assert against.
   test.skip(mode !== 'opfs', 'reads the saved file back out of OPFS');
@@ -221,6 +227,25 @@ test('the floating toolbar marks a selection', async ({ page }) => {
 
   await done(page);
   await expect.poll(() => saved(page)).toContain('Bold **me**\n');
+});
+
+test('the floating toolbar keeps off the page title on the first block', async ({ page }) => {
+  // The heading is the first block, and a selection in it is the case where the toolbar's
+  // preferred `top` placement had the whole page header to draw over: the default flip
+  // boundary is the scrolling ancestor, which starts above the editor.
+  await clickCaret(page.locator(EDITOR).getByRole('heading', { name: 'Blocks' }));
+  await page.keyboard.press('End');
+  await page.keyboard.press('Shift+ArrowLeft');
+  await page.keyboard.press('Shift+ArrowLeft');
+
+  const toolbar = page.getByRole('toolbar', { name: 'Formatting' });
+  await expect(toolbar).toBeVisible();
+
+  const bar = await boxOf(toolbar);
+  const title = await boxOf(page.getByRole('textbox', { name: 'Page title' }));
+  const editor = await boxOf(page.locator(EDITOR));
+  expect(bar.y).toBeGreaterThanOrEqual(title.y + title.height);
+  expect(bar.y).toBeGreaterThanOrEqual(editor.y);
 });
 
 test('the floating toolbar colours a selection', async ({ page }) => {

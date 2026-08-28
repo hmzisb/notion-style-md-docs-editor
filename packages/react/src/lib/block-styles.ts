@@ -16,6 +16,14 @@ export const blockStyles = {
   h2: 'mt-6 mb-0.5 text-2xl leading-[1.3] font-semibold first:mt-0',
   h3: 'mt-4 mb-0.5 text-xl leading-[1.3] font-semibold first:mt-0',
   image: 'my-2',
+  /**
+   * The figure is the picture's box, not the column's. Without `w-fit` a narrow image sits in
+   * a full-width figure, and the centred caption below it lines up with the page rather than
+   * with the picture. `mx-auto` is what `align` already does to a resized image in the editor
+   * (`center` is its default, and Markdown carries no alignment), applied here so the read
+   * view and the editor put the same picture in the same place (docs/05 section 8).
+   */
+  figure: 'm-0 mx-auto w-fit max-w-full',
   /** docs/06 section 7: the visible caption of docs/05 section 5, under the image. */
   caption: 'mt-1 text-center text-sm text-muted-foreground',
   p: 'py-[3px]',
