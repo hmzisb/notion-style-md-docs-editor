@@ -1,6 +1,13 @@
-# 📝 notion-style-md-docs-editor
+# 📝 Markdown Docs Editor for React
 
-**A Notion-like docs editor for your React app. It reads and writes plain Markdown files.**
+**Let users write and organize docs inside your React app.**
+
+A Notion-style editor that reads and writes plain Markdown files.
+Use it for a help center, internal wiki or project documentation.
+
+- ✍️ **Write:** edit pages with blocks, lists, tables and code.
+- 📂 **Organize:** browse a page tree and search your docs.
+- 💾 **Save:** autosave to browser storage, a supported local folder or your own API.
 
 [![ci](https://github.com/hmzisb/notion-style-md-docs-editor/actions/workflows/ci.yml/badge.svg)](https://github.com/hmzisb/notion-style-md-docs-editor/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-black.svg)](LICENSE)
@@ -9,11 +16,9 @@
 [![Tests](https://img.shields.io/badge/tests-1%2C255%20unit%20%2B%20156%20e2e-2ea043.svg)](#-quality)
 [![Bundle](https://img.shields.io/badge/read%20path-39.2%20kB%20gzip-2ea043.svg)](#-speed)
 
-Drop it in and your users get a sidebar tree, a block editor, a search palette, and instant page
-loads. Your docs stay as `.md` files in a folder you own.
-
-**No backend needed.** It talks to storage through one small interface. Pick a folder on the
-user's computer, the browser's own storage, or your own API.
+**Start with the demo below.** The package is not published on npm yet; see
+[Add it to your app](#-add-it-to-your-app) for the current setup.
+Local folder access depends on the browser. Browser storage works without a backend.
 
 ![Reading a page: sidebar tree, breadcrumbs and a table](docs/assets/read-light.png)
 
